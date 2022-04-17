@@ -1,5 +1,7 @@
 namespace FluentHttpClient;
 
+// TODO: Support more complex cookies
+
 /// <summary>
 /// Provides access the cookies for the request
 /// </summary>

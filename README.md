@@ -37,9 +37,8 @@ The extension methods available in this library simplifiy that process. The `Usi
 - Sending the `HttpRequestMessage`
 - Deserializing the `HttpResponseMessage` contents
 
-The example below proceed in that topical order.
-
-To enjoy the benefits of using these chaning methods, you'll want to configure the request and send it all in one chain.
+To enjoy the benefits of using these chaining methods, you can configure the request and send it all in one chain.
+The example below proceeds in that topical order.
 
 ```csharp
 var content = await _client
@@ -50,6 +49,8 @@ var content = await _client
     .GetAsync()
     .GetResponseStreamAsync();
 ```
+
+> Note that the method name difference between setting a single instance of a property is that the multiple instance will use the plural form. For example, you can add a single cookie using the method `WithCookie()` and multiple cookies at onces using `WithCookies()`.
 
 ## Configure The Request
 
@@ -102,9 +103,14 @@ _client.UsingRoute("")
 You can set the content of the request by passing in a string or a pre-built [`HttpContent`](https://docs.microsoft.com/en-us/dotnet/api/system.net.http.httpcontent?view=net-5.0) object.
 
 ```csharp
+// Send a pre-serialized JSON string
 var json = JsonSerializer.Serialize(myObject);
 _client.UsingRoute("")
     .WithContent(json);
+
+// Send an object as JsonSerializer
+_client.UsingRoute("")
+    .WithContent(JsonContent.Create(myObject));
 
 // Send a multipart request
 MultipartContent content = ...
@@ -292,4 +298,38 @@ var response = await _client
     .GetAsync();
 
 var responseContent = response.GetResponseBytesAsync();
+```
+
+## Advanced Deserializing
+Because the type of content being returned from the request can vary (JSON vs XML vs YAML, etc.) and the choice of serializers are many in each category, FluentHttpClient does not have built in methods to deserialize to an object. However, these are easy to create and add to your solution.
+
+Below is an example extension method that will deserialize a JSON stream to an object.
+
+```csharp
+public static class FluentHttpClientExtensions
+{
+    private static JsonSerializerOptions _options = new JsonSerializerOptions
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
+    public static async Task<T?> DeserializeJsonAsync<T>(this Task<Stream> result)
+    {
+        return await result.DeserializeJsonAsync<T>(_options);
+    }
+
+    public static async Task<T?> DeserializeJsonAsync<T>(this Task<Stream> result, JsonSerializerOptions options)
+    {
+        var data = await result;
+
+        try
+        {
+            return await JsonSerializer.DeserializeAsync<T>(data, options);
+        }
+        catch (Exception)
+        {
+            throw new Exception(data.ToString());
+        }
+    }
+}
 ```
