@@ -301,35 +301,30 @@ var responseContent = response.GetResponseBytesAsync();
 ```
 
 ## Advanced Deserializing
-Because the type of content being returned from the request can vary (JSON vs XML vs YAML, etc.) and the choice of serializers are many in each category, FluentHttpClient does not have built in methods to deserialize to an object. However, these are easy to create and add to your solution.
 
-Below is an example extension method that will deserialize a JSON stream to an object.
+Deserialize a JSON response to an object from either a string or a stream.
+
+```csharp {8}
+string response = await _client
+    .UsingRoute($"/repos/scottoffen/grapevine/issues")
+    .WithQueryParam("state", "open")
+    .WithQueryParam("sort", "created")
+    .WithQueryParam("direction", "desc")
+    .GetAsync()
+    .GetResponseStreamAsync()
+    .DeserializeJsonAsync<IssuesResponse>();
+```
+
+### Create Custom Fluent Deserializers
+
+Create custom fluent deserializers by adding generic async extensions on `Task<Stream>` and/or `Task<string>`. For a given generic Format:
 
 ```csharp
 public static class FluentHttpClientExtensions
 {
-    private static JsonSerializerOptions _options = new JsonSerializerOptions
+    public static async Task<T?> DeserializeFormatAsync<T>(this Task<Stream> result)
     {
-        PropertyNameCaseInsensitive = true
-    };
-
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<Stream> result)
-    {
-        return await result.DeserializeJsonAsync<T>(_options);
-    }
-
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<Stream> result, JsonSerializerOptions options)
-    {
-        var data = await result;
-
-        try
-        {
-            return await JsonSerializer.DeserializeAsync<T>(data, options);
-        }
-        catch (Exception)
-        {
-            throw new Exception(data.ToString());
-        }
+        return await FormatSerializer.DeserializeFormatAsync<T>(await result);
     }
 }
 ```
