@@ -42,4 +42,23 @@ public static class HttpResponseMessageExtensions
         var responseMessage = await taskResponseMessage;
         return await responseMessage.GetResponseBytesAsync().ConfigureAwait(false);
     }
+
+    public static async Task<HttpResponseMessage> OnFailure(this Task<HttpResponseMessage> taskResponseMessage, Action<HttpResponseMessage> action, bool suppressException = false)
+    {
+        var response = await taskResponseMessage;
+        if (!response.IsSuccessStatusCode)
+        {
+            action(response);
+            if (!suppressException) response.EnsureSuccessStatusCode();
+        }
+
+        return await Task.FromResult(response);
+    }
+
+    public static async Task<HttpResponseMessage> OnSuccess(this Task<HttpResponseMessage> taskResponseMessage, Action<HttpResponseMessage> action)
+    {
+        var response = await taskResponseMessage;
+        if (response.IsSuccessStatusCode) action(response);
+        return await Task.FromResult(response);
+    }
 }
