@@ -52,4 +52,17 @@ public static class FluentJsonDeserialization
             ? JsonSerializer.Deserialize<T>(await response.GetResponseStreamAsync(), options)
             : defaultAction(response);
     }
+
+    public static async Task<T> DeserializeJsonAsync<T>(this Task<HttpResponseMessage> result, Func<HttpResponseMessage, Task<T>> defaultAction)
+    {
+        return await result.DeserializeJsonAsync<T>(defaultAction, Options);
+    }
+
+    public static async Task<T> DeserializeJsonAsync<T>(this Task<HttpResponseMessage> taskResponse, Func<HttpResponseMessage, Task<T>> defaultAction, JsonSerializerOptions options)
+    {
+        var response = await taskResponse;
+        return (response.IsSuccessStatusCode)
+            ? JsonSerializer.Deserialize<T>(await response.GetResponseStreamAsync(), options)
+            : await defaultAction(response);
+    }
 }

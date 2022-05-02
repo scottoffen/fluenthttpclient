@@ -55,10 +55,29 @@ public static class HttpResponseMessageExtensions
         return await Task.FromResult(response);
     }
 
+    public static async Task<HttpResponseMessage> OnFailureAsync(this Task<HttpResponseMessage> taskResponseMessage, Func<HttpResponseMessage, Task> action, bool suppressException = false)
+    {
+        var response = await taskResponseMessage;
+        if (!response.IsSuccessStatusCode)
+        {
+            await action(response);
+            if (!suppressException) response.EnsureSuccessStatusCode();
+        }
+
+        return await Task.FromResult(response);
+    }
+
     public static async Task<HttpResponseMessage> OnSuccess(this Task<HttpResponseMessage> taskResponseMessage, Action<HttpResponseMessage> action)
     {
         var response = await taskResponseMessage;
         if (response.IsSuccessStatusCode) action(response);
+        return await Task.FromResult(response);
+    }
+
+    public static async Task<HttpResponseMessage> OnSuccessAsync(this Task<HttpResponseMessage> taskResponseMessage, Func<HttpResponseMessage, Task> action)
+    {
+        var response = await taskResponseMessage;
+        if (response.IsSuccessStatusCode) await action(response);
         return await Task.FromResult(response);
     }
 }
