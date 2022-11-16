@@ -7,8 +7,8 @@ namespace FluentHttpClient;
 /// </summary>
 public class Cookies : Dictionary<string, string>
 {
-    private static char[] _invalidNameChars = @"()<>@,;:\/[]?={}""".ToCharArray();
-    private static char[] _invalidValueChars = @",;\""".ToCharArray();
+    private static readonly char[] _invalidNameChars = @"()<>@,;:\/[]?={}""".ToCharArray();
+    private static readonly char[] _invalidValueChars = @",;\""".ToCharArray();
 
     public new string this[string key]
     {

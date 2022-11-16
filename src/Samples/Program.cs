@@ -5,7 +5,7 @@ HttpClient client = new HttpClient();
 
 client.BaseAddress = new Uri("https://api.github.com/");
 client.DefaultRequestHeaders.Add("Accept", "application/vnd.github.v3+json");
-client.DefaultRequestHeaders.Add("User-Agent", "Grapevine-Client");
+client.DefaultRequestHeaders.Add("User-Agent", "Fluent-Http-Client");
 
 var owner = "scottoffen";
 var repo = "fluenthttpclient";
