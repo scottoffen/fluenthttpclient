@@ -354,6 +354,8 @@ string response = await _client
     .DeserializeJsonAsync<IssuesResponse>();
 ```
 
+An optional `JsonSerializerOptions` instance can be passed as a parameter.
+
 ### Handling Json Deserializing in Failure
 
 If the request does not return a success status code, it might not be possible to deserialze the response body to the desired object. In those cases, you can specify a default action that will occur **instead of the default deserialization** if the status code on the response is not a success status code.
@@ -366,7 +368,7 @@ string response = await _client
     .WithQueryParam("direction", "desc")
     .GetAsync()
     .GetResponseStreamAsync()
-    .DeserializeJsonAsync<IssuesResponse>(async msg =>
+    .DeserializeJsonAsync<IssuesResponse>(msg =>
     {
         /*
         * write to the logs, throw a custom exception or parse the problem details
@@ -377,7 +379,14 @@ string response = await _client
     });
 ```
 
+If you need to perform async tasks in your delegate, preface it with the `async` keyword.
 
+```csharp
+.DeserializeJsonAsync<IssuesResponse>(async msg =>
+{
+    /* do async stuff here */
+});
+```
 
 ### Create Custom Fluent Deserializers
 
@@ -392,3 +401,17 @@ public static class FluentHttpClientExtensions
     }
 }
 ```
+
+## Default Json Serialization Options
+
+Unless explicitly passed in the method call for serialization or deserialization of JSON, the following default `JsonSerializerOptions` will be used:
+
+```csharp
+new JsonSerializerOptions
+{
+    PropertyNameCaseInsensitive = true,
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+};
+```
+
+This default can be overridden or modified via the `FluentHttpClientSettings.DefaultJsonSerializerOptions` property.
