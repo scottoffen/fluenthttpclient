@@ -42,7 +42,7 @@ The example below proceeds in that topical order.
 
 ```csharp
 var content = await _client
-    .UsingRoute($"/repos/scottoffen/grapevine/issues")
+    .UsingRoute("/repos/scottoffen/grapevine/issues")
     .WithQueryParam("state", "open")
     .WithQueryParam("sort", "created")
     .WithQueryParam("direction", "desc")
@@ -50,23 +50,25 @@ var content = await _client
     .GetResponseStreamAsync();
 ```
 
-> Note that the method name difference between setting a single instance of a property is that the multiple instance will use the plural form. For example, you can add a single cookie using the method `WithCookie()` and multiple cookies at onces using `WithCookies()`.
+> Note that the method name difference between setting a single instance of a property is that the multiple instance will use the plural form. For example, you can add a single query parameter using the method `WithQueryParam()` and multiple cookies at onces using `WithQueryParams()`.
 
 ## Configure The Request
 
 ### Route (Endpoint)
 
-Start by setting the request route using the `UsingRoute(string route)` extension method. If the `HttpClient.BaseAddress` has already been set, the value should be relative to that value. If it has not, then you should include the fully qualified domain name and full path the endpoint.
+Start by setting the request route using the `UsingRoute(string route)` extension method. If the `HttpClient.BaseAddress` has already been set, the value should be relative to that value (don't worry about striping or adding leading slashes, the library will take care of that as needed). If it has not, then you should include the fully qualified domain name and full path the endpoint.
 
 ```csharp
-_client.UsingRoute($"/repos/scottoffen/grapevine/issues");
+_client.UsingRoute("/repos/scottoffen/grapevine/issues");
 ```
 
-You'll notice that this is the only extension method on `HttpClient` of those listed here. This method actually returns a `RestRequestMessageBuilder`, and all other methods below are extension methods on that class.
+You'll notice that this is the only extension method on `HttpClient` of those listed here. This method actually returns a `RestRequestMessageBuilder`, and all other request configuration methods below are extension methods on that class.
 
 ### Authentication
 
 If your requests need authentication, you can easily add it using one of the three extensions methods below.
+
+> This is not necessary if you have already configured authorization tokens on your client.
 
 #### Basic Authentication
 
@@ -82,7 +84,7 @@ _client.UsingRoute("")
     .WithBasicAuthentication(token);
 ```
 
-##### OAuth Authentication
+#### OAuth Authentication
 
 ```csharp
 _client.UsingRoute("")
@@ -103,14 +105,10 @@ _client.UsingRoute("")
 You can set the content of the request by passing in a string or a pre-built [`HttpContent`](https://docs.microsoft.com/en-us/dotnet/api/system.net.http.httpcontent?view=net-5.0) object.
 
 ```csharp
-// Send a pre-serialized JSON string
+// Send a string of data
 var json = JsonSerializer.Serialize(myObject);
 _client.UsingRoute("")
-    .WithContent(json);
-
-// Send an object as JsonSerializer
-_client.UsingRoute("")
-    .WithContent(JsonContent.Create(myObject));
+    .WithContent(myStringData);
 
 // Send a multipart request
 MultipartContent content = ...
@@ -122,6 +120,16 @@ MultipartFormDataContent content = ...
 _client.UsingRoute("")
     .WithContent(content);
 ```
+
+If you are using .NET 5.0 or higher, you can simplify sending objects as JSON using the `.WithJsonContent()` method.
+
+```csharp
+var obj = new SomeDtoClass();
+_client.UsingRoute()
+    .WithJsonContent(obj);
+```
+
+With this method you can send an optional instance of [`JsonSerializerOptions`](https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsonserializeroptions?view=net-5.0) to modify how the object is serialized.
 
 ### Cookies
 
@@ -228,6 +236,37 @@ var response = await _client
     .SendAsync(HttpMethod.Patch);
 ```
 
+Each of the methods `GetAsync()`, `PostAsync()`, `PutAsync()` and `DeleteAsync()` call `SendAsync()` behind the scenes. As such, `GetAsync()` is equivalent to `SendAsync(HttpMethod.Get)`.
+
+## Success and Failure Delegates
+
+> These are extensions methods on `Task<HttpResponseMessage>`, and are only available to be chained after the request has been sent.
+
+There are times when the body of the response might not contain any data - or you just might not care about the data - and therefore there is no need to deserialize the response. You can add callback delegates for success and failure using the following methods:
+
+- `OnSuccess(msg => { /* code to execute */ })`
+- `OnSuccessAsync(async msg => { /* async code to execute */ })`
+- `OnFailure(msg => { /* code to execute */ })`
+- `OnFailureAsync(async msg => { /* async code to execute */ })`
+
+```csharp
+bool success = false;
+var response = await _client
+    .UsingRoute("/user/list")
+    .WithQueryParam("sort", "desc")
+    .GetAsync()
+    .OnFailure(msg => { success = false; })
+    .OnSuccess(msg => { success = true; });
+```
+
+Use the async versions when you need to perform awaitable tasks in your callback (e.g. parsing the response body). The single parameter to the delegate is of type `HttpResponseMessage`.
+
+### Differences between v1 and v2
+
+The extensions methods for failure take a second, optional parameter after the delegate that indicates whether or not you want an exception to be thrown if the status code does not indicate success. This paramter is named `suppressException`. If it is false, then the `EnsureSuccessStatusCode()` method is called on the HttpResponseMessage after your delegate is run.
+
+> The difference is that in v1 the `suppressException` parameter is false by default, and in v2 it is true by default.
+
 ## Deserialize The Response
 
 You can deserialize the response body to a string, stream or byte array using an extension method on the response.
@@ -236,7 +275,7 @@ You can deserialize the response body to a string, stream or byte array using an
 
 ```csharp {7,18}
 string response = await _client
-    .UsingRoute($"/repos/scottoffen/grapevine/issues")
+    .UsingRoute("/repos/scottoffen/grapevine/issues")
     .WithQueryParam("state", "open")
     .WithQueryParam("sort", "created")
     .WithQueryParam("direction", "desc")
@@ -246,7 +285,7 @@ string response = await _client
 /* OR */
 
 var response = await _client
-    .UsingRoute($"/repos/scottoffen/grapevine/issues")
+    .UsingRoute("/repos/scottoffen/grapevine/issues")
     .WithQueryParam("state", "open")
     .WithQueryParam("sort", "created")
     .WithQueryParam("direction", "desc")
@@ -258,7 +297,7 @@ var responseContent = response.GetResponseStringAsync();
 ### Get Response As Stream
 ```csharp {7,18}
 string response = await _client
-    .UsingRoute($"/repos/scottoffen/grapevine/issues")
+    .UsingRoute("/repos/scottoffen/grapevine/issues")
     .WithQueryParam("state", "open")
     .WithQueryParam("sort", "created")
     .WithQueryParam("direction", "desc")
@@ -268,7 +307,7 @@ string response = await _client
 /* OR */
 
 var response = await _client
-    .UsingRoute($"/repos/scottoffen/grapevine/issues")
+    .UsingRoute("/repos/scottoffen/grapevine/issues")
     .WithQueryParam("state", "open")
     .WithQueryParam("sort", "created")
     .WithQueryParam("direction", "desc")
@@ -281,7 +320,7 @@ var responseContent = response.GetResponseStreamAsync();
 
 ```csharp {7,18}
 string response = await _client
-    .UsingRoute($"/repos/scottoffen/grapevine/issues")
+    .UsingRoute("/repos/scottoffen/grapevine/issues")
     .WithQueryParam("state", "open")
     .WithQueryParam("sort", "created")
     .WithQueryParam("direction", "desc")
@@ -291,7 +330,7 @@ string response = await _client
 /* OR */
 
 var response = await _client
-    .UsingRoute($"/repos/scottoffen/grapevine/issues")
+    .UsingRoute("/repos/scottoffen/grapevine/issues")
     .WithQueryParam("state", "open")
     .WithQueryParam("sort", "created")
     .WithQueryParam("direction", "desc")
@@ -306,7 +345,7 @@ Deserialize a JSON response to an object from either a string or a stream.
 
 ```csharp {8}
 string response = await _client
-    .UsingRoute($"/repos/scottoffen/grapevine/issues")
+    .UsingRoute("/repos/scottoffen/grapevine/issues")
     .WithQueryParam("state", "open")
     .WithQueryParam("sort", "created")
     .WithQueryParam("direction", "desc")
@@ -315,9 +354,34 @@ string response = await _client
     .DeserializeJsonAsync<IssuesResponse>();
 ```
 
+### Handling Json Deserializing in Failure
+
+If the request does not return a success status code, it might not be possible to deserialze the response body to the desired object. In those cases, you can specify a default action that will occur **instead of the default deserialization** if the status code on the response is not a success status code.
+
+```csharp {8}
+string response = await _client
+    .UsingRoute("/repos/scottoffen/grapevine/issues")
+    .WithQueryParam("state", "open")
+    .WithQueryParam("sort", "created")
+    .WithQueryParam("direction", "desc")
+    .GetAsync()
+    .GetResponseStreamAsync()
+    .DeserializeJsonAsync<IssuesResponse>(async msg =>
+    {
+        /*
+        * write to the logs, throw a custom exception or parse the problem details
+        * take different actions based on the status code
+        * or return a default empty object
+        */
+        return new IssueResponse();
+    });
+```
+
+
+
 ### Create Custom Fluent Deserializers
 
-Create custom fluent deserializers by adding generic async extensions on `Task<Stream>` and/or `Task<string>`. For a given generic Format:
+Create custom fluent deserializers by adding generic async extensions on `Task<Stream>` and/or `Task<string>`. For a given generic format (e.g. Xml):
 
 ```csharp
 public static class FluentHttpClientExtensions
