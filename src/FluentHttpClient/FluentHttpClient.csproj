@@ -7,7 +7,7 @@
     <PackageId>FluentHttpClient</PackageId>
     <PackageVersion>$(Version)</PackageVersion>
     <Authors>Scott Offen</Authors>
-    <Copyright>© 2021 Scott Offen</Copyright>
+    <Copyright>© 2021 - $([System.DateTime]::Now.ToString('yyyy')) Scott Offen</Copyright>
     <Owners>Scott Offen</Owners>
     <Description>Fluent extensions for HttpClient</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
