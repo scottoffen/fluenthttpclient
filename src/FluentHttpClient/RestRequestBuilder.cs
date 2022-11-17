@@ -35,9 +35,10 @@ public class RestRequestBuilder
     {
         Request.Method = method;
 
-        Headers["Cookie"] = (Headers.ContainsKey("Cookie"))
-            ? string.Join("; ", new string[] { Headers["Cookies"], Cookies.ToString() })
-            : Cookies.ToString();
+        if (Cookies.Any())
+            Headers["Cookie"] = (Headers.ContainsKey("Cookie"))
+                ? string.Join("; ", new string[] { Headers["Cookies"], Cookies.ToString() })
+                : Cookies.ToString();
 
         foreach (var item in Headers) Request.Headers.Add(item.Key, item.Value);
 
@@ -48,6 +49,6 @@ public class RestRequestBuilder
             : new Uri($"{Route}{QueryParams}");
 
         token = token ?? CancellationToken.None;
-        return await _client.SendAsync(Request, HttpCompletionOption.ResponseContentRead, token.Value).ConfigureAwait(false);
+        return await _client.SendAsync(Request, HttpCompletionOption.ResponseContentRead, token.Value);
     }
 }

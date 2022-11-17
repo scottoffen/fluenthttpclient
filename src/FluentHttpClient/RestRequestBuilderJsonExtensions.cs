@@ -9,16 +9,10 @@ namespace FluentHttpClient;
 
 public static class RestRequestJsonExtensions
 {
-    private static readonly JsonSerializerOptions _options = new JsonSerializerOptions
-    {
-        PropertyNameCaseInsensitive = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-    };
-
 #if NET5_0_OR_GREATER
     public static RestRequestBuilder WithJsonContent(this RestRequestBuilder builder, object content)
     {
-        return builder.WithJsonContent(content, _options);
+        return builder.WithJsonContent(content, FluentHttpClient.DefaultJsonSerializerOptions);
     }
 
     public static RestRequestBuilder WithJsonContent(this RestRequestBuilder builder, object content, JsonSerializerOptions options)

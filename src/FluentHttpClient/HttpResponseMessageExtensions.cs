@@ -43,7 +43,7 @@ public static class HttpResponseMessageExtensions
         return await responseMessage.GetResponseBytesAsync().ConfigureAwait(false);
     }
 
-    public static async Task<HttpResponseMessage> OnFailure(this Task<HttpResponseMessage> taskResponseMessage, Action<HttpResponseMessage> action, bool suppressException = false)
+    public static async Task<HttpResponseMessage> OnFailure(this Task<HttpResponseMessage> taskResponseMessage, Action<HttpResponseMessage> action, bool suppressException = true)
     {
         var response = await taskResponseMessage;
         if (!response.IsSuccessStatusCode)
@@ -55,7 +55,7 @@ public static class HttpResponseMessageExtensions
         return await Task.FromResult(response);
     }
 
-    public static async Task<HttpResponseMessage> OnFailureAsync(this Task<HttpResponseMessage> taskResponseMessage, Func<HttpResponseMessage, Task> action, bool suppressException = false)
+    public static async Task<HttpResponseMessage> OnFailureAsync(this Task<HttpResponseMessage> taskResponseMessage, Func<HttpResponseMessage, Task> action, bool suppressException = true)
     {
         var response = await taskResponseMessage;
         if (!response.IsSuccessStatusCode)
