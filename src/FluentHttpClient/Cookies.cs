@@ -26,8 +26,6 @@ public class Cookies : Dictionary<string, string>
         base.Add(ValidateName(key), ValidateValue(value.ToString()));
     }
 
-#if !NETSTANDARD2_0
-
     public new bool TryAdd(string key, string value)
     {
         return base.TryAdd(ValidateName(key), ValidateValue(value));
@@ -37,8 +35,6 @@ public class Cookies : Dictionary<string, string>
     {
         return base.TryAdd(ValidateName(key), ValidateValue(value.ToString()));
     }
-
-#endif
 
     public override string ToString()
     {
