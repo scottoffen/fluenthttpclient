@@ -1,6 +1,6 @@
 namespace FluentHttpClient;
 
-public class RestRequestBuilder
+public class HttpRequestBuilder
 {
     private readonly HttpClient _client;
 
@@ -26,7 +26,7 @@ public class RestRequestBuilder
         set { _client.Timeout = value; }
     }
 
-    internal RestRequestBuilder(HttpClient client)
+    internal HttpRequestBuilder(HttpClient client)
     {
         _client = client;
     }
