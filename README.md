@@ -6,16 +6,6 @@ FluentHttpClient exposes a set of extensions methods to make sending REST reques
 
 FluentHttpClient is available on [NuGet.org](https://www.nuget.org/packages/FluentHttpClient/) and can be installed using a NuGet package manager or the .NET CLI.
 
-Powershell:
-```powershell
-Install-Package FluentHttpClient -Version 1.0.0
-```
-
-.NET CLI
-```cmd
-> dotnet add package FluentHttpClient --version 1.0.0
-```
-
 ## Correctly Injecting HttpClient
 
 The socket exhaustion problems assocaited with the incorrect usage of the `HttpClient` class in .NET applications has been [well documented](https://www.aspnetmonsters.com/2016/08/2016-08-27-httpclientwrong/). Microsoft has published [an article introducing `IHttpClientFactory`](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests?view=aspnetcore-5.0), which is used to configure and create `HttpClient` instances in an app.
@@ -31,7 +21,7 @@ The socket exhaustion problems assocaited with the incorrect usage of the `HttpC
 
 Using `HttpClient` involves creating an `HttpRequestMessage`, configuring it's properties (e.g. headers, query string, route, etc.), serializing the content, and sending that request. The response then needs to be deserialized and used.
 
-The extension methods available in this library simplifiy that process. The `UsingRoute` extension method on `HttpClient` returns a `RestRequestBuilder` object, which has extension methods on it to configure the request. It also has extension methods to send the request using different HTTP verbs, and then there are extension methods on both `HttpResponseMessage` and `Task<HttpResponseMessage>`for deserializing the content. Put another way, the extension methods fall in to three categories.
+The extension methods available in this library simplifiy that lifecycle. The `UsingRoute` extension method on `HttpClient` returns a `HttpRequestMessageBuilder` object, which has extension methods on it to configure the request. It also has extension methods to send the request using different HTTP verbs, and then there are extension methods on both `HttpResponseMessage` and `Task<HttpResponseMessage>`for deserializing the content. Put another way, the extension methods fall in to three categories.
 
 - Configuring the `HttpRequestMessage`
 - Sending the `HttpRequestMessage`
@@ -50,7 +40,7 @@ var content = await _client
     .GetResponseStreamAsync();
 ```
 
-> Note that the method name difference between setting a single instance of a property is that the multiple instance will use the plural form. For example, you can add a single query parameter using the method `WithQueryParam()` and multiple cookies at onces using `WithQueryParams()`.
+> Note that the method name difference between setting a single instance of a property and multiples is that the multiple instance will use the plural form. For example, you can add a single query parameter using the method `WithQueryParam()` and multiple query parameters at onces using `WithQueryParams()`.
 
 ## Configure The Request
 
@@ -62,7 +52,7 @@ Start by setting the request route using the `UsingRoute(string route)` extensio
 _client.UsingRoute("/repos/scottoffen/grapevine/issues");
 ```
 
-You'll notice that this is the only extension method on `HttpClient` of those listed here. This method actually returns a `RestRequestMessageBuilder`, and all other request configuration methods below are extension methods on that class.
+You'll notice that this is the only extension method on `HttpClient` of those listed here. This method actually returns an instance of `HttpRequestMessageBuilder`, and all other request configuration methods below are extension methods on that class.
 
 ### Authentication
 
