@@ -21,7 +21,7 @@ The socket exhaustion problems assocaited with the incorrect usage of the `HttpC
 
 Using `HttpClient` involves creating an `HttpRequestMessage`, configuring it's properties (e.g. headers, query string, route, etc.), serializing the content, and sending that request. The response then needs to be deserialized and used.
 
-The extension methods available in this library simplifiy that lifecycle. The `UsingRoute` extension method on `HttpClient` returns a `HttpRequestMessageBuilder` object, which has extension methods on it to configure the request. It also has extension methods to send the request using different HTTP verbs, and then there are extension methods on both `HttpResponseMessage` and `Task<HttpResponseMessage>`for deserializing the content. Put another way, the extension methods fall in to three categories.
+The extension methods available in this library simplifiy that lifecycle. The `UsingRoute` extension method on `HttpClient` returns a `HttpRequestBuilder` object, which has extension methods on it to configure the request. It also has extension methods to send the request using different HTTP verbs, and then there are extension methods on both `HttpResponseMessage` and `Task<HttpResponseMessage>`for deserializing the content. Put another way, the extension methods fall in to three categories.
 
 - Configuring the `HttpRequestMessage`
 - Sending the `HttpRequestMessage`
@@ -52,7 +52,7 @@ Start by setting the request route using the `UsingRoute(string route)` extensio
 _client.UsingRoute("/repos/scottoffen/grapevine/issues");
 ```
 
-You'll notice that this is the only extension method on `HttpClient` of those listed here. This method actually returns an instance of `HttpRequestMessageBuilder`, and all other request configuration methods below are extension methods on that class.
+You'll notice that this is the only extension method on `HttpClient` of those listed here. This method actually returns an instance of `HttpRequestBuilder`, and all other request configuration methods below are extension methods on that class.
 
 ### Authentication
 

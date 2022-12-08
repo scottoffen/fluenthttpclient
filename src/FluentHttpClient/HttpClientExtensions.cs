@@ -8,8 +8,8 @@ public static class HttpClientExtensions
     /// <param name="client">HttpClient instance to be used for request</param>
     /// <param name="route">Endpoint URL, can be empty if the base address already targets the endpoint</param>
     /// <returns></returns>
-    public static RestRequestBuilder UsingRoute(this HttpClient client, string route = "")
+    public static HttpRequestBuilder UsingRoute(this HttpClient client, string route = "")
     {
-        return new RestRequestBuilder(client).UsingRoute(route);
+        return new HttpRequestBuilder(client).UsingRoute(route);
     }
 }
