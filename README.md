@@ -8,7 +8,7 @@ FluentHttpClient is available on [NuGet.org](https://www.nuget.org/packages/Flue
 
 ## Correctly Injecting HttpClient
 
-The socket exhaustion problems assocaited with the incorrect usage of the `HttpClient` class in .NET applications has been [well documented](https://www.aspnetmonsters.com/2016/08/2016-08-27-httpclientwrong/). Microsoft has published [an article introducing `IHttpClientFactory`](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests?view=aspnetcore-5.0), which is used to configure and create `HttpClient` instances in an app.
+The socket exhaustion problems associated with the incorrect usage of the `HttpClient` class in .NET applications has been [well documented](https://www.aspnetmonsters.com/2016/08/2016-08-27-httpclientwrong/). Microsoft has published [an article introducing `IHttpClientFactory`](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests?view=aspnetcore-5.0), which is used to configure and create `HttpClient` instances in an app.
 
 ### References
 
@@ -21,7 +21,7 @@ The socket exhaustion problems assocaited with the incorrect usage of the `HttpC
 
 Using `HttpClient` involves creating an `HttpRequestMessage`, configuring it's properties (e.g. headers, query string, route, etc.), serializing the content, and sending that request. The response then needs to be deserialized and used.
 
-The extension methods available in this library simplifiy that lifecycle. The `UsingRoute` extension method on `HttpClient` returns a `HttpRequestBuilder` object, which has extension methods on it to configure the request. It also has extension methods to send the request using different HTTP verbs, and then there are extension methods on both `HttpResponseMessage` and `Task<HttpResponseMessage>`for deserializing the content. Put another way, the extension methods fall in to three categories.
+The extension methods available in this library simplify that lifecycle. The `UsingRoute` extension method on `HttpClient` returns a `HttpRequestBuilder` object, which has extension methods on it to configure the request. It also has extension methods to send the request using different HTTP verbs, and then there are extension methods on both `HttpResponseMessage` and `Task<HttpResponseMessage>`for deserializing the content. Put another way, the extension methods fall in to three categories.
 
 - Configuring the `HttpRequestMessage`
 - Sending the `HttpRequestMessage`
@@ -251,11 +251,11 @@ var response = await _client
 
 Use the async versions when you need to perform awaitable tasks in your callback (e.g. parsing the response body). The single parameter to the delegate is of type `HttpResponseMessage`.
 
-### Differences between v1 and v2
+### Note for users of version 1.x
 
-The extensions methods for failure take a second, optional parameter after the delegate that indicates whether or not you want an exception to be thrown if the status code does not indicate success. This paramter is named `suppressException`. If it is false, then the `EnsureSuccessStatusCode()` method is called on the HttpResponseMessage after your delegate is run.
+The extensions methods for failure take a second, optional parameter after the delegate that indicates whether or not you want an exception to be thrown if the status code does not indicate success. This parameter is named `suppressException`. If it is false, then the `EnsureSuccessStatusCode()` method is called on the HttpResponseMessage after your delegate is run.
 
-> The difference is that in v1 the `suppressException` parameter is false by default, and in v2 it is true by default.
+> In version 1.x the `suppressException` parameter is false by default, and in all future versions it is true by default.
 
 ## Deserialize The Response
 
@@ -348,7 +348,7 @@ An optional `JsonSerializerOptions` instance can be passed as a parameter.
 
 ### Handling Json Deserializing in Failure
 
-If the request does not return a success status code, it might not be possible to deserialze the response body to the desired object. In those cases, you can specify a default action that will occur **instead of the default deserialization** if the status code on the response is not a success status code.
+If the request does not return a success status code, it might not be possible to deserialize the response body to the desired object. In those cases, you can specify a default action that will occur **instead of the default deserialization** if the status code on the response is not a success status code.
 
 ```csharp {8}
 string response = await _client

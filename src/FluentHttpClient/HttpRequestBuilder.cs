@@ -48,7 +48,7 @@ public class HttpRequestBuilder
             ? new Uri($"{_client.BaseAddress.ToString().TrimEnd('/')}/{Route.TrimStart('/')}{QueryParams}")
             : new Uri($"{Route}{QueryParams}");
 
-        token = token ?? CancellationToken.None;
+        token ??= CancellationToken.None;
         return await _client.SendAsync(Request, HttpCompletionOption.ResponseContentRead, token.Value);
     }
 }

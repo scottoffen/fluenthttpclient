@@ -1,9 +1,11 @@
 ﻿using System.Collections.Specialized;
 using FluentHttpClient;
 
-HttpClient client = new HttpClient();
+HttpClient client = new()
+{
+    BaseAddress = new Uri("https://api.github.com/")
+};
 
-client.BaseAddress = new Uri("https://api.github.com/");
 client.DefaultRequestHeaders.Add("Accept", "application/vnd.github.v3+json");
 client.DefaultRequestHeaders.Add("User-Agent", "Fluent-Http-Client");
 

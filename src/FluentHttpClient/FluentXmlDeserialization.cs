@@ -17,7 +17,7 @@ public static class FluentXmlDeserialization
 
     public static async Task<XElement> DeserializeXmlAsync(this Task<HttpResponseMessage> taskResponse, LoadOptions options, CancellationToken? token)
     {
-        token = token ?? CancellationToken.None;
+        token ??= CancellationToken.None;
         var response = await taskResponse;
 
         return await XElement.LoadAsync(await response.GetResponseStreamAsync(), options, token.Value);
@@ -39,10 +39,8 @@ public static class FluentXmlDeserialization
 
     public static async Task<T> DeserializeXmlAsync<T>(this HttpResponseMessage response)
     {
-        using (var reader = new StreamReader(await response.GetResponseStreamAsync()))
-        {
-            var serializer = new XmlSerializer(typeof(T));
-            return (T) serializer.Deserialize(reader);
-        }
+        using var reader = new StreamReader(await response.GetResponseStreamAsync());
+        var serializer = new XmlSerializer(typeof(T));
+        return (T)serializer.Deserialize(reader);
     }
 }
