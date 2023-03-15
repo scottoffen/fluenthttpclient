@@ -21,19 +21,9 @@ public class Cookies : Dictionary<string, string>
         base.Add(ValidateName(key), ValidateValue(value));
     }
 
-    public void Add(string key, object value)
-    {
-        base.Add(ValidateName(key), ValidateValue(value.ToString()));
-    }
-
     public new bool TryAdd(string key, string value)
     {
         return base.TryAdd(ValidateName(key), ValidateValue(value));
-    }
-
-    public bool TryAdd(string key, object value)
-    {
-        return base.TryAdd(ValidateName(key), ValidateValue(value.ToString()));
     }
 
     public override string ToString()
@@ -43,7 +33,7 @@ public class Cookies : Dictionary<string, string>
             : string.Join("; ", (from key in Keys let value = base[key] select $"{key}={Uri.EscapeDataString(value)}").ToArray());
     }
 
-    private string ValidateName(string name)
+    private static string ValidateName(string name)
     {
         if (name.HasWhiteSpace() || name.Contains(_invalidNameChars))
             throw new ArgumentOutOfRangeException($"Invalid cookie name {name}");
@@ -51,7 +41,7 @@ public class Cookies : Dictionary<string, string>
         return name;
     }
 
-    private string ValidateValue(string value)
+    private static string ValidateValue(string value)
     {
         if (value.HasWhiteSpace() || value.Contains(_invalidValueChars))
             throw new ArgumentOutOfRangeException($"Invalid cookie value {value}");
