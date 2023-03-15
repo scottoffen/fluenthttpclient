@@ -1,6 +1,8 @@
 using System.Collections.Specialized;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
 
 namespace FluentHttpClient;
 
@@ -134,7 +136,6 @@ public static partial class HttpRequestBuilderExtensions
 /// </summary>
 public static partial class HttpRequestBuilderExtensions
 {
-#if NET5_0_OR_GREATER
     public static HttpRequestBuilder WithJsonContent(this HttpRequestBuilder builder, object content)
     {
         return builder.WithJsonContent(content, FluentHttpClient.DefaultJsonSerializerOptions);
@@ -145,5 +146,4 @@ public static partial class HttpRequestBuilderExtensions
         builder.Content = JsonContent.Create(content, options: options);
         return builder;
     }
-#endif
 }
