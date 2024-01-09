@@ -10,16 +10,40 @@ public class HttpRequestBuilder
         set { Request.Content = value; }
     }
 
-    public Cookies Cookies { get; } = new Cookies();
+    /// <summary>
+    /// Add or remove request cookies
+    /// </summary>
+    public Cookies Cookies { get; } = [];
 
+    /// <summary>
+    /// Add or remove request headers
+    /// </summary>
     public IDictionary<string, string> Headers { get; } = new Dictionary<string, string>();
 
-    public QueryParams QueryParams { get; set; } = new QueryParams();
+    /// <summary>
+    /// Get or set an exception handler for exceptions of type <see cref="HttpRequestException"/>
+    /// </summary>
+    public Action<HttpRequestException> HttpRequestExceptionHandler { get; set; }
 
+    /// <summary>
+    /// Get or set request query parameters
+    /// </summary>
+    public QueryParams QueryParams { get; set; } = [];
+
+    /// <summary>
+    /// The request object
+    /// </summary>
     public HttpRequestMessage Request { get; } = new HttpRequestMessage();
 
-    public string Route { get; set; } = "";
+    /// <summary>
+    /// The request route
+    /// </summary>
+    /// <remarks>If the HttpClient has a base address, this value will be appended to the end of the base address, and extra slashes removed.</remarks>
+    public string Route { get; set; }
 
+    /// <summary>
+    /// Gets or sets the timespan to wait before the request times out
+    /// </summary>
     public TimeSpan Timeout
     {
         get { return _client.Timeout; }
@@ -33,6 +57,12 @@ public class HttpRequestBuilder
 
     public async Task<HttpResponseMessage> SendAsync(HttpMethod method, CancellationToken? token = null)
     {
+        var noBaseAddress = string.IsNullOrWhiteSpace(_client.BaseAddress?.ToString());
+        var noRoute = string.IsNullOrWhiteSpace(Route);
+
+        if (noBaseAddress && noRoute)
+            throw new ArgumentException("Invalid Route: Client has not base address and no route information was provided");
+
         Request.Method = method;
 
         if (Cookies.Any())
@@ -44,11 +74,34 @@ public class HttpRequestBuilder
 
         if (Request.Content is MultipartContent) Request.Headers.ExpectContinue = false;
 
-        Request.RequestUri = (!string.IsNullOrWhiteSpace(_client.BaseAddress?.ToString()))
-            ? new Uri($"{_client.BaseAddress.ToString().TrimEnd('/')}/{Route.TrimStart('/')}{QueryParams}")
-            : new Uri($"{Route}{QueryParams}");
+        if (noRoute)
+        {
+            Request.RequestUri = new Uri($"{_client.BaseAddress}{QueryParams}");
+        }
+        else
+        {
+            Request.RequestUri = noBaseAddress
+                ? new Uri($"{Route}{QueryParams}")
+                : new Uri($"{_client.BaseAddress.ToString().TrimEnd('/')}/{Route.TrimStart('/')}{QueryParams}");
+        }
 
         token ??= CancellationToken.None;
-        return await _client.SendAsync(Request, HttpCompletionOption.ResponseContentRead, token.Value);
+
+        try
+        {
+            return await _client.SendAsync(Request, HttpCompletionOption.ResponseContentRead, token.Value);
+        }
+        catch (HttpRequestException hre)
+        {
+            if (HttpRequestExceptionHandler != null)
+            {
+                HttpRequestExceptionHandler(hre);
+                return null;
+            }
+            else
+            {
+                throw;
+            }
+        }
     }
 }

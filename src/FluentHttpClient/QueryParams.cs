@@ -9,7 +9,7 @@ public class QueryParams : NameValueCollection
 {
     public override string ToString()
     {
-        return Count <= 0
+        return HasKeys()
             ? string.Empty
             : "?" + string.Join("&", (from key in AllKeys let value = Get(key) select Uri.EscapeDataString(key) + "=" + Uri.EscapeDataString(value)).ToArray());
     }

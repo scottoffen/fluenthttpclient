@@ -11,7 +11,7 @@ namespace FluentHttpClient;
 /// </summary>
 public static partial class HttpRequestBuilderExtensions
 {
-    public static HttpRequestBuilder UsingRoute(this HttpRequestBuilder builder, string route)
+    public static HttpRequestBuilder UsingRoute(this HttpRequestBuilder builder, string route = null)
     {
         builder.Route = route;
         return builder;
@@ -144,6 +144,18 @@ public static partial class HttpRequestBuilderExtensions
     public static HttpRequestBuilder WithJsonContent(this HttpRequestBuilder builder, object content, JsonSerializerOptions options)
     {
         builder.Content = JsonContent.Create(content, options: options);
+        return builder;
+    }
+}
+
+/// <summary>
+/// Extensions for handling HttpRequestExceptions
+/// </summary>
+public static partial class HttpRequestBuilderExtensions
+{
+    public static HttpRequestBuilder OnHttpRequestException(this HttpRequestBuilder builder, Action<HttpRequestException> action)
+    {
+        builder.HttpRequestExceptionHandler = action;
         return builder;
     }
 }
