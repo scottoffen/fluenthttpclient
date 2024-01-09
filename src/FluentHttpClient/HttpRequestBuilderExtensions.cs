@@ -147,3 +147,15 @@ public static partial class HttpRequestBuilderExtensions
         return builder;
     }
 }
+
+/// <summary>
+/// Extensions for handling HttpRequestExceptions
+/// </summary>
+public static partial class HttpRequestBuilderExtensions
+{
+    public static HttpRequestBuilder OnHttpRequestException(this HttpRequestBuilder builder, Action<HttpRequestException> action)
+    {
+        builder.HttpRequestExceptionHandler = action;
+        return builder;
+    }
+}
