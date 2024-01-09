@@ -18,7 +18,7 @@ public class HttpRequestBuilder
 
     public HttpRequestMessage Request { get; } = new HttpRequestMessage();
 
-    public string Route { get; set; } = "";
+    public string Route { get; set; }
 
     public TimeSpan Timeout
     {
@@ -33,6 +33,12 @@ public class HttpRequestBuilder
 
     public async Task<HttpResponseMessage> SendAsync(HttpMethod method, CancellationToken? token = null)
     {
+        var noBaseAddress = string.IsNullOrWhiteSpace(_client.BaseAddress?.ToString());
+        var noRoute = string.IsNullOrWhiteSpace(Route);
+
+        if (noBaseAddress && noRoute)
+            throw new ArgumentException("Invalid Route: Client has not base address and no route information was provided");
+
         Request.Method = method;
 
         if (Cookies.Any())
@@ -44,9 +50,16 @@ public class HttpRequestBuilder
 
         if (Request.Content is MultipartContent) Request.Headers.ExpectContinue = false;
 
-        Request.RequestUri = (!string.IsNullOrWhiteSpace(_client.BaseAddress?.ToString()))
-            ? new Uri($"{_client.BaseAddress.ToString().TrimEnd('/')}/{Route.TrimStart('/')}{QueryParams}")
-            : new Uri($"{Route}{QueryParams}");
+        if (noRoute)
+        {
+            Request.RequestUri = new Uri($"{_client.BaseAddress}{QueryParams}");
+        }
+        else
+        {
+            Request.RequestUri = noBaseAddress
+                ? new Uri($"{Route}{QueryParams}")
+                : new Uri($"{_client.BaseAddress.ToString().TrimEnd('/')}/{Route.TrimStart('/')}{QueryParams}");
+        }
 
         token ??= CancellationToken.None;
         return await _client.SendAsync(Request, HttpCompletionOption.ResponseContentRead, token.Value);

@@ -11,7 +11,7 @@ namespace FluentHttpClient;
 /// </summary>
 public static partial class HttpRequestBuilderExtensions
 {
-    public static HttpRequestBuilder UsingRoute(this HttpRequestBuilder builder, string route)
+    public static HttpRequestBuilder UsingRoute(this HttpRequestBuilder builder, string route = null)
     {
         builder.Route = route;
         return builder;
