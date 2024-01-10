@@ -404,4 +404,4 @@ new JsonSerializerOptions
 };
 ```
 
-This default can be overridden or modified via the `FluentHttpClientSettings.DefaultJsonSerializerOptions` property.
+This default can be overridden or modified via the `FluentHttpClient.DefaultJsonSerializerOptions` property.
