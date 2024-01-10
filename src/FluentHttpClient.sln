@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluentHttpClient", "FluentH
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples", "Samples\Samples.csproj", "{9EF02AE9-B2AD-4A08-A2BD-CDC573A52D65}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FluentHttpClient.Tests", "FluentHttpClient.Tests\FluentHttpClient.Tests.csproj", "{7BF989ED-C2D4-426A-B525-417251AD337A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{9EF02AE9-B2AD-4A08-A2BD-CDC573A52D65}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9EF02AE9-B2AD-4A08-A2BD-CDC573A52D65}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9EF02AE9-B2AD-4A08-A2BD-CDC573A52D65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BF989ED-C2D4-426A-B525-417251AD337A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BF989ED-C2D4-426A-B525-417251AD337A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BF989ED-C2D4-426A-B525-417251AD337A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BF989ED-C2D4-426A-B525-417251AD337A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

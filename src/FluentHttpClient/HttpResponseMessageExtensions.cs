@@ -46,7 +46,7 @@ public static class HttpResponseMessageExtensions
     public static async Task<HttpResponseMessage> OnFailure(this Task<HttpResponseMessage> taskResponseMessage, Action<HttpResponseMessage> action, bool suppressException = true)
     {
         var response = await taskResponseMessage;
-        if (!response.IsSuccessStatusCode)
+        if (!response.IsSuccessStatusCode && !response.HttpResponseMessageExceptionOccurred())
         {
             action(response);
             if (!suppressException) response.EnsureSuccessStatusCode();
@@ -58,7 +58,7 @@ public static class HttpResponseMessageExtensions
     public static async Task<HttpResponseMessage> OnFailureAsync(this Task<HttpResponseMessage> taskResponseMessage, Func<HttpResponseMessage, Task> action, bool suppressException = true)
     {
         var response = await taskResponseMessage;
-        if (!response.IsSuccessStatusCode)
+        if (!response.IsSuccessStatusCode && !response.HttpResponseMessageExceptionOccurred())
         {
             await action(response);
             if (!suppressException) response.EnsureSuccessStatusCode();
@@ -79,5 +79,15 @@ public static class HttpResponseMessageExtensions
         var response = await taskResponseMessage;
         if (response.IsSuccessStatusCode) await action(response);
         return await Task.FromResult(response);
+    }
+
+    /// <summary>
+    /// Returns true if an HttpResponseMessageException occurred while sending the request
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    public static bool HttpResponseMessageExceptionOccurred(this HttpResponseMessage message)
+    {
+        return message is NullHttpResponseMessage;
     }
 }
