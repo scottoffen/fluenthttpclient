@@ -10,4 +10,9 @@ public static class FluentHttpClient
         PropertyNameCaseInsensitive = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
+
+    /// <summary>
+    /// When true, query parameters that are null or empty will not be included when converted to a string.
+    /// </summary>
+    public static bool RemoveEmptyQueryParameters { get; set; } = false;
 }
