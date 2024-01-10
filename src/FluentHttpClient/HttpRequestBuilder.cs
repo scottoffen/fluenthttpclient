@@ -96,7 +96,7 @@ public class HttpRequestBuilder
             if (HttpRequestExceptionHandler != null)
             {
                 HttpRequestExceptionHandler(hre);
-                return null;
+                return new NullHttpResponseMessage();
             }
             else
             {
