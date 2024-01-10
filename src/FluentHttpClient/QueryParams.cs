@@ -9,8 +9,18 @@ public class QueryParams : NameValueCollection
 {
     public override string ToString()
     {
-        return HasKeys()
-            ? string.Empty
-            : "?" + string.Join("&", (from key in AllKeys let value = Get(key) select Uri.EscapeDataString(key) + "=" + Uri.EscapeDataString(value)).ToArray());
+        if (!HasKeys()) return string.Empty;
+
+        var result = (
+            from key in AllKeys
+            let value = Get(key)
+            where (
+                !FluentHttpClient.RemoveEmptyQueryParameters
+                || !string.IsNullOrWhiteSpace(value)
+            )
+            select $"{Uri.EscapeDataString(key)}={Uri.EscapeDataString(value)}"
+        ).ToArray();
+
+        return $"?{string.Join("&", result)}";
     }
 }
