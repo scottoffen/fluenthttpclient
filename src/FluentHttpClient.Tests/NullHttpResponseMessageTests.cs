@@ -15,6 +15,6 @@ public class NullHttpResponseMessageTests
     public void HttpResponseExceptionOccurredTest()
     {
         HttpResponseMessage message = new NullHttpResponseMessage();
-        message.HttpResponseMessageExceptionOccurred().ShouldBeTrue();
+        message.HttpRequestExceptionOccurred().ShouldBeTrue();
     }
 }
