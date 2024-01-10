@@ -40,7 +40,7 @@ var content = await _client
     .GetResponseStreamAsync();
 ```
 
-> Note that the method name difference between setting a single instance of a property and multiples is that the multiple instance will use the plural form. For example, you can add a single query parameter using the method `WithQueryParam()` and multiple query parameters at onces using `WithQueryParams()`.
+> Note that the method name difference between setting a single instance of a property and multiples is that the multiple instance will use the plural form. For example, you can add a single query parameter using the method `WithQueryParam()` and multiple query parameters at once using `WithQueryParams()`.
 
 ## Configure The Request
 
@@ -194,6 +194,35 @@ _client.UsingRoute("")
 // Set to a timespan of 10 seconds
 _client.UsingRoute("")
     .WithRequestTimeout(TimeSpan.FromSeconds(10));
+```
+
+## `HttpRequestException` Handling
+
+You can provide an exception handler for when an `HttpRequestException` is thrown. When used, success and failure handlers will not be executed, and the `GetResponse*` methods will return `0`. If you are using any deserialization methods, you will want to provided a default action to avoid an exception being thrown when the deserialization attempt is made.
+
+```csharp
+var response = await _client.UsingRoute()
+    .OnHttpRequestException(ex =>
+    {
+        /* The exception will be available in this context */
+    })
+    .GetAsync()
+    .OnSuccessAsync(async msg => { /* code will not execute if exception is thrown */ })
+    .OnFailureAsync(async msg => { /* code will not execute if exception is thrown */ })
+    .GetResponseStringAsync() // Will return '0' if HttpRequestException occurred
+
+var response = await _client.UsingRoute()
+    .OnHttpRequestException(ex =>
+    {
+        /* The exception will be available in this context */
+    })
+    .GetAsync()
+    .OnSuccessAsync(async msg => { /* code will not execute if exception is thrown */ })
+    .OnFailureAsync(async msg => { /* code will not execute if exception is thrown */ })
+    .DeserializeJsonAsync<SomeClass>(async msg =>
+    {
+        /* This code will execute if an HttpRequestException occurred */
+    });
 ```
 
 ## Send The Request
