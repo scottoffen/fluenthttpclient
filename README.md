@@ -66,18 +66,19 @@ Basic authentication sends a Base64 encoded username and password. You can creat
 
 ```csharp
 // Send the username and password to be concatenated and Base64 encoded
-_client.WithBasicAuthentication("username", "password");
+_client.UsingRoute("some/route/here")
+    .WithBasicAuthentication("username", "password");
 
 // Concat and encode yourself, and just pass in the token
 var token = "dXNlcm5hbWU6cGFzc3dvcmQ=";
-_client.UsingRoute("")
+_client.UsingRoute("some/route/here")
     .WithBasicAuthentication(token);
 ```
 
 #### OAuth Authentication
 
 ```csharp
-_client.UsingRoute("")
+_client.UsingRoute("some/route/here")
     .WithOAuthBearerToken(bearerToken);
 ```
 
@@ -86,8 +87,8 @@ _client.UsingRoute("")
 Or you can use a [different authentication scheme](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#authentication_schemes) by passing in the type and credentials.
 
 ```csharp
-_client.UsingRoute("")
-    .WithAuthentication(type, credentials);
+_client.UsingRoute("some/route/here")
+    .WithAuthentication("type", "credentials");
 ```
 
 ### Content
@@ -97,17 +98,17 @@ You can set the content of the request by passing in a string or a pre-built [`H
 ```csharp
 // Send a string of data
 var json = JsonSerializer.Serialize(myObject);
-_client.UsingRoute("")
+_client.UsingRoute("some/route/here")
     .WithContent(myStringData);
 
 // Send a multipart request
 MultipartContent content = ...
-_client.UsingRoute("")
+_client.UsingRoute("some/route/here")
     .WithContent(content);
 
 // Or more specifically multipart/form-data
 MultipartFormDataContent content = ...
-_client.UsingRoute("")
+_client.UsingRoute("some/route/here")
     .WithContent(content);
 ```
 
@@ -115,7 +116,7 @@ If you are using .NET 5.0 or higher, you can simplify sending objects as JSON us
 
 ```csharp
 var obj = new SomeDtoClass();
-_client.UsingRoute()
+_clientUsingRoute("some/route/here")
     .WithJsonContent(obj);
 ```
 
@@ -127,7 +128,7 @@ You can set one or many cookies on the request.
 
 ```csharp
 // Set a single cookie
-_client.UsingRoute("")
+_client.UsingRoute("some/route/here")
     .WithCookie("key", "value");
 
 // Set multiple cookies
@@ -137,7 +138,7 @@ var cookies = new []
     new KeyValuePair<string,string>("delta", "true")
 };
 
-_client.UsingRoute("")
+_client.UsingRoute("some/route/here")
     .WithCookies(cookies);
 ```
 
@@ -147,7 +148,7 @@ You can set one or many headers on the request.
 
 ```csharp
 // Set a single header
-_client.UsingRoute("")
+_client.UsingRoute("some/route/here")
     .WithHeader("X-CustomHeader", "MyCustomValue");
 
 // Set multiple headers
@@ -157,7 +158,7 @@ var headers = new []
     new KeyValuePair<string,string>("Content-Encoding", "gzip")
 };
 
-_client.UsingRoute("")
+_client.UsingRoute("some/route/here")
     .WithHeaders(headers);
 ```
 
@@ -167,7 +168,7 @@ Add query parameters to the route.
 
 ```csharp
 // Set a single query parameter
-_client.UsingRoute("")
+_client.UsingRoute("some/route/here")
     .WithQueryParam("id", "13485");
 
 // Set multiple query parameters
@@ -178,7 +179,7 @@ var query = new NameValueCollection()
     {"direction", "desc"},
 };
 
-_client.UsingRoute("")
+_client.UsingRoute("some/route/here")
     .WithQueryParams(query);
 ```
 
@@ -188,11 +189,11 @@ You can set the timeout value for a request by passing either a number of second
 
 ```csharp
 // Set to 10 seconds
-_client.UsingRoute("")
+_client.UsingRoute("some/route/here")
     .WithRequestTimeout(10);
 
 // Set to a timespan of 10 seconds
-_client.UsingRoute("")
+_client.UsingRoute("some/route/here")
     .WithRequestTimeout(TimeSpan.FromSeconds(10));
 ```
 
@@ -201,7 +202,7 @@ _client.UsingRoute("")
 You can provide an exception handler for when an `HttpRequestException` is thrown. When used, success and failure handlers will not be executed, and the `GetResponse*` methods will return `0`. If you are using any deserialization methods, you will want to provided a default action to avoid an exception being thrown when the deserialization attempt is made.
 
 ```csharp
-var response = await _client.UsingRoute()
+var response = await _clientUsingRoute("some/route/here")
     .OnHttpRequestException(ex =>
     {
         /* The exception will be available in this context */
@@ -211,7 +212,7 @@ var response = await _client.UsingRoute()
     .OnFailureAsync(async msg => { /* code will not execute if exception is thrown */ })
     .GetResponseStringAsync() // Will return '0' if HttpRequestException occurred
 
-var response = await _client.UsingRoute()
+var response = await _clientUsingRoute("some/route/here")
     .OnHttpRequestException(ex =>
     {
         /* The exception will be available in this context */
@@ -221,7 +222,7 @@ var response = await _client.UsingRoute()
     .OnFailureAsync(async msg => { /* code will not execute if exception is thrown */ })
     .DeserializeJsonAsync<SomeClass>(async msg =>
     {
-        /* This code will execute if an HttpRequestException occurred */
+        /* This code will execute INSTEAD OF the deserialization if an HttpRequestException occurred */
     });
 ```
 
@@ -310,7 +311,7 @@ var response = await _client
     .WithQueryParam("direction", "desc")
     .GetAsync();
 
-var responseContent = response.GetResponseStringAsync();
+var responseContent = await response.GetResponseStringAsync();
 ```
 
 ### Get Response As Stream
@@ -332,7 +333,7 @@ var response = await _client
     .WithQueryParam("direction", "desc")
     .GetAsync();
 
-var responseContent = response.GetResponseStreamAsync();
+var responseContent = await response.GetResponseStreamAsync();
 ```
 
 ### Get Response As Byte Array
@@ -355,7 +356,7 @@ var response = await _client
     .WithQueryParam("direction", "desc")
     .GetAsync();
 
-var responseContent = response.GetResponseBytesAsync();
+var responseContent = await response.GetResponseBytesAsync();
 ```
 
 ## Advanced Deserializing
