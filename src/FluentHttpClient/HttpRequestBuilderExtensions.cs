@@ -86,15 +86,27 @@ public static partial class HttpRequestBuilderExtensions
         return builder;
     }
 
-    public static HttpRequestBuilder WithQueryParam(this HttpRequestBuilder builder, string key, string value)
+    public static HttpRequestBuilder WithQueryParam(this HttpRequestBuilder builder, string key, string? value)
     {
-        builder.QueryParams.Add(key, value);
+        builder.QueryParams.Add(key, (value != null) ? value : string.Empty);
         return builder;
     }
 
-    public static HttpRequestBuilder WithQueryParams(this HttpRequestBuilder builder, IEnumerable<KeyValuePair<string, string>> queryParams)
+    public static HttpRequestBuilder WithQueryParam(this HttpRequestBuilder builder, string key, object? value)
     {
-        foreach (var param in queryParams) builder.QueryParams.Add(param.Key, param.Value);
+        builder.QueryParams.Add(key, (value != null) ? value.ToString() : string.Empty);
+        return builder;
+    }
+
+    public static HttpRequestBuilder WithQueryParams(this HttpRequestBuilder builder, IEnumerable<KeyValuePair<string, string?>> queryParams)
+    {
+        foreach (var param in queryParams) builder.QueryParams.Add(param.Key, (param.Value != null) ? param.Value : string.Empty);
+        return builder;
+    }
+
+    public static HttpRequestBuilder WithQueryParams(this HttpRequestBuilder builder, IEnumerable<KeyValuePair<string, object?>> queryParams)
+    {
+        foreach (var param in queryParams) builder.QueryParams.Add(param.Key, (param.Value != null) ? param.Value.ToString() : string.Empty);
         return builder;
     }
 
