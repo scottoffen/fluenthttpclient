@@ -4,7 +4,7 @@ public class HttpRequestBuilder
 {
     private readonly HttpClient _client;
 
-    public HttpContent Content
+    public HttpContent? Content
     {
         get { return Request.Content; }
         set { Request.Content = value; }
@@ -23,7 +23,7 @@ public class HttpRequestBuilder
     /// <summary>
     /// Get or set an exception handler for exceptions of type <see cref="HttpRequestException"/>
     /// </summary>
-    public Action<HttpRequestException> HttpRequestExceptionHandler { get; set; }
+    public Action<HttpRequestException>? HttpRequestExceptionHandler { get; set; }
 
     /// <summary>
     /// Get or set request query parameters
@@ -39,7 +39,7 @@ public class HttpRequestBuilder
     /// The request route
     /// </summary>
     /// <remarks>If the HttpClient has a base address, this value will be appended to the end of the base address, and extra slashes removed.</remarks>
-    public string Route { get; set; }
+    public string Route { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the timespan to wait before the request times out
@@ -82,7 +82,7 @@ public class HttpRequestBuilder
         {
             Request.RequestUri = noBaseAddress
                 ? new Uri($"{Route}{QueryParams}")
-                : new Uri($"{_client.BaseAddress.ToString().TrimEnd('/')}/{Route.TrimStart('/')}{QueryParams}");
+                : new Uri($"{_client.BaseAddress?.ToString().TrimEnd('/')}/{Route.TrimStart('/')}{QueryParams}");
         }
 
         token ??= CancellationToken.None;

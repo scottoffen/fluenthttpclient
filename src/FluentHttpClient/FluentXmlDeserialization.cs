@@ -23,7 +23,7 @@ public static class FluentXmlDeserialization
         return await XElement.LoadAsync(await response.GetResponseStreamAsync(), options, token.Value);
     }
 
-    public static async Task<T> DeserializeXmlAsync<T>(this Task<HttpResponseMessage> taskResponse, Func<HttpResponseMessage, Task<T>> defaultAction)
+    public static async Task<T?> DeserializeXmlAsync<T>(this Task<HttpResponseMessage> taskResponse, Func<HttpResponseMessage, Task<T>> defaultAction)
     {
         var response = await taskResponse;
         return (response.IsSuccessStatusCode)
@@ -31,16 +31,16 @@ public static class FluentXmlDeserialization
             : await defaultAction(response);
     }
 
-    public static async Task<T> DeserializeXmlAsync<T>(this Task<HttpResponseMessage> taskResponse)
+    public static async Task<T?> DeserializeXmlAsync<T>(this Task<HttpResponseMessage> taskResponse)
     {
         var response = await taskResponse;
         return await response.DeserializeXmlAsync<T>();
     }
 
-    public static async Task<T> DeserializeXmlAsync<T>(this HttpResponseMessage response)
+    public static async Task<T?> DeserializeXmlAsync<T>(this HttpResponseMessage response)
     {
         using var reader = new StreamReader(await response.GetResponseStreamAsync());
         var serializer = new XmlSerializer(typeof(T));
-        return (T)serializer.Deserialize(reader);
+        return (T?)serializer.Deserialize(reader);
     }
 }
