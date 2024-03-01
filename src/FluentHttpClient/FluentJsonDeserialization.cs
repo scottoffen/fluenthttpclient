@@ -6,7 +6,7 @@ public static class FluentJsonDeserialization
 {
     public static async Task<T?> DeserializeJsonAsync<T>(this Task<Stream> result)
     {
-        return await result.DeserializeJsonAsync<T>(FluentHttpClient.DefaultJsonSerializerOptions);
+        return await result.DeserializeJsonAsync<T>(FluentHttpClientOptions.DefaultJsonSerializerOptions);
     }
 
     public static async Task<T?> DeserializeJsonAsync<T>(this Task<Stream> result, JsonSerializerOptions options)
@@ -16,7 +16,7 @@ public static class FluentJsonDeserialization
 
     public static async Task<T?> DeserializeJsonAsync<T>(this Task<String> result)
     {
-        return await result.DeserializeJsonAsync<T>(FluentHttpClient.DefaultJsonSerializerOptions);
+        return await result.DeserializeJsonAsync<T>(FluentHttpClientOptions.DefaultJsonSerializerOptions);
     }
 
     public static async Task<T?> DeserializeJsonAsync<T>(this Task<string> result, JsonSerializerOptions options)
@@ -26,7 +26,7 @@ public static class FluentJsonDeserialization
 
     public static async Task<T?> DeserializeJsonAsync<T>(this Task<HttpResponseMessage> result)
     {
-        return await result.DeserializeJsonAsync<T>(FluentHttpClient.DefaultJsonSerializerOptions);
+        return await result.DeserializeJsonAsync<T>(FluentHttpClientOptions.DefaultJsonSerializerOptions);
     }
 
     public static async Task<T?> DeserializeJsonAsync<T>(this Task<HttpResponseMessage> taskResponse, JsonSerializerOptions options)
@@ -37,7 +37,7 @@ public static class FluentJsonDeserialization
 
     public static async Task<T?> DeserializeJsonAsync<T>(this Task<HttpResponseMessage> result, Func<HttpResponseMessage, T> defaultAction)
     {
-        return await result.DeserializeJsonAsync<T>(defaultAction, FluentHttpClient.DefaultJsonSerializerOptions);
+        return await result.DeserializeJsonAsync<T>(defaultAction, FluentHttpClientOptions.DefaultJsonSerializerOptions);
     }
 
     public static async Task<T?> DeserializeJsonAsync<T>(this Task<HttpResponseMessage> taskResponse, Func<HttpResponseMessage, T> defaultAction, JsonSerializerOptions options)
@@ -50,7 +50,7 @@ public static class FluentJsonDeserialization
 
     public static async Task<T?> DeserializeJsonAsync<T>(this Task<HttpResponseMessage> result, Func<HttpResponseMessage, Task<T>> defaultAction)
     {
-        return await result.DeserializeJsonAsync<T>(defaultAction, FluentHttpClient.DefaultJsonSerializerOptions);
+        return await result.DeserializeJsonAsync<T>(defaultAction, FluentHttpClientOptions.DefaultJsonSerializerOptions);
     }
 
     public static async Task<T?> DeserializeJsonAsync<T>(this Task<HttpResponseMessage> taskResponse, Func<HttpResponseMessage, Task<T>> defaultAction, JsonSerializerOptions options)

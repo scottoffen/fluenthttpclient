@@ -155,7 +155,7 @@ public static partial class HttpRequestBuilderExtensions
 {
     public static HttpRequestBuilder WithJsonContent(this HttpRequestBuilder builder, object content)
     {
-        return builder.WithJsonContent(content, FluentHttpClient.DefaultJsonSerializerOptions);
+        return builder.WithJsonContent(content, FluentHttpClientOptions.DefaultJsonSerializerOptions);
     }
 
     public static HttpRequestBuilder WithJsonContent(this HttpRequestBuilder builder, object content, JsonSerializerOptions options)
