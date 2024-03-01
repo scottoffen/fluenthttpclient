@@ -422,7 +422,7 @@ public static class FluentHttpClientExtensions
 }
 ```
 
-## Default Json Serialization Options
+## Default JsonSerializerOptions
 
 Unless explicitly passed in the method call for serialization or deserialization of JSON, the following default `JsonSerializerOptions` will be used:
 
@@ -430,8 +430,9 @@ Unless explicitly passed in the method call for serialization or deserialization
 new JsonSerializerOptions
 {
     PropertyNameCaseInsensitive = true,
+    NumberHandling = JsonNumberHandling.AllowReadingFromString,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
 };
 ```
 
-This default can be overridden or modified via the `FluentHttpClient.DefaultJsonSerializerOptions` property.
+This default can be overridden or modified via the `FluentHttpClientOptions.DefaultJsonSerializerOptions` property.

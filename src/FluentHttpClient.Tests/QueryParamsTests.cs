@@ -7,7 +7,7 @@ public class QueryParamsTests
     [Fact]
     public void DoesNotRemoveEmptyValues()
     {
-        FluentHttpClient.RemoveEmptyQueryParameters = false;
+        FluentHttpClientOptions.RemoveEmptyQueryParameters = false;
 
         var expected = "?name=bob&age=&color=blue";
 
@@ -25,7 +25,7 @@ public class QueryParamsTests
     [Fact]
     public void RemovesEmptyValues()
     {
-        FluentHttpClient.RemoveEmptyQueryParameters = true;
+        FluentHttpClientOptions.RemoveEmptyQueryParameters = true;
 
         var expected = "?name=bob&color=blue";
 

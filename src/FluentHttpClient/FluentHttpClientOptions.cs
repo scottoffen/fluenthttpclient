@@ -3,11 +3,15 @@ using System.Text.Json.Serialization;
 
 namespace FluentHttpClient;
 
-public static class FluentHttpClient
+public static class FluentHttpClientOptions
 {
+    /// <summary>
+    /// Default JsonSerializerOptions that will be use when serializing and deserializing if none are provided.
+    /// </summary>
     public static JsonSerializerOptions DefaultJsonSerializerOptions { get; set; } = new JsonSerializerOptions
     {
         PropertyNameCaseInsensitive = true,
+        NumberHandling = JsonNumberHandling.AllowReadingFromString,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 

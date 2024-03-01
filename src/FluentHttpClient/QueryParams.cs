@@ -15,7 +15,7 @@ public class QueryParams : NameValueCollection
             from key in AllKeys
             let value = Get(key)
             where (
-                !FluentHttpClient.RemoveEmptyQueryParameters
+                !FluentHttpClientOptions.RemoveEmptyQueryParameters
                 || !string.IsNullOrWhiteSpace(value)
             )
             select $"{Uri.EscapeDataString(key)}={Uri.EscapeDataString(value)}"
