@@ -3,6 +3,9 @@ using System.Text.Json.Serialization;
 
 namespace FluentHttpClient;
 
+/// <summary>
+/// Global options used by <see cref="FluentHttpClient"/>.
+/// </summary>
 public static class FluentHttpClientOptions
 {
     /// <summary>
@@ -16,7 +19,8 @@ public static class FluentHttpClientOptions
     };
 
     /// <summary>
-    /// When true, query parameters that are null or empty will not be included when converted to a string.
+    /// Get or set a boolean value that indicate whether query parameters that are null or empty should be removed when converted to a string.
     /// </summary>
+    /// <remarks>Defaults to false</remarks>
     public static bool RemoveEmptyQueryParameters { get; set; } = false;
 }

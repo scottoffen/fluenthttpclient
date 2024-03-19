@@ -1,4 +1,5 @@
 using System.Collections.Specialized;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
@@ -7,172 +8,552 @@ using System.Text.Json;
 namespace FluentHttpClient;
 
 /// <summary>
-/// Extensions for chaining modifications to the HttpRequestMessage
+/// Extensions for setting the properties of the <see cref="HttpRequestBuilder"/> and sending the request.
 /// </summary>
-public static partial class HttpRequestBuilderExtensions
+public static class HttpRequestBuilderExtensions
 {
-    public static HttpRequestBuilder UsingRoute(this HttpRequestBuilder builder)
+    /// <summary>
+    /// Set the action for <see cref="HttpRequestBuilder.ConfigureOptionsAction"/>.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="action"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder ConfigureOptions(this HttpRequestBuilder builder, Action<HttpRequestOptions> action)
     {
-        return builder.UsingRoute(string.Empty);
-    }
-
-    public static HttpRequestBuilder UsingRoute(this HttpRequestBuilder builder, string route)
-    {
-        builder.Route = route;
+        builder.ConfigureOptionsAction = action;
         return builder;
     }
 
+    /// <summary>
+    /// Sets the HTTP message version.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="version"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder UsingVersion(this HttpRequestBuilder builder, string version)
+    {
+        builder.Version = new Version(version);
+        return builder;
+    }
+
+    /// <summary>
+    /// Sets the HTTP message version.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="version"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder UsingVersion(this HttpRequestBuilder builder, Version version)
+    {
+        builder.Version = version;
+        return builder;
+    }
+
+    /// <summary>
+    /// Sets the HTTP message version and the policy that determines how <see cref="Version"/> is interpreted and how the final HTTP version is negotiated with the server.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="version"></param>
+    /// <param name="policy"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder UsingVersion(this HttpRequestBuilder builder, string version, HttpVersionPolicy policy)
+    {
+        builder.Version = new Version(version);
+        builder.VersionPolicy = policy;
+        return builder;
+    }
+
+    /// <summary>
+    /// Sets the HTTP message version and the policy that determines how <see cref="Version"/> is interpreted and how the final HTTP version is negotiated with the server.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="version"></param>
+    /// <param name="policy"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder UsingVersion(this HttpRequestBuilder builder, Version version, HttpVersionPolicy policy)
+    {
+        builder.Version = version;
+        builder.VersionPolicy = policy;
+        return builder;
+    }
+
+    /// <summary>
+    /// Sets the value of the authentication header for the request.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="scheme"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
     public static HttpRequestBuilder WithAuthentication(this HttpRequestBuilder builder, string scheme, string token)
     {
-        builder.Request.Headers.Authorization = new AuthenticationHeaderValue(scheme, token);
+        builder.ConfigureHeaders.Add(headers =>
+        {
+            headers.Authorization = new AuthenticationHeaderValue(scheme, token);
+        });
+
         return builder;
     }
 
+    /// <summary>
+    /// Sets the value of the authentication header for the request to Basic, using the specified token.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder WithBasicAuthentication(this HttpRequestBuilder builder, string token)
+    {
+        return builder.WithAuthentication("Basic", token);
+    }
+
+    /// <summary>
+    /// Sets the value of the authentication header for the request to Basic using the Base64 encoded username and password as the token.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="username"></param>
+    /// <param name="password"></param>
+    /// <returns></returns>
     public static HttpRequestBuilder WithBasicAuthentication(this HttpRequestBuilder builder, string username, string password)
     {
         var token = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{username}:{password}"));
         return builder.WithBasicAuthentication(token);
     }
 
-    public static HttpRequestBuilder WithBasicAuthentication(this HttpRequestBuilder builder, string token)
-    {
-        return builder.WithAuthentication("Basic", token);
-    }
-
+    /// <summary>
+    /// Sets the contents of the HTTP message.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="content"></param>
+    /// <returns></returns>
     public static HttpRequestBuilder WithContent(this HttpRequestBuilder builder, HttpContent content)
     {
         builder.Content = content;
         return builder;
     }
 
+    /// <summary>
+    /// Sets the contents of the HTTP message.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="content"></param>
+    /// <returns></returns>
     public static HttpRequestBuilder WithContent(this HttpRequestBuilder builder, string content)
     {
         builder.Content = new StringContent(content);
         return builder;
     }
 
-    public static HttpRequestBuilder WithCookie(this HttpRequestBuilder builder, string key, string value)
+    /// <summary>
+    /// Adds a cookie to the cookie container for this request.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="cookie"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder WithCookie(this HttpRequestBuilder builder, Cookie cookie)
     {
-        builder.Cookies.Add(key, value);
+        builder.Cookies.Add(cookie);
         return builder;
     }
 
-    public static HttpRequestBuilder WithCookies(this HttpRequestBuilder builder, IEnumerable<KeyValuePair<string, string>> cookies)
+    /// <summary>
+    /// Adds a collection of cookies to the cookie container for this request.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="cookieCollection"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder WithCookie(this HttpRequestBuilder builder, CookieCollection cookieCollection)
     {
-        foreach (var cookie in cookies) builder.Cookies.Add(cookie.Key, cookie.Value);
+        builder.Cookies.Add(cookieCollection);
         return builder;
     }
 
+    /// <summary>
+    /// Adds the specified header and its value into the HttpHeaders collection.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
     public static HttpRequestBuilder WithHeader(this HttpRequestBuilder builder, string key, string value)
     {
-        builder.Headers[key] = value;
+        builder.ConfigureHeaders.Add((httpHeaders) =>
+        {
+            httpHeaders.Add(key, value);
+        });
         return builder;
     }
 
+    /// <summary>
+    /// Adds the specified header and its values into the HttpHeaders collection.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="key"></param>
+    /// <param name="values"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder WithHeader(this HttpRequestBuilder builder, string key, IEnumerable<string> values)
+    {
+        builder.ConfigureHeaders.Add((httpHeaders) =>
+        {
+            httpHeaders.Add(key, values);
+        });
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds the specified headers and their values into the HttpHeaders collection.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="headers"></param>
+    /// <returns></returns>
     public static HttpRequestBuilder WithHeaders(this HttpRequestBuilder builder, IEnumerable<KeyValuePair<string, string>> headers)
     {
-        foreach (var header in headers) builder.Headers[header.Key] = header.Value;
+        builder.ConfigureHeaders.Add((httpHeaders) =>
+        {
+            foreach (var header in headers)
+            {
+                httpHeaders.Add(header.Key, header.Value);
+            }
+        });
         return builder;
     }
 
+    /// <summary>
+    /// Creates a new instance of the <see cref="JsonContent"/> that contains the specified content serialized to JSON using the default JsonSerializerOptions and assigns it to the Content property of the HttpRequestMessage.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="content"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder WithJsonContent(this HttpRequestBuilder builder, object content)
+    {
+        return builder.WithJsonContent(content, FluentHttpClientOptions.DefaultJsonSerializerOptions);
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="JsonContent"/> that contains the specified content serialized to JSON using the provided JsonSerializerOptions and assigns it to the Content property of the HttpRequestMessage.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="content"></param>
+    /// <param name="options"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder WithJsonContent(this HttpRequestBuilder builder, object content, JsonSerializerOptions options)
+    {
+        builder.Content = JsonContent.Create(content, options: options);
+        return builder;
+    }
+
+    /// <summary>
+    /// Sets the value of the Authentication header for the request.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
     public static HttpRequestBuilder WithOAuthBearerToken(this HttpRequestBuilder builder, string token)
     {
         return builder.WithAuthentication("Bearer", token);
     }
 
-    public static HttpRequestBuilder WithRequestTimeout(this HttpRequestBuilder builder, int seconds)
-    {
-        return builder.WithRequestTimeout(TimeSpan.FromSeconds(seconds));
-    }
-
-    public static HttpRequestBuilder WithRequestTimeout(this HttpRequestBuilder builder, TimeSpan timeout)
-    {
-        builder.Timeout = timeout;
-        return builder;
-    }
-
+    /// <summary>
+    /// Adds the query parameter with the specified key and value to the request Url.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
     public static HttpRequestBuilder WithQueryParam(this HttpRequestBuilder builder, string key, string? value)
     {
         builder.QueryParams.Add(key, (value != null) ? value : string.Empty);
         return builder;
     }
 
+    /// <summary>
+    /// Adds the query parameter with the specified key and value to the request Url.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
     public static HttpRequestBuilder WithQueryParam(this HttpRequestBuilder builder, string key, object? value)
     {
-        builder.QueryParams.Add(key, (value != null) ? value.ToString() : string.Empty);
+        return builder.WithQueryParam(key, (value != null) ? value.ToString() : string.Empty);
+    }
+
+    /// <summary>
+    /// Adds an enumeration of key value pairs as query parameters to the request Url.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="values"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder WithQueryParams(this HttpRequestBuilder builder, IEnumerable<KeyValuePair<string, string?>> values)
+    {
+        foreach (var value in values)
+        {
+            builder.WithQueryParam(value.Key, value.Value);
+        }
         return builder;
     }
 
-    public static HttpRequestBuilder WithQueryParams(this HttpRequestBuilder builder, IEnumerable<KeyValuePair<string, string?>> queryParams)
+    /// <summary>
+    /// Adds an enumeration of key value pairs as query parameters to the request Url.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="values"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder WithQueryParams(this HttpRequestBuilder builder, IEnumerable<KeyValuePair<string, object?>> values)
     {
-        foreach (var param in queryParams) builder.QueryParams.Add(param.Key, (param.Value != null) ? param.Value : string.Empty);
+        foreach (var value in values)
+        {
+            builder.WithQueryParam(value.Key, value.Value);
+        }
         return builder;
     }
 
-    public static HttpRequestBuilder WithQueryParams(this HttpRequestBuilder builder, IEnumerable<KeyValuePair<string, object?>> queryParams)
+    /// <summary>
+    /// Adds the key value pairs from the <see cref="NameValueCollection"/> as query parameters to the request Url.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="values"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder WithQueryParams(this HttpRequestBuilder builder, NameValueCollection values)
     {
-        foreach (var param in queryParams) builder.QueryParams.Add(param.Key, (param.Value != null) ? param.Value.ToString() : string.Empty);
+        builder.QueryParams.Add(values);
         return builder;
     }
 
-    public static HttpRequestBuilder WithQueryParams(this HttpRequestBuilder builder, NameValueCollection queryParams)
+    /// <summary>
+    /// Send an HTTP DELETE request as an asynchronous operation.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException" />
+    /// <exception cref="InvalidOperationException" />
+    /// <exception cref="HttpRequestException" />
+    /// <exception cref="TaskCanceledException" />
+    public static async Task<HttpResponseMessage> DeleteAsync(this HttpRequestBuilder builder)
     {
-        builder.QueryParams.Add(queryParams);
-        return builder;
-    }
-}
-
-/// <summary>
-/// Extensions for sending the HttpRequestMessage via SendAsync
-/// </summary>
-public static partial class HttpRequestBuilderExtensions
-{
-    public static async Task<HttpResponseMessage> DeleteAsync(this HttpRequestBuilder builder, CancellationToken? token = null)
-    {
-        return await builder.SendAsync(HttpMethod.Delete, token).ConfigureAwait(false);
+        return await builder.SendAsync(HttpMethod.Delete);
     }
 
-    public static async Task<HttpResponseMessage> GetAsync(this HttpRequestBuilder builder, CancellationToken? token = null)
+    /// <summary>
+    /// Send an HTTP DELETE request as an asynchronous operation.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="completionOption"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException" />
+    /// <exception cref="InvalidOperationException" />
+    /// <exception cref="HttpRequestException" />
+    /// <exception cref="TaskCanceledException" />
+    public static async Task<HttpResponseMessage> DeleteAsync(this HttpRequestBuilder builder, HttpCompletionOption completionOption)
     {
-        return await builder.SendAsync(HttpMethod.Get, token).ConfigureAwait(false);
+        return await builder.SendAsync(HttpMethod.Delete, completionOption);
     }
 
-    public static async Task<HttpResponseMessage> PostAsync(this HttpRequestBuilder builder, CancellationToken? token = null)
+    /// <summary>
+    /// Send an HTTP DELETE request as an asynchronous operation.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="token"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException" />
+    /// <exception cref="InvalidOperationException" />
+    /// <exception cref="HttpRequestException" />
+    /// <exception cref="TaskCanceledException" />
+    public static async Task<HttpResponseMessage> DeleteAsync(this HttpRequestBuilder builder, CancellationToken token)
     {
-        return await builder.SendAsync(HttpMethod.Post, token).ConfigureAwait(false);
+        return await builder.SendAsync(HttpMethod.Delete, token);
     }
 
-    public static async Task<HttpResponseMessage> PutAsync(this HttpRequestBuilder builder, CancellationToken? token = null)
+    /// <summary>
+    /// Send an HTTP DELETE request as an asynchronous operation.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="completionOption"></param>
+    /// <param name="token"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException" />
+    /// <exception cref="InvalidOperationException" />
+    /// <exception cref="HttpRequestException" />
+    /// <exception cref="TaskCanceledException" />
+    public static async Task<HttpResponseMessage> DeleteAsync(this HttpRequestBuilder builder, HttpCompletionOption completionOption, CancellationToken token)
     {
-        return await builder.SendAsync(HttpMethod.Put, token).ConfigureAwait(false);
+        return await builder.SendAsync(HttpMethod.Delete, completionOption, token);
     }
-}
 
-/// <summary>
-/// Extensions for adding json content
-/// </summary>
-public static partial class HttpRequestBuilderExtensions
-{
-    public static HttpRequestBuilder WithJsonContent(this HttpRequestBuilder builder, object content)
+    /// <summary>
+    /// Send an HTTP GET request as an asynchronous operation.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException" />
+    /// <exception cref="InvalidOperationException" />
+    /// <exception cref="HttpRequestException" />
+    /// <exception cref="TaskCanceledException" />
+    public static async Task<HttpResponseMessage> GetAsync(this HttpRequestBuilder builder)
     {
-        return builder.WithJsonContent(content, FluentHttpClientOptions.DefaultJsonSerializerOptions);
+        return await builder.SendAsync(HttpMethod.Get);
     }
 
-    public static HttpRequestBuilder WithJsonContent(this HttpRequestBuilder builder, object content, JsonSerializerOptions options)
+    /// <summary>
+    /// Send an HTTP GET request as an asynchronous operation.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="completionOption"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException" />
+    /// <exception cref="InvalidOperationException" />
+    /// <exception cref="HttpRequestException" />
+    /// <exception cref="TaskCanceledException" />
+    public static async Task<HttpResponseMessage> GetAsync(this HttpRequestBuilder builder, HttpCompletionOption completionOption)
     {
-        builder.Content = JsonContent.Create(content, options: options);
-        return builder;
+        return await builder.SendAsync(HttpMethod.Get, completionOption);
     }
-}
 
-/// <summary>
-/// Extensions for handling HttpRequestExceptions
-/// </summary>
-public static partial class HttpRequestBuilderExtensions
-{
-    public static HttpRequestBuilder OnHttpRequestException(this HttpRequestBuilder builder, Action<HttpRequestException> action)
+    /// <summary>
+    /// Send an HTTP GET request as an asynchronous operation.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="token"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException" />
+    /// <exception cref="InvalidOperationException" />
+    /// <exception cref="HttpRequestException" />
+    /// <exception cref="TaskCanceledException" />
+    public static async Task<HttpResponseMessage> GetAsync(this HttpRequestBuilder builder, CancellationToken token)
     {
-        builder.HttpRequestExceptionHandler = action;
-        return builder;
+        return await builder.SendAsync(HttpMethod.Get, token);
+    }
+
+    /// <summary>
+    /// Send an HTTP GET request as an asynchronous operation.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="completionOption"></param>
+    /// <param name="token"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException" />
+    /// <exception cref="InvalidOperationException" />
+    /// <exception cref="HttpRequestException" />
+    /// <exception cref="TaskCanceledException" />
+    public static async Task<HttpResponseMessage> GetAsync(this HttpRequestBuilder builder, HttpCompletionOption completionOption, CancellationToken token)
+    {
+        return await builder.SendAsync(HttpMethod.Get, completionOption, token);
+    }
+
+    /// <summary>
+    /// Send an HTTP POST request as an asynchronous operation.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException" />
+    /// <exception cref="InvalidOperationException" />
+    /// <exception cref="HttpRequestException" />
+    /// <exception cref="TaskCanceledException" />
+    public static async Task<HttpResponseMessage> PostAsync(this HttpRequestBuilder builder)
+    {
+        return await builder.SendAsync(HttpMethod.Post);
+    }
+
+    /// <summary>
+    /// Send an HTTP POST request as an asynchronous operation.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="completionOption"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException" />
+    /// <exception cref="InvalidOperationException" />
+    /// <exception cref="HttpRequestException" />
+    /// <exception cref="TaskCanceledException" />
+    public static async Task<HttpResponseMessage> PostAsync(this HttpRequestBuilder builder, HttpCompletionOption completionOption)
+    {
+        return await builder.SendAsync(HttpMethod.Post, completionOption);
+    }
+
+    /// <summary>
+    /// Send an HTTP POST request as an asynchronous operation.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="token"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException" />
+    /// <exception cref="InvalidOperationException" />
+    /// <exception cref="HttpRequestException" />
+    /// <exception cref="TaskCanceledException" />
+    public static async Task<HttpResponseMessage> PostAsync(this HttpRequestBuilder builder, CancellationToken token)
+    {
+        return await builder.SendAsync(HttpMethod.Post, token);
+    }
+
+    /// <summary>
+    /// Send an HTTP POST request as an asynchronous operation.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="completionOption"></param>
+    /// <param name="token"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException" />
+    /// <exception cref="InvalidOperationException" />
+    /// <exception cref="HttpRequestException" />
+    /// <exception cref="TaskCanceledException" />
+    public static async Task<HttpResponseMessage> PostAsync(this HttpRequestBuilder builder, HttpCompletionOption completionOption, CancellationToken token)
+    {
+        return await builder.SendAsync(HttpMethod.Post, completionOption, token);
+    }
+
+    /// <summary>
+    /// Send an HTTP PUT request as an asynchronous operation.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException" />
+    /// <exception cref="InvalidOperationException" />
+    /// <exception cref="HttpRequestException" />
+    /// <exception cref="TaskCanceledException" />
+    public static async Task<HttpResponseMessage> PutAsync(this HttpRequestBuilder builder)
+    {
+        return await builder.SendAsync(HttpMethod.Put);
+    }
+
+    /// <summary>
+    /// Send an HTTP PUT request as an asynchronous operation.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="completionOption"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException" />
+    /// <exception cref="InvalidOperationException" />
+    /// <exception cref="HttpRequestException" />
+    /// <exception cref="TaskCanceledException" />
+    public static async Task<HttpResponseMessage> PutAsync(this HttpRequestBuilder builder, HttpCompletionOption completionOption)
+    {
+        return await builder.SendAsync(HttpMethod.Put, completionOption);
+    }
+
+    /// <summary>
+    /// Send an HTTP PUT request as an asynchronous operation.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="token"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException" />
+    /// <exception cref="InvalidOperationException" />
+    /// <exception cref="HttpRequestException" />
+    /// <exception cref="TaskCanceledException" />
+    public static async Task<HttpResponseMessage> PutAsync(this HttpRequestBuilder builder, CancellationToken token)
+    {
+        return await builder.SendAsync(HttpMethod.Put, token);
+    }
+
+    /// <summary>
+    /// Send an HTTP PUT request as an asynchronous operation.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="completionOption"></param>
+    /// <param name="token"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException" />
+    /// <exception cref="InvalidOperationException" />
+    /// <exception cref="HttpRequestException" />
+    /// <exception cref="TaskCanceledException" />
+    public static async Task<HttpResponseMessage> PutAsync(this HttpRequestBuilder builder, HttpCompletionOption completionOption, CancellationToken token)
+    {
+        return await builder.SendAsync(HttpMethod.Put, completionOption, token);
     }
 }

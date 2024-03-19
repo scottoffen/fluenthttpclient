@@ -1,3 +1,4 @@
+using System.Collections.Specialized;
 using Shouldly;
 
 namespace FluentHttpClient.Tests;
@@ -11,14 +12,14 @@ public class QueryParamsTests
 
         var expected = "?name=bob&age=&color=blue";
 
-        var qp = new QueryParams
+        var qp = new NameValueCollection
         {
             { "name", "bob" },
             { "age", "" },
             { "color", "blue" }
         };
 
-        var actual = qp.ToString();
+        var actual = qp.ToQueryString();
         actual.ShouldBe(expected);
     }
 
@@ -29,14 +30,14 @@ public class QueryParamsTests
 
         var expected = "?name=bob&color=blue";
 
-        var qp = new QueryParams
+        var qp = new NameValueCollection
         {
             { "name", "bob" },
             { "age", "" },
             { "color", "blue" }
         };
 
-        var actual = qp.ToString();
+        var actual = qp.ToQueryString();
         actual.ShouldBe(expected);
     }
 }
