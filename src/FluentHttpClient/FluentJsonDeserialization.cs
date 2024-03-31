@@ -144,7 +144,7 @@ public static class FluentJsonDeserialization
         catch (Exception e)
         {
             var responseMessage = await responseMessageTask.ConfigureAwait(false);
-            return await defaultAction(responseMessage, e);
+            return await defaultAction(responseMessage, e).ConfigureAwait(false);
         }
     }
 
@@ -364,7 +364,9 @@ public static class FluentJsonDeserialization
         }
         catch (Exception e)
         {
-            return await defaultAction.Invoke(responseMessage, e);
+            return await defaultAction
+                .Invoke(responseMessage, e)
+                .ConfigureAwait(false);
         }
     }
 
@@ -583,7 +585,9 @@ public static class FluentJsonDeserialization
         }
         catch (Exception e)
         {
-            return await defaultAction.Invoke(e);
+            return await defaultAction
+                .Invoke(e)
+                .ConfigureAwait(false);
         }
     }
 
@@ -802,7 +806,9 @@ public static class FluentJsonDeserialization
         }
         catch (Exception e)
         {
-            return await defaultAction.Invoke(e);
+            return await defaultAction
+                .Invoke(e)
+                .ConfigureAwait(false);
         }
     }
 

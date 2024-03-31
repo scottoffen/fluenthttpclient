@@ -143,10 +143,12 @@ public class HttpRequestBuilder
             VersionPolicy = VersionPolicy
         };
 
-        ConfigureMessageHeaders(request);
+        ConfigureMessage(request);
         ConfigureOptionsAction?.Invoke(request.Options);
 
-        return await _client.SendAsync(request, completionOption, token);
+        return await _client
+            .SendAsync(request, completionOption, token)
+            .ConfigureAwait(false);
     }
 
     private Uri GenerateRequestUri()
@@ -173,7 +175,7 @@ public class HttpRequestBuilder
         return new Uri($"{baseAddress}/{route}{QueryParams.ToQueryString()}");
     }
 
-    private void ConfigureMessageHeaders(HttpRequestMessage request)
+    private void ConfigureMessage(HttpRequestMessage request)
     {
         if (request.RequestUri == null)
             throw new ArgumentException($"{nameof(HttpRequestMessage.RequestUri)} cannot be null");

@@ -328,7 +328,7 @@ public static class HttpRequestBuilderExtensions
     /// <exception cref="TaskCanceledException" />
     public static async Task<HttpResponseMessage> DeleteAsync(this HttpRequestBuilder builder)
     {
-        return await builder.SendAsync(HttpMethod.Delete);
+        return await builder.SendAsync(HttpMethod.Delete).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -343,7 +343,7 @@ public static class HttpRequestBuilderExtensions
     /// <exception cref="TaskCanceledException" />
     public static async Task<HttpResponseMessage> DeleteAsync(this HttpRequestBuilder builder, HttpCompletionOption completionOption)
     {
-        return await builder.SendAsync(HttpMethod.Delete, completionOption);
+        return await builder.SendAsync(HttpMethod.Delete, completionOption).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -358,7 +358,7 @@ public static class HttpRequestBuilderExtensions
     /// <exception cref="TaskCanceledException" />
     public static async Task<HttpResponseMessage> DeleteAsync(this HttpRequestBuilder builder, CancellationToken token)
     {
-        return await builder.SendAsync(HttpMethod.Delete, token);
+        return await builder.SendAsync(HttpMethod.Delete, token).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -374,7 +374,7 @@ public static class HttpRequestBuilderExtensions
     /// <exception cref="TaskCanceledException" />
     public static async Task<HttpResponseMessage> DeleteAsync(this HttpRequestBuilder builder, HttpCompletionOption completionOption, CancellationToken token)
     {
-        return await builder.SendAsync(HttpMethod.Delete, completionOption, token);
+        return await builder.SendAsync(HttpMethod.Delete, completionOption, token).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -388,7 +388,7 @@ public static class HttpRequestBuilderExtensions
     /// <exception cref="TaskCanceledException" />
     public static async Task<HttpResponseMessage> GetAsync(this HttpRequestBuilder builder)
     {
-        return await builder.SendAsync(HttpMethod.Get);
+        return await builder.SendAsync(HttpMethod.Get).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -403,7 +403,7 @@ public static class HttpRequestBuilderExtensions
     /// <exception cref="TaskCanceledException" />
     public static async Task<HttpResponseMessage> GetAsync(this HttpRequestBuilder builder, HttpCompletionOption completionOption)
     {
-        return await builder.SendAsync(HttpMethod.Get, completionOption);
+        return await builder.SendAsync(HttpMethod.Get, completionOption).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -418,7 +418,7 @@ public static class HttpRequestBuilderExtensions
     /// <exception cref="TaskCanceledException" />
     public static async Task<HttpResponseMessage> GetAsync(this HttpRequestBuilder builder, CancellationToken token)
     {
-        return await builder.SendAsync(HttpMethod.Get, token);
+        return await builder.SendAsync(HttpMethod.Get, token).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -434,7 +434,7 @@ public static class HttpRequestBuilderExtensions
     /// <exception cref="TaskCanceledException" />
     public static async Task<HttpResponseMessage> GetAsync(this HttpRequestBuilder builder, HttpCompletionOption completionOption, CancellationToken token)
     {
-        return await builder.SendAsync(HttpMethod.Get, completionOption, token);
+        return await builder.SendAsync(HttpMethod.Get, completionOption, token).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -448,7 +448,7 @@ public static class HttpRequestBuilderExtensions
     /// <exception cref="TaskCanceledException" />
     public static async Task<HttpResponseMessage> PostAsync(this HttpRequestBuilder builder)
     {
-        return await builder.SendAsync(HttpMethod.Post);
+        return await builder.SendAsync(HttpMethod.Post).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -463,7 +463,7 @@ public static class HttpRequestBuilderExtensions
     /// <exception cref="TaskCanceledException" />
     public static async Task<HttpResponseMessage> PostAsync(this HttpRequestBuilder builder, HttpCompletionOption completionOption)
     {
-        return await builder.SendAsync(HttpMethod.Post, completionOption);
+        return await builder.SendAsync(HttpMethod.Post, completionOption).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -478,7 +478,7 @@ public static class HttpRequestBuilderExtensions
     /// <exception cref="TaskCanceledException" />
     public static async Task<HttpResponseMessage> PostAsync(this HttpRequestBuilder builder, CancellationToken token)
     {
-        return await builder.SendAsync(HttpMethod.Post, token);
+        return await builder.SendAsync(HttpMethod.Post, token).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -494,7 +494,7 @@ public static class HttpRequestBuilderExtensions
     /// <exception cref="TaskCanceledException" />
     public static async Task<HttpResponseMessage> PostAsync(this HttpRequestBuilder builder, HttpCompletionOption completionOption, CancellationToken token)
     {
-        return await builder.SendAsync(HttpMethod.Post, completionOption, token);
+        return await builder.SendAsync(HttpMethod.Post, completionOption, token).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -508,7 +508,7 @@ public static class HttpRequestBuilderExtensions
     /// <exception cref="TaskCanceledException" />
     public static async Task<HttpResponseMessage> PutAsync(this HttpRequestBuilder builder)
     {
-        return await builder.SendAsync(HttpMethod.Put);
+        return await builder.SendAsync(HttpMethod.Put).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -523,7 +523,7 @@ public static class HttpRequestBuilderExtensions
     /// <exception cref="TaskCanceledException" />
     public static async Task<HttpResponseMessage> PutAsync(this HttpRequestBuilder builder, HttpCompletionOption completionOption)
     {
-        return await builder.SendAsync(HttpMethod.Put, completionOption);
+        return await builder.SendAsync(HttpMethod.Put, completionOption).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -538,7 +538,7 @@ public static class HttpRequestBuilderExtensions
     /// <exception cref="TaskCanceledException" />
     public static async Task<HttpResponseMessage> PutAsync(this HttpRequestBuilder builder, CancellationToken token)
     {
-        return await builder.SendAsync(HttpMethod.Put, token);
+        return await builder.SendAsync(HttpMethod.Put, token).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -554,6 +554,6 @@ public static class HttpRequestBuilderExtensions
     /// <exception cref="TaskCanceledException" />
     public static async Task<HttpResponseMessage> PutAsync(this HttpRequestBuilder builder, HttpCompletionOption completionOption, CancellationToken token)
     {
-        return await builder.SendAsync(HttpMethod.Put, completionOption, token);
+        return await builder.SendAsync(HttpMethod.Put, completionOption, token).ConfigureAwait(false);
     }
 }

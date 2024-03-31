@@ -93,7 +93,7 @@ public static class FluentXmlDeserialization
     /// <returns>A new XElement containing the contents of the <see cref="HttpResponseMessage.Content"/> stream.</returns>
     public static async Task<XElement> DeserializeXmlAsync(this Task<HttpResponseMessage> taskResponse, LoadOptions options, CancellationToken token)
     {
-        var response = await taskResponse;
+        var response = await taskResponse.ConfigureAwait(false);
         return await response
             .DeserializeXmlAsync(options, token)
             .ConfigureAwait(false);
@@ -108,7 +108,10 @@ public static class FluentXmlDeserialization
     /// <returns>A new XElement containing the contents of the <see cref="HttpResponseMessage.Content"/> stream.</returns>
     public static async Task<XElement> DeserializeXmlAsync(this HttpResponseMessage response, LoadOptions options, CancellationToken token)
     {   
-        var stream = await response.GetResponseStreamAsync();
+        var stream = await response
+            .GetResponseStreamAsync()
+            .ConfigureAwait(false);
+
         return await XElement
             .LoadAsync(stream, options, token)
             .ConfigureAwait(false);
@@ -125,11 +128,12 @@ public static class FluentXmlDeserialization
     /// <exception cref="InvalidOperationException" />
     public static async Task<T?> DeserializeXmlAsync<T>(this Task<HttpResponseMessage> taskResponse, Func<HttpResponseMessage, Task<T>>? defaultAction)
     {
-        var response = await taskResponse;
+        var response = await taskResponse.ConfigureAwait(false);
+
         if (!response.IsSuccessStatusCode)
         {
             if (defaultAction == null) return default;
-            return await defaultAction(response);
+            return await defaultAction(response).ConfigureAwait(false);
         }
 
         return await response.DeserializeXmlAsync<T>().ConfigureAwait(false);
@@ -144,7 +148,7 @@ public static class FluentXmlDeserialization
     /// <exception cref="InvalidOperationException" />
     public static async Task<T?> DeserializeXmlAsync<T>(this HttpResponseMessage response)
     {
-        using var reader = new StreamReader(await response.GetResponseStreamAsync());
+        using var reader = new StreamReader(await response.GetResponseStreamAsync().ConfigureAwait(false));
         var serializer = new XmlSerializer(typeof(T));
         return (T?)serializer.Deserialize(reader);
     }
