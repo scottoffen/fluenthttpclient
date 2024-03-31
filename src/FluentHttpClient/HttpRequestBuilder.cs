@@ -1,107 +1,193 @@
+using System.Collections.Specialized;
+using System.Net;
+using System.Net.Http.Headers;
+
 namespace FluentHttpClient;
 
+/// <summary>
+/// Provides a builder pattern for generating and sending an <see cref="HttpRequestMessage"/> 
+/// </summary>
 public class HttpRequestBuilder
 {
     private readonly HttpClient _client;
 
-    public HttpContent? Content
-    {
-        get { return Request.Content; }
-        set { Request.Content = value; }
-    }
+    /// <summary>
+    /// Gets or sets the contents of the HTTP message.
+    /// </summary>
+    public HttpContent? Content { get; set; }
 
     /// <summary>
-    /// Add or remove request cookies
+    /// Gets the collection of cookies for the request.
     /// </summary>
-    public Cookies Cookies { get; } = [];
+    public CookieContainer Cookies { get; } = new CookieContainer();
 
     /// <summary>
-    /// Add or remove request headers
+    /// Gets the collection of actions used to configure HTTP request headers.
     /// </summary>
-    public IDictionary<string, string> Headers { get; } = new Dictionary<string, string>();
+    public List<Action<HttpRequestHeaders>> ConfigureHeaders { get; } = [];
 
     /// <summary>
-    /// Get or set an exception handler for exceptions of type <see cref="HttpRequestException"/>
+    /// Gets or set an action to configure the <see cref="HttpRequestOptions"/>  of the HTTP request.
     /// </summary>
-    public Action<HttpRequestException>? HttpRequestExceptionHandler { get; set; }
+    public Action<HttpRequestOptions>? ConfigureOptionsAction { get; set; }
 
     /// <summary>
-    /// Get or set request query parameters
+    /// Gets the collection of request query parameters.
     /// </summary>
-    public QueryParams QueryParams { get; set; } = [];
+    /// <remarks>
+    /// By default, query parameters without a value will not be included in the query string.
+    /// </remarks>
+    public NameValueCollection QueryParams { get; } = [];
 
     /// <summary>
-    /// The request object
+    /// Gets or sets the route used for the HTTP request.
     /// </summary>
-    public HttpRequestMessage Request { get; } = new HttpRequestMessage();
+    /// <remarks>
+    /// Trailing slashes on the route will be removed. If <see cref="HttpClient.BaseAddress"/> has a value, then this value will be appended to it.
+    /// </remarks>
+    public string? Route { get; private set; }
 
     /// <summary>
-    /// The request route
+    /// Gets or sets the HTTP message version.
     /// </summary>
-    /// <remarks>If the HttpClient has a base address, this value will be appended to the end of the base address, and extra slashes removed.</remarks>
-    public string Route { get; set; } = string.Empty;
+    /// <remarks>Defaults to 1.1</remarks>
+    public Version Version { get; set; } = new Version("1.1");
 
     /// <summary>
-    /// Gets or sets the timespan to wait before the request times out
+    /// Gets or sets the policy that determines how <see cref="Version"/> is interpreted and how the final HTTP version is negotiated with the server.
     /// </summary>
-    public TimeSpan Timeout
-    {
-        get { return _client.Timeout; }
-        set { _client.Timeout = value; }
-    }
+    /// <remarks>Defaults to <see cref="HttpVersionPolicy.RequestVersionOrLower"/> </remarks>
+    public HttpVersionPolicy VersionPolicy { get; set; } = HttpVersionPolicy.RequestVersionOrLower;
 
-    internal HttpRequestBuilder(HttpClient client)
+    /// <summary>
+    /// Constructs an <see cref="HttpRequestBuilder"/> with the supplied client.
+    /// </summary>
+    /// <param name="client"></param>
+    public HttpRequestBuilder(HttpClient client)
     {
         _client = client;
     }
 
-    public async Task<HttpResponseMessage> SendAsync(HttpMethod method, CancellationToken? token = null)
+    /// <summary>
+    /// Constructs an <see cref="HttpRequestBuilder"/> with the supplied client and route.
+    /// </summary>
+    /// <param name="client"></param>
+    /// <param name="route"></param>
+    public HttpRequestBuilder(HttpClient client, string route) : this(client)
     {
-        var noBaseAddress = string.IsNullOrWhiteSpace(_client.BaseAddress?.ToString());
-        var noRoute = string.IsNullOrWhiteSpace(Route);
+        Route = route;
+    }
 
-        if (noBaseAddress && noRoute)
-            throw new ArgumentException("Invalid Route: Client has not base address and no route information was provided");
+    /// <summary>
+    /// Send an HTTP request as an asynchronous operation.
+    /// </summary>
+    /// <param name="method"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">The request is null or the route is invalid</exception>
+    /// <exception cref="InvalidOperationException">The request message was already sent by the HttpClient instance.</exception>
+    /// <exception cref="HttpRequestException">The request failed due to an underlying issue such as network connectivity, DNS failure, server certificate validation or timeout.</exception>
+    /// <exception cref="TaskCanceledException">The request failed due to timeout.</exception>
+    public Task<HttpResponseMessage> SendAsync(HttpMethod method)
+    {
+        return SendAsync(method, HttpCompletionOption.ResponseContentRead, CancellationToken.None);
+    }
 
-        Request.Method = method;
+    /// <summary>
+    /// Send an HTTP request as an asynchronous operation.
+    /// </summary>
+    /// <param name="method"></param>
+    /// <param name="completionOption"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">The request is null or the route is invalid</exception>
+    /// <exception cref="InvalidOperationException">The request message was already sent by the HttpClient instance.</exception>
+    /// <exception cref="HttpRequestException">The request failed due to an underlying issue such as network connectivity, DNS failure, server certificate validation or timeout.</exception>
+    /// <exception cref="TaskCanceledException">The request failed due to timeout.</exception>
+    public Task<HttpResponseMessage> SendAsync(HttpMethod method, HttpCompletionOption completionOption)
+    {
+        return SendAsync(method, completionOption, CancellationToken.None);
+    }
 
-        if (Cookies.Any())
-            Headers["Cookie"] = (Headers.ContainsKey("Cookie"))
-                ? string.Join("; ", new string[] { Headers["Cookies"], Cookies.ToString() })
-                : Cookies.ToString();
+    /// <summary>
+    /// Send an HTTP request as an asynchronous operation.
+    /// </summary>
+    /// <param name="method"></param>
+    /// <param name="token"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">The request is null or the route is invalid</exception>
+    /// <exception cref="InvalidOperationException">The request message was already sent by the HttpClient instance.</exception>
+    /// <exception cref="HttpRequestException">The request failed due to an underlying issue such as network connectivity, DNS failure, server certificate validation or timeout.</exception>
+    /// <exception cref="TaskCanceledException">The request failed due to timeout.</exception>
+    public Task<HttpResponseMessage> SendAsync(HttpMethod method, CancellationToken token)
+    {
+        return SendAsync(method, HttpCompletionOption.ResponseContentRead, token);
+    }
 
-        foreach (var item in Headers) Request.Headers.Add(item.Key, item.Value);
-
-        if (Request.Content is MultipartContent) Request.Headers.ExpectContinue = false;
-
-        if (noRoute)
+    /// <summary>
+    /// Send an HTTP request as an asynchronous operation.
+    /// </summary>
+    /// <param name="method"></param>
+    /// <param name="completionOption"></param>
+    /// <param name="token"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">The request is null or the route is invalid</exception>
+    /// <exception cref="InvalidOperationException">The request message was already sent by the HttpClient instance.</exception>
+    /// <exception cref="HttpRequestException">The request failed due to an underlying issue such as network connectivity, DNS failure, server certificate validation or timeout.</exception>
+    /// <exception cref="TaskCanceledException">The request failed due to timeout.</exception>
+    public async Task<HttpResponseMessage> SendAsync(HttpMethod method, HttpCompletionOption completionOption, CancellationToken token)
+    {
+        var request = new HttpRequestMessage(method, GenerateRequestUri())
         {
-            Request.RequestUri = new Uri($"{_client.BaseAddress}{QueryParams}");
+            Content = Content,
+            Method = method,
+            Version = Version,
+            VersionPolicy = VersionPolicy
+        };
+
+        ConfigureMessage(request);
+        ConfigureOptionsAction?.Invoke(request.Options);
+
+        return await _client
+            .SendAsync(request, completionOption, token)
+            .ConfigureAwait(false);
+    }
+
+    private Uri GenerateRequestUri()
+    {
+        var baseAddress = _client.BaseAddress?.ToString().TrimEnd('/') ?? string.Empty;
+        var route = Route?.TrimStart('/') ?? string.Empty;
+
+        var missingBaseAddress = string.IsNullOrWhiteSpace(baseAddress);
+        var missingRoute = string.IsNullOrWhiteSpace(route);
+
+        if (missingBaseAddress && missingRoute)
+            throw new ArgumentException("Invalid Route: Client has no base address and no route information was provided");
+
+        if (missingBaseAddress)
+        {
+            return new Uri($"{route}{QueryParams.ToQueryString()}");
         }
-        else
+
+        if (missingRoute)
         {
-            Request.RequestUri = noBaseAddress
-                ? new Uri($"{Route}{QueryParams}")
-                : new Uri($"{_client.BaseAddress?.ToString().TrimEnd('/')}/{Route.TrimStart('/')}{QueryParams}");
+            return new Uri($"{baseAddress}{QueryParams.ToQueryString()}");
         }
 
-        token ??= CancellationToken.None;
+        return new Uri($"{baseAddress}/{route}{QueryParams.ToQueryString()}");
+    }
 
-        try
+    private void ConfigureMessage(HttpRequestMessage request)
+    {
+        if (request.RequestUri == null)
+            throw new ArgumentException($"{nameof(HttpRequestMessage.RequestUri)} cannot be null");
+
+        if (Content is MultipartContent) request.Headers.ExpectContinue = false;
+
+        ConfigureHeaders.ForEach(x => x.Invoke(request.Headers));
+
+        if (Cookies.Count > 0)
         {
-            return await _client.SendAsync(Request, HttpCompletionOption.ResponseContentRead, token.Value);
-        }
-        catch (HttpRequestException hre)
-        {
-            if (HttpRequestExceptionHandler != null)
-            {
-                HttpRequestExceptionHandler(hre);
-                return new NullHttpResponseMessage();
-            }
-            else
-            {
-                throw;
-            }
+            var cookieHeader = Cookies.GetCookieHeader(request.RequestUri);
+            request.Headers.Add("Cookie", cookieHeader);
         }
     }
 }
