@@ -15,7 +15,7 @@
     <PackageTags>fluent httpclient rest http api web client</PackageTags>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
-    <Version>4.0.0</Version>
+    <Version>4.1.0</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
