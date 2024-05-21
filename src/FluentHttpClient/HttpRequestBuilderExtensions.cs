@@ -318,6 +318,34 @@ public static class HttpRequestBuilderExtensions
     }
 
     /// <summary>
+    /// Adds the query parameter with the specified key and value to the request Url unless it is null.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder WithQueryParamIfNotNull(this HttpRequestBuilder builder, string key, string? value)
+    {
+        if (value != null)
+            builder.QueryParams.Add(key, value);
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds the query parameter with the specified key and value to the request Url unless it is null.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder WithQueryParamIfNotNull(this HttpRequestBuilder builder, string key, object? value)
+    {
+        if (value != null)
+            builder.WithQueryParam(key, value.ToString());
+        return builder;
+    }
+
+    /// <summary>
     /// Send an HTTP DELETE request as an asynchronous operation.
     /// </summary>
     /// <param name="builder"></param>
