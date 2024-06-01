@@ -221,9 +221,9 @@ public static class HttpRequestBuilderExtensions
     /// <param name="builder"></param>
     /// <param name="content"></param>
     /// <returns></returns>
-    public static HttpRequestBuilder WithJsonContent(this HttpRequestBuilder builder, object content)
+    public static HttpRequestBuilder WithJsonContent<T>(this HttpRequestBuilder builder, T content)
     {
-        return builder.WithJsonContent(content, FluentHttpClientOptions.DefaultJsonSerializerOptions);
+        return builder.WithJsonContent<T>(content, FluentHttpClientOptions.DefaultJsonSerializerOptions);
     }
 
     /// <summary>
@@ -233,9 +233,9 @@ public static class HttpRequestBuilderExtensions
     /// <param name="content"></param>
     /// <param name="options"></param>
     /// <returns></returns>
-    public static HttpRequestBuilder WithJsonContent(this HttpRequestBuilder builder, object content, JsonSerializerOptions options)
+    public static HttpRequestBuilder WithJsonContent<T>(this HttpRequestBuilder builder, T content, JsonSerializerOptions options)
     {
-        builder.Content = JsonContent.Create(content, options: options);
+        builder.Content = JsonContent.Create<T>(content, options: options);
         return builder;
     }
 
@@ -342,6 +342,114 @@ public static class HttpRequestBuilderExtensions
     {
         if (value != null)
             builder.WithQueryParam(key, value.ToString());
+        return builder;
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="StringContent"/> that contains the specified content serialized to XML using the <see cref="FluentXmlSerializer.DefaultSettings" /> and assigns it to the Content property of the HttpRequestMessage.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="builder"></param>
+    /// <param name="obj"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder WithXmlContent<T>(this HttpRequestBuilder builder, T obj)
+    {
+        return builder.WithXmlContent(obj, FluentXmlSerializer.DefaultSettings.Encoding, FluentXmlSerializer.DefaultContentType);
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="StringContent"/> that contains the specified content serialized to XML using the <see cref="FluentXmlSerializer.DefaultSettings" /> and assigns it to the Content property of the HttpRequestMessage.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="builder"></param>
+    /// <param name="obj"></param>
+    /// <param name="encoding"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder WithXmlContent<T>(this HttpRequestBuilder builder, T obj, Encoding encoding)
+    {
+        return builder.WithXmlContent(obj, encoding, FluentXmlSerializer.DefaultContentType);
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="StringContent"/> that contains the specified content serialized to XML using the <see cref="FluentXmlSerializer.DefaultSettings" /> and assigns it to the Content property of the HttpRequestMessage.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="builder"></param>
+    /// <param name="obj"></param>
+    /// <param name="contentType"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder WithXmlContent<T>(this HttpRequestBuilder builder, T obj, string contentType)
+    {
+        return builder.WithXmlContent(obj, FluentXmlSerializer.DefaultSettings.Encoding, contentType);
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="StringContent"/> that contains the specified content serialized to XML using the <see cref="FluentXmlSerializer.DefaultSettings" /> and assigns it to the Content property of the HttpRequestMessage.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="builder"></param>
+    /// <param name="obj"></param>
+    /// <param name="encoding"></param>
+    /// <param name="contentType"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder WithXmlContent<T>(this HttpRequestBuilder builder, T obj, Encoding encoding, string contentType)
+    {
+        var settings = FluentXmlSerializer.DefaultSettings;
+        settings.Encoding = encoding;
+
+        var xml = FluentXmlSerializer.Serialize(obj, settings);
+        return builder.WithXmlContent(xml, encoding, contentType);
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="StringContent"/> that contains the specified content and assigns it to the Content property of the HttpRequestMessage.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="xml"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder WithXmlContent(this HttpRequestBuilder builder, string xml)
+    {
+        return builder.WithXmlContent(xml, FluentXmlSerializer.DefaultSettings.Encoding, FluentXmlSerializer.DefaultContentType);
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="StringContent"/> that contains the specified content and assigns it to the Content property of the HttpRequestMessage.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="xml"></param>
+    /// <param name="encoding"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder WithXmlContent(this HttpRequestBuilder builder, string xml, Encoding encoding)
+    {
+        return builder.WithXmlContent(xml, encoding, FluentXmlSerializer.DefaultContentType);
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="StringContent"/> that contains the specified content and assigns it to the Content property of the HttpRequestMessage.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="xml"></param>
+    /// <param name="contentType"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder WithXmlContent(this HttpRequestBuilder builder, string xml, string contentType)
+    {
+        return builder.WithXmlContent(xml, FluentXmlSerializer.DefaultSettings.Encoding, contentType);
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="StringContent"/> that contains the specified content and assigns it to the Content property of the HttpRequestMessage.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="xml"></param>
+    /// <param name="encoding"></param>
+    /// <param name="contentType"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder WithXmlContent(this HttpRequestBuilder builder, string xml, Encoding encoding, string contentType)
+    {
+        var content = new StringContent(xml, encoding, contentType);
+        content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
+
+        builder.Content = content;
         return builder;
     }
 
