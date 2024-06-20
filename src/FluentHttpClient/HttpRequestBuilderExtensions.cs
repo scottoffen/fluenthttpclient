@@ -142,6 +142,32 @@ public static class HttpRequestBuilderExtensions
     }
 
     /// <summary>
+    /// Sets the contents of the HTTP message.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="content"></param>
+    /// <param name="contentType"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder WithContent(this HttpRequestBuilder builder, string content, string contentType)
+    {
+        return builder.WithContent(content, new MediaTypeHeaderValue(contentType));
+    }
+
+    /// <summary>
+    /// Sets the contents of the HTTP message.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="content"></param>
+    /// <param name="contentTypeHeaderValue"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder WithContent(this HttpRequestBuilder builder, string content, MediaTypeHeaderValue contentTypeHeaderValue)
+    {
+        builder.Content = new StringContent(content);
+        builder.Content.Headers.ContentType = contentTypeHeaderValue;
+        return builder;
+    }
+
+    /// <summary>
     /// Adds a cookie to the cookie container for this request.
     /// </summary>
     /// <param name="builder"></param>
