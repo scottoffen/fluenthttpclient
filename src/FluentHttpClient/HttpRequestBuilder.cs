@@ -41,9 +41,9 @@ public class HttpRequestBuilder
     /// Gets the collection of request query parameters.
     /// </summary>
     /// <remarks>
-    /// By default, query parameters without a value will not be included in the query string.
+    /// Use extension methods WithQueryParam() and WithQueryParams() to add values to the collection.
     /// </remarks>
-    public NameValueCollection QueryParams { get; } = [];
+    public List<string> QueryParams { get; } = [];
 
     /// <summary>
     /// Gets or sets the route used for the HTTP request.

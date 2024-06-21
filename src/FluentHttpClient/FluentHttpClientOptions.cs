@@ -21,6 +21,7 @@ public static class FluentHttpClientOptions
     /// <summary>
     /// Get or set a boolean value that indicate whether query parameters that are null or empty should be removed when converted to a string.
     /// </summary>
-    /// <remarks>Defaults to false</remarks>
+    /// <remarks>This property is no longer used. Use the extension method WithQueryParamIfNotNull() instead.</remarks>
+    [Obsolete("This property is no longer used. Use the extension method WithQueryParamIfNotNull() instead.")]
     public static bool RemoveEmptyQueryParameters { get; set; } = false;
 }

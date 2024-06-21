@@ -300,7 +300,8 @@ public static class HttpRequestBuilderExtensions
     /// <returns></returns>
     public static HttpRequestBuilder WithQueryParam(this HttpRequestBuilder builder, string key, string? value)
     {
-        builder.QueryParams.Add(key, (value != null) ? value : string.Empty);
+        value ??= string.Empty;
+        builder.QueryParams.Add($"{Uri.EscapeDataString(key)}={Uri.EscapeDataString(value)}");
         return builder;
     }
 
@@ -354,7 +355,12 @@ public static class HttpRequestBuilderExtensions
     /// <returns></returns>
     public static HttpRequestBuilder WithQueryParams(this HttpRequestBuilder builder, NameValueCollection values)
     {
-        builder.QueryParams.Add(values);
+        foreach(var key in values.AllKeys)
+        {
+            if (key == null) continue;
+            builder.WithQueryParam(key, values[key]);
+        }
+
         return builder;
     }
 
@@ -368,7 +374,7 @@ public static class HttpRequestBuilderExtensions
     public static HttpRequestBuilder WithQueryParamIfNotNull(this HttpRequestBuilder builder, string key, string? value)
     {
         if (value != null)
-            builder.QueryParams.Add(key, value);
+            builder.WithQueryParam(key, value);
         return builder;
     }
 
