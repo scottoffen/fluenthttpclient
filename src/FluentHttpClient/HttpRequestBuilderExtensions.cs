@@ -25,6 +25,21 @@ public static class HttpRequestBuilderExtensions
     }
 
     /// <summary>
+    /// Disables chunked transfer encoding.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <remarks>
+    ///     Chunked transfer encoding is enabled by default; in the overwhelming majority of cases, this is both safe and desireable.
+    ///     This disabled chunked transfer encoding by serializing the content, which will auto-populate the Content-Length header.
+    ///     See <a href="https://github.com/dotnet/runtime/issues/30283">this issue</a> for a more detailed treatment.
+    /// </remarks>
+    public static HttpRequestBuilder DisableChunkedTransferEncoding(this HttpRequestBuilder builder)
+    {
+        builder.TransferEncodingChunked = false;
+        return builder;
+    }
+
+    /// <summary>
     /// Sets the HTTP message version.
     /// </summary>
     /// <param name="builder"></param>
