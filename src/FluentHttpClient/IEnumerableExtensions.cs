@@ -15,6 +15,8 @@ internal static class ListExtensions
     /// <returns></returns>
     public static string ToQueryString(this List<string> collection)
     {
-        return $"?{string.Join("&", collection)}";
+        return (collection.Count == 0)
+            ? string.Empty
+            : $"?{string.Join("&", collection)}";
     }
 }
