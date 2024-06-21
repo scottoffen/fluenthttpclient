@@ -25,6 +25,21 @@ public static class HttpRequestBuilderExtensions
     }
 
     /// <summary>
+    /// Disables chunked transfer encoding.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <remarks>
+    ///     Chunked transfer encoding is enabled by default; in the overwhelming majority of cases, this is both safe and desireable.
+    ///     This disabled chunked transfer encoding by serializing the content, which will auto-populate the Content-Length header.
+    ///     See <a href="https://github.com/dotnet/runtime/issues/30283">this issue</a> for a more detailed treatment.
+    /// </remarks>
+    public static HttpRequestBuilder DisableChunkedTransferEncoding(this HttpRequestBuilder builder)
+    {
+        builder.TransferEncodingChunked = false;
+        return builder;
+    }
+
+    /// <summary>
     /// Sets the HTTP message version.
     /// </summary>
     /// <param name="builder"></param>
@@ -285,7 +300,8 @@ public static class HttpRequestBuilderExtensions
     /// <returns></returns>
     public static HttpRequestBuilder WithQueryParam(this HttpRequestBuilder builder, string key, string? value)
     {
-        builder.QueryParams.Add(key, (value != null) ? value : string.Empty);
+        value ??= string.Empty;
+        builder.QueryParams.Add($"{Uri.EscapeDataString(key)}={Uri.EscapeDataString(value)}");
         return builder;
     }
 
@@ -339,7 +355,12 @@ public static class HttpRequestBuilderExtensions
     /// <returns></returns>
     public static HttpRequestBuilder WithQueryParams(this HttpRequestBuilder builder, NameValueCollection values)
     {
-        builder.QueryParams.Add(values);
+        foreach(var key in values.AllKeys)
+        {
+            if (key == null) continue;
+            builder.WithQueryParam(key, values[key]);
+        }
+
         return builder;
     }
 
@@ -353,7 +374,7 @@ public static class HttpRequestBuilderExtensions
     public static HttpRequestBuilder WithQueryParamIfNotNull(this HttpRequestBuilder builder, string key, string? value)
     {
         if (value != null)
-            builder.QueryParams.Add(key, value);
+            builder.WithQueryParam(key, value);
         return builder;
     }
 
