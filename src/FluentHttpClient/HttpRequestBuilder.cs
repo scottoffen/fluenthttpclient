@@ -32,10 +32,10 @@ public class HttpRequestBuilder
     public Action<HttpRequestOptions>? ConfigureOptionsAction { get; set; }
 
     /// <summary>
-    /// Gets or sets a boolean value to indicate whether transfer encoding should be chunked.
+    /// Gets or sets a boolean value to indicate whether content should be buffered (serialized) prior to sending the request.
     /// </summary>
-    /// <remarks>Only for use in rare edge cases; see <a href="https://github.com/dotnet/runtime/issues/30283">this issue</a>.</remarks>
-    public bool TransferEncodingChunked { get; set; } = true;
+    /// <remarks>For use in rare edge cases; see <a href="https://github.com/dotnet/runtime/issues/30283">this issue</a>.</remarks>
+    public bool BufferContentBeforeSending { get; set; }
 
     /// <summary>
     /// Gets the collection of request query parameters.
@@ -141,7 +141,7 @@ public class HttpRequestBuilder
     /// <exception cref="TaskCanceledException">The request failed due to timeout.</exception>
     public async Task<HttpResponseMessage> SendAsync(HttpMethod method, HttpCompletionOption completionOption, CancellationToken token)
     {
-        if (!TransferEncodingChunked && Content != null)
+        if (BufferContentBeforeSending && Content != null)
             await Content.LoadIntoBufferAsync();
 
         var request = new HttpRequestMessage(method, GenerateRequestUri())
