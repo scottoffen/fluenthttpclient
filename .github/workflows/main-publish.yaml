@@ -1,0 +1,78 @@
+name: Publish Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      nugetPush:
+        description: 'Push the package to Nuget'
+        required: false
+        default: false
+        type: boolean
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: Build and Test
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+    - name: Checkout (Deep Clone)
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore ./src
+
+    - name: Build
+      run: dotnet build ./src --no-restore
+
+    - name: Test
+      run: dotnet test ./src --no-build --verbosity normal --filter "Category!=Integration"
+  
+  publish:
+    name: Publish to GitHub Packages
+    needs: build
+
+    permissions:
+      contents: write
+      packages: write
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout (Deep Clone)
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Build
+      run: dotnet build ./src/MyPackage --configuration Release --output .
+
+    - name: Publish to GitHub Packages
+      if: ${{ github.event.inputs.nugetPush == false }}
+      run: |
+        dotnet nuget push *.nupkg --source https://nuget.pkg.github.com/scottoffen/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
+        dotnet nuget push *.snupkg --source https://nuget.pkg.github.com/scottoffen/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Publish to Nuget
+      if: ${{ github.event.inputs.nugetPush == true }}
+      run: |
+        dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
+        dotnet nuget push *.snupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
