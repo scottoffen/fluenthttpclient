@@ -1,50 +1,35 @@
-# GitHub Workflow to build and test the code on a pull request
-name: PR Build and Test
+# This workflow will automatically build and test the project when code is merged
+# into the main branch, then publish a release of the library to GitHub Packages.
+# It can also be manually triggered to optionally publish to Nuget.org.
+name: Publish Release
 
 # The workflow_dispatch event allows you to run the workflow manually
-# The pull_request event triggers the workflow on pull requests to the main branch
+# The push event triggers the workflow on pushes to the main branch
 on:
   workflow_dispatch:
-  pull_request:
+    inputs:
+      pushNuget:
+        description: 'Push to Nuget'
+        required: false
+        default: false
+        type: boolean
+      pushGitHub:
+        description: 'Push to GitHub'
+        required: false
+        default: true
+        type: boolean
+  push:
     branches:
     - main
+    paths:
+      - 'src/**'
+      - '!src/**/*.md'
 
 jobs:
-
-  # This job will determine if actual code changes have been made
-  check:
-    name: Check for Source Code Changes
-    runs-on: ubuntu-latest
-
-    outputs:
-      has_changes: ${{ steps.changed_files.outputs.any_changed }}
-
-    # The steps below will only run once
-    steps:
-
-      # Checks out the code from the repository using a deep clone
-      # The deep clone is necessary to access the full history of the repository
-      # so that the NerdBank.GitVersioning tool can determine the version number
-      - name: Checkout code (Deep Clone)
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      # Checks for changes in the ./src/FluentHttpClient directory that are not markdown files
-      # this step outputs a boolean value named any_changed that can be used in
-      # conditional steps.
-      - name: Check for source code changes
-        id: changed_files
-        uses: tj-actions/changed-files@v45
-        with:
-          files: 'src/FluentHttpClient/**'
-          files_ignore: '**/*.md'
-
   # This job will build and run the tests for the project
   build:
     name: Build and Test
     runs-on: ubuntu-latest
-    needs: check
 
     # The matrix strategy allows you to run the same steps on multiple operating systems
     # The library should be compatible with all the operating systems in the matrix
@@ -57,7 +42,6 @@ jobs:
 
     # Installs the most recent versions of the .NET SDKs
     - name: Setup .NET SDK
-      if: ${{ needs.check.outputs.has_changes == 'true' }}
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
@@ -69,43 +53,41 @@ jobs:
     # Checks out the code from the repository using a deep clone
     # The deep clone is necessary to access the full history of the repository
     # so that the NerdBank.GitVersioning tool can determine the version number
-    - name: Checkout code (Deep Clone)
-      if: ${{ needs.check.outputs.has_changes == 'true' }}
+    - name: Checkout Code (Deep Clone)
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
     # Restores the dependencies for the project
-    - name: Restore dependencies
-      if: ${{ needs.check.outputs.has_changes == 'true' }}
-      run: dotnet restore ./src/FluentHttpClient.Tests
+    - name: Restore Dependencies
+      run: dotnet restore ./src/FluentHttpClient
 
     # Builds the project without restoring the dependencies
-    - name: Build
-      if: ${{ needs.check.outputs.has_changes == 'true' }}
-      run: dotnet build ./src/FluentHttpClient.Tests --no-restore
-
+    - name: Build Project
+      run: dotnet build ./src/FluentHttpClient --no-restore
+  
     # Runs all the tests in the project except the integration tests
     # without rebuilding the project
-    - name: Test
-      if: ${{ needs.check.outputs.has_changes == 'true' }}  
-      run: dotnet test ./src/FluentHttpClient.Tests --no-build --verbosity normal --filter "Category!=Integration"
+    - name: Execute Test
+      run: dotnet test ./src/FluentHttpClient --no-build --verbosity normal --filter "Category!=Integration"
 
   # This job will publish the package to GitHub Packages
   # While this job is dependent on the build job, do not combine the jobs as
   # the build job will run multiple times
   publish:
-    name: Publish PreRelease Package
+    name: Publish Package
     runs-on: ubuntu-latest
-    needs: 
-      - build
-      - check
-    if: ${{ needs.check.outputs.has_changes == 'true' }}
+    needs: build
 
     # These permissions are required to publish the package to GitHub Packages
     permissions:
       contents: write
       packages: write
+
+    # Get default values for the workflow_dispatch event inputs
+    env:
+      PUSH_GITHUB: ${{ github.event.inputs.pushGitHub || 'true' }}
+      PUSH_NUGET: ${{ github.event.inputs.pushNuget || 'false' }}
 
     # The steps below will only run once
     steps:
@@ -123,21 +105,56 @@ jobs:
     # Checks out the code from the repository using a deep clone
     # The deep clone is necessary to access the full history of the repository
     # so that the NerdBank.GitVersioning tool can determine the version number
-    - name: Checkout code (Deep Clone)
+    - name: Checkout Code (Deep Clone)
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
     # Restores the dependencies for the project
-    - name: Restore dependencies
+    - name: Restore Dependencies
       run: dotnet restore ./src/FluentHttpClient
 
     # Builds the project using the Release configuration without restoring dependencies
-    - name: Build
+    - name: Build Release
       run: dotnet build ./src/FluentHttpClient --no-restore --configuration Release -p:PackageOutputPath=$PWD/publish
 
+    # Output the github.event.inputs values
+    - name: Display Inputs
+      run: |
+        echo "pushGitHub: $PUSH_GITHUB"
+        echo "pushNuget: $PUSH_NUGET"
+
     # Publishes the package to GitHub Packages
+    # This step is run by default, but should be disabled when the workflow is triggered manually
     - name: Publish to GitHub Packages
+      if: env.PUSH_GITHUB == 'true'
       run: |
         dotnet nuget push ./publish/*.nupkg --source https://nuget.pkg.github.com/scottoffen/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
         dotnet nuget push ./publish/*.snupkg --source https://nuget.pkg.github.com/scottoffen/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
+
+    # Publishes the package to Nuget.org
+    # This step is optional and can ONLY be triggered manually
+    # The NUGET_API_KEY secret must be set in the repository settings
+    - name: Publish to Nuget.org
+      if: env.PUSH_NUGET == 'true'
+      run: |
+        dotnet nuget push ./publish/*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
+
+    # Outputs the version number for the release
+    # This step is run only if the PUSH_GITHUB input is true
+    # See https://www.jameskerr.blog/posts/how-to-set-output-in-github-actions/
+    - name: Get Version Info
+      if: env.PUSH_GITHUB == 'true'
+      id: get_version
+      run: |
+        cd src/FluentHttpClient
+        echo "version='$(nbgv get-version -v NugetPackageVersion)'" >> "$GITHUB_OUTPUT"
+        cd ../..
+
+    # Create a release tag based on the version number
+    # This step is run only if the PUSH_GITHUB input is true
+    - name: Create Release
+      if: env.PUSH_GITHUB == 'true'
+      run: gh release create ${{ steps.get_version.outputs.version }} --title ${{ steps.get_version.outputs.version }} --notes "Release ${{ steps.get_version.outputs.version }}" --target main
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
