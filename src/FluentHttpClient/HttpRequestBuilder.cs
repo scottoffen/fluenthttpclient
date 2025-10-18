@@ -1,4 +1,3 @@
-using System.Collections.Specialized;
 using System.Net;
 using System.Net.Http.Headers;
 
@@ -57,7 +56,7 @@ public class HttpRequestBuilder
     /// Gets or sets the HTTP message version.
     /// </summary>
     /// <remarks>Defaults to 1.1</remarks>
-    public Version Version { get; set; } = new Version("2.0");
+    public Version Version { get; set; } = new Version("1.1");
 
     /// <summary>
     /// Gets or sets the policy that determines how <see cref="Version"/> is interpreted and how the final HTTP version is negotiated with the server.
