@@ -71,12 +71,12 @@ See:
 - `WithCookie(Cookie cookie)`
 - `WithCookie(CookieCollection cookieCollection)`
 
-### ConfigureHeaderActions
+### ConfigureHeaders
 
 A collection of actions that can modify request headers before sending.
 
 ```csharp
-builder.ConfigureHeaderActions.Add(headers => headers.Add("X-Custom-Header", "value"));
+builder.ConfigureHeaders.Add(headers => headers.Add("X-Custom-Header", "value"));
 ```
 
 See:
@@ -216,7 +216,7 @@ This design provides several key advantages:
    Because actions are stored rather than concrete headers, there's no need to maintain a mutable intermediate header dictionary or merge duplicates.
    Headers are added directly to the outgoing request at send time, ensuring correct behavior even if the same builder is reused with different configurations.
 
-While this adds complexity when working directly with the `ConfigureHeaderActions` property, it is recommended instead to use the extension methods provided, which abstracts away this complexity.
+While this adds complexity when working directly with the `ConfigureHeaders` property, it is recommended instead to use the extension methods provided, which abstracts away this complexity.
 
 ---
 
