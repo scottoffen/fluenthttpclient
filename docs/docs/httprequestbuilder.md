@@ -16,11 +16,11 @@ Wherever possible, prefer configuring properties and calling methods through the
 You can create a new `HttpRequestBuilder` by passing an `HttpClient` instance. An optional route can also be provided to target a specific endpoint.
 
 ```csharp
-var builder = new HttpRequestBuilder(client);
-var builder = new HttpRequestBuilder(client, "/users/12345");
+var request = new HttpRequestBuilder(client);
+var request = new HttpRequestBuilder(client, "/users/12345");
 ```
 
-While you *can* create the builder directly, it is recommended to use the extension methods on `HttpClient`.
+While you *can* create the request builder directly, it is recommended to use the extension methods on `HttpClient`.
 
 ```csharp
 var request = client.UsingRoute("/users/12345");
