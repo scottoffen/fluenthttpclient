@@ -1,4 +1,4 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // In SDK-style projects such as this one, several assembly attributes that were historically
@@ -11,6 +11,11 @@ using System.Runtime.InteropServices;
 // attribute to true on that type.
 [assembly: ComVisible(false)]
 
+// Identify the assembly CLS-compliance level
 [assembly: CLSCompliant(true)]
 
+// InternalsVisibleTo attribute is used to specify that the internal types of this assembly
+// are visible to another assembly. This is often used for unit testing purposes.
+// The specified assembly name must match the name of the assembly that will access the internal types.
+// See https://learn.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.internalsvisibletoattribute
 [assembly: InternalsVisibleTo("FluentHttpClient.Tests")]
