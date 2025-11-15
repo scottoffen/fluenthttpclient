@@ -11,11 +11,12 @@ public class HttpRequestBuilder
 {
     internal static readonly string MessageInvalidBaseAddress = "HttpClient.BaseAddress must not contain a query string or fragment.";
     internal static readonly string MessageInvalidRoute = "Route must not contain a query string or fragment. Use QueryParameters to specify query values.";
-    internal static readonly string MessageMissingRoute = "Invalid route: client has no base address and no route information was provided.";
+    internal static readonly string MessageEmptyRoute = "Missing or invalid route provided to constructor.";
+    internal static readonly string MessageMissingRoute = "Client has no base address and no route information was provided.";
     internal static readonly string CookieHeaderName = "Cookie";
 
     private readonly HttpClient _client;
-    private string? _route;
+    private readonly Uri? _route;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpRequestBuilder"/> class
@@ -47,9 +48,42 @@ public class HttpRequestBuilder
     /// </summary>
     /// <param name="client"></param>
     /// <param name="route"></param>
-    public HttpRequestBuilder(HttpClient client, string route) : this(client)
+    public HttpRequestBuilder(HttpClient client, string route)
+        : this(client, CreateRouteUri(route))
     {
-        Route = route;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HttpRequestBuilder"/> class
+    /// with the specified <see cref="HttpClient"/> and route.
+    /// </summary>
+    /// <param name="client"></param>
+    /// <param name="route"></param>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="route"/> contains a query string or fragment.
+    /// </exception>
+    public HttpRequestBuilder(HttpClient client, Uri route) : this(client)
+    {
+        ArgumentNullException.ThrowIfNull(route);
+
+        if (route.IsAbsoluteUri)
+        {
+            if (!string.IsNullOrEmpty(route.Query) || !string.IsNullOrEmpty(route.Fragment))
+            {
+                throw new ArgumentException(MessageInvalidRoute, nameof(route));
+            }
+        }
+        else
+        {
+            var text = route.OriginalString;
+            if (text.IndexOfAny(['?', '#']) >= 0)
+            {
+                throw new ArgumentException(MessageInvalidRoute, nameof(route));
+            }
+        }
+
+        _route = route;
     }
 
     /// <summary>
@@ -99,31 +133,9 @@ public class HttpRequestBuilder
     public HttpQueryParameterCollection QueryParameters { get; } = new();
 
     /// <summary>
-    /// Gets or sets the route used for the HTTP request.
+    /// Gets the route used for the HTTP request.
     /// </summary>
-    /// <remarks>
-    /// This value is combined with <see cref="HttpClient.BaseAddress"/> to build the request URI.
-    /// The route must not contain a query string or fragment. Use <see cref="QueryParameters"/> for query values.
-    /// </remarks>
-    /// <exception cref="ArgumentException">
-    /// Thrown when the value contains a query string or fragment component.
-    /// </exception>
-    public string? Route
-    {
-        get => _route;
-        set
-        {
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                if (value.Contains('?') || value.Contains('#'))
-                {
-                    throw new ArgumentException(MessageInvalidRoute, nameof(Route));
-                }
-            }
-
-            _route = value;
-        }
-    }
+    public string? Route => _route?.OriginalString;
 
     /// <summary>
     /// Gets or sets the HTTP message version.
@@ -267,37 +279,32 @@ public class HttpRequestBuilder
     /// </exception>
     internal Uri BuildRequestUri()
     {
-        if (_client.BaseAddress is null && string.IsNullOrWhiteSpace(Route))
+        if (_client.BaseAddress is null && _route is null)
         {
             throw new ArgumentException(MessageMissingRoute, nameof(Route));
         }
 
-        var baseAddress = _client.BaseAddress?.ToString().TrimEnd('/') ?? string.Empty;
-        var route = Route?.Trim().Trim('/') ?? string.Empty;
+        var queryString = QueryParameters.ToQueryString();
 
-        var queryString = QueryParameters.ToQueryString(); // "" or "?..."
-
-        if (_client.BaseAddress is null)
+        if (_route is null)
         {
-            // Route may be relative or absolute
-            return new Uri($"{route}{queryString}", UriKind.RelativeOrAbsolute);
+            return new Uri(queryString, UriKind.Relative);
         }
 
-        if (string.IsNullOrWhiteSpace(route))
+        if (_route.IsAbsoluteUri)
         {
-            return new Uri($"{baseAddress}{queryString}", UriKind.Absolute);
+            var path = _route.GetLeftPart(UriPartial.Path);
+            return new Uri($"{path}{queryString}", UriKind.Absolute);
         }
 
-        return new Uri($"{baseAddress}/{route}{queryString}", UriKind.Absolute);
+        var routeText = _route.OriginalString.Trim();
+        return new Uri($"{routeText}{queryString}", UriKind.RelativeOrAbsolute);
     }
 
     /// <summary>
     /// Applies headers, cookies, and options from the builder to the request.
     /// </summary>
     /// <param name="request"></param>
-    /// <exception cref="ArgumentException">
-    /// Thrown when <see cref="HttpRequestMessage.RequestUri"/> is null.
-    /// </exception>
     private void ApplyConfiguration(HttpRequestMessage request)
     {
         if (Content is MultipartContent)
@@ -325,6 +332,34 @@ public class HttpRequestBuilder
         for (var i = 0; i < OptionConfigurators.Count; i++)
         {
             OptionConfigurators[i](request.Options);
+        }
+    }
+
+    /// <summary>
+    /// Creates a <see cref="Uri"/> instance from the specified route string,
+    /// trimming whitespace and validating that the value is not null or empty.
+    /// </summary>
+    /// <remarks>
+    /// This method should only be used by the <see cref="HttpRequestBuilder"/> constructors.
+    /// </remarks>
+    internal static Uri CreateRouteUri(string route)
+    {
+        ArgumentNullException.ThrowIfNull(route);
+
+        var trimmed = route.Trim();
+
+        if (trimmed.Length == 0)
+        {
+            throw new ArgumentException(MessageEmptyRoute, nameof(route));
+        }
+
+        try
+        {
+            return new Uri(trimmed, UriKind.RelativeOrAbsolute);
+        }
+        catch (UriFormatException ex)
+        {
+            throw new ArgumentException(MessageEmptyRoute, nameof(route), ex);
         }
     }
 }

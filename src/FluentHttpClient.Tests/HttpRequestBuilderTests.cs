@@ -1,279 +1,557 @@
 using System.Net;
-using System.Net.Http.Headers;
 
 namespace FluentHttpClient.Tests;
 
 public class HttpRequestBuilderTests
 {
-    [Fact]
-    public void Constructor_ThrowsArgumentNullException_WhenClientIsNull()
-    {
-        Should.Throw<ArgumentNullException>(() => new HttpRequestBuilder(null!));
-    }
-
-    [Fact]
-    public void Constructor_ThrowsArgumentException_WhenBaseAddressHasQuery()
-    {
-        var client = new HttpClient { BaseAddress = new Uri("https://api.example.com/v1?x=1") };
-
-        var ex = Should.Throw<ArgumentException>(() => new HttpRequestBuilder(client));
-        ex.ParamName.ShouldBe("client");
-        ex.Message.ShouldContain("BaseAddress must not contain a query string or fragment", Case.Insensitive);
-    }
-
-    [Fact]
-    public void Constructor_ThrowsArgumentException_WhenBaseAddressHasFragment()
-    {
-        var client = new HttpClient { BaseAddress = new Uri("https://api.example.com/v1#fragment") };
-
-        var ex = Should.Throw<ArgumentException>(() => new HttpRequestBuilder(client));
-        ex.ParamName.ShouldBe("client");
-        ex.Message.ShouldContain("BaseAddress must not contain a query string or fragment", Case.Insensitive);
-    }
-
-    [Theory]
-    [InlineData("route?x=1")]
-    [InlineData("route#frag")]
-    public void Route_ThrowsArgumentException_WhenValueContainsQueryOrFragment(string route)
+    private static HttpClient CreateClient(string? baseAddress = null)
     {
         var client = new HttpClient();
-        var builder = new HttpRequestBuilder(client);
-
-        var ex = Should.Throw<ArgumentException>(() => builder.Route = route);
-        ex.ParamName.ShouldBe("Route");
-        ex.Message.ShouldContain("Route must not contain a query string or fragment", Case.Insensitive);
-    }
-
-    [Fact]
-    public void BuildRequestUri_ThrowsArgumentException_WhenBaseAddressAndRouteMissing()
-    {
-        var client = new HttpClient();
-        var builder = new HttpRequestBuilder(client);
-
-        var ex = Should.Throw<ArgumentException>(() => builder.BuildRequestUri());
-        ex.ParamName.ShouldBe("Route");
-        ex.Message.ShouldContain("Invalid route", Case.Insensitive);
-    }
-
-    [Fact]
-    public void BuildRequestUri_ReturnsBaseAddress_WhenRouteMissingAndNoQueryParameters()
-    {
-        var client = new HttpClient { BaseAddress = new Uri("https://api.example.com/v1/") };
-        var builder = new HttpRequestBuilder(client);
-
-        var uri = builder.BuildRequestUri();
-
-        uri.ShouldNotBeNull();
-        uri.ToString().ShouldBe("https://api.example.com/v1");
-    }
-
-    [Fact]
-    public void BuildRequestUri_AppendsRouteToBaseAddress_WhenBothProvided()
-    {
-        var client = new HttpClient { BaseAddress = new Uri("https://api.example.com/v1/") };
-        var builder = new HttpRequestBuilder(client, "users/");
-
-        var uri = builder.BuildRequestUri();
-
-        uri.ShouldNotBeNull();
-        uri.ToString().ShouldBe("https://api.example.com/v1/users");
-    }
-
-    [Fact]
-    public void BuildRequestUri_UsesRouteOnly_WhenBaseAddressMissing()
-    {
-        var client = new HttpClient();
-        var builder = new HttpRequestBuilder(client)
+        if (baseAddress is not null)
         {
-            Route = "api/users"
-        };
-
-        var uri = builder.BuildRequestUri();
-
-        uri.ShouldNotBeNull();
-        uri.ToString().ShouldBe("api/users");
-        uri.IsAbsoluteUri.ShouldBeFalse();
-    }
-
-    [Fact]
-    public void BuildRequestUri_AppendsQueryString_WhenParametersPresent()
-    {
-        var client = new HttpClient { BaseAddress = new Uri("https://api.example.com/") };
-        var builder = new HttpRequestBuilder(client, "search");
-
-        builder.QueryParameters.Add("q", "test");
-        builder.QueryParameters.Add("page", "1");
-
-        var uri = builder.BuildRequestUri();
-
-        uri.ShouldNotBeNull();
-        uri.ToString().ShouldBe("https://api.example.com/search?q=test&page=1");
-    }
-
-    [Fact]
-    public async Task BuildRequest_SetsContentVersionAndPolicy_WhenCalled()
-    {
-        var client = new HttpClient { BaseAddress = new Uri("https://api.example.com/") };
-        var builder = new HttpRequestBuilder(client, "items")
-        {
-            Content = new StringContent("payload"),
-            Version = HttpVersion.Version20,
-            VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher
-        };
-
-        var request = await builder.BuildRequest(HttpMethod.Post, CancellationToken.None);
-
-        request.Method.ShouldBe(HttpMethod.Post);
-        request.RequestUri!.ToString().ShouldBe("https://api.example.com/items");
-        request.Content.ShouldBe(builder.Content);
-        request.Version.ShouldBe(HttpVersion.Version20);
-        request.VersionPolicy.ShouldBe(HttpVersionPolicy.RequestVersionOrHigher);
-    }
-
-    [Fact]
-    public async Task BuildRequest_AppliesHeaderConfigurators_WhenPresent()
-    {
-        var client = new HttpClient { BaseAddress = new Uri("https://api.example.com/") };
-        var builder = new HttpRequestBuilder(client, "items");
-
-        builder.HeaderConfigurators.Add(headers =>
-        {
-            headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            headers.Add("X-Test", "value");
-        });
-
-        var request = await builder.BuildRequest(HttpMethod.Get, CancellationToken.None);
-
-        request.Headers.Accept.Single().MediaType.ShouldBe("application/json");
-        request.Headers.GetValues("X-Test").Single().ShouldBe("value");
-    }
-
-    [Fact]
-    public async Task BuildRequest_AppliesCookiesToCookieHeader_WhenCookiesPresent()
-    {
-        var client = new HttpClient { BaseAddress = new Uri("https://api.example.com/") };
-        var builder = new HttpRequestBuilder(client, "items");
-
-        builder.Cookies["session"] = "abc123";
-        builder.Cookies["mode"] = "test";
-
-        var request = await builder.BuildRequest(HttpMethod.Get, CancellationToken.None);
-
-        request.Headers.TryGetValues("Cookie", out var cookieHeaders).ShouldBeTrue();
-        var cookieHeader = cookieHeaders.Single();
-
-        cookieHeader.ShouldContain("session=abc123");
-        cookieHeader.ShouldContain("mode=test");
-        cookieHeader.ShouldBe("session=abc123; mode=test");
-    }
-
-    [Fact]
-    public async Task BuildRequest_AppliesOptionConfigurators_WhenPresent()
-    {
-        var client = new HttpClient { BaseAddress = new Uri("https://api.example.com/") };
-        var builder = new HttpRequestBuilder(client, "items");
-
-        var key = new HttpRequestOptionsKey<string>("test-option");
-
-        builder.OptionConfigurators.Add(options =>
-        {
-            options.Set(key, "value");
-        });
-
-        var request = await builder.BuildRequest(HttpMethod.Get, CancellationToken.None);
-
-        request.Options.TryGetValue(key, out string? value).ShouldBeTrue();
-        value.ShouldBe("value");
-    }
-
-    [Fact]
-    public async Task BuildRequest_DisablesExpectContinue_WhenContentIsMultipart()
-    {
-        var client = new HttpClient { BaseAddress = new Uri("https://api.example.com/") };
-        var builder = new HttpRequestBuilder(client, "upload")
-        {
-            Content = new MultipartFormDataContent()
-        };
-
-        var request = await builder.BuildRequest(HttpMethod.Post, CancellationToken.None);
-
-        request.Headers.ExpectContinue!.Value.ShouldBeFalse();
-    }
-
-    [Fact]
-    public async Task BuildRequest_DoesNotModifyExpectContinue_WhenContentIsNotMultipart()
-    {
-        var client = new HttpClient { BaseAddress = new Uri("https://api.example.com/") };
-        var builder = new HttpRequestBuilder(client, "items")
-        {
-            Content = new StringContent("payload")
-        };
-
-        var request = await builder.BuildRequest(HttpMethod.Post, CancellationToken.None);
-
-        request.Headers.ExpectContinue.ShouldBeNull();
-    }
-
-    [Fact]
-    public async Task BuildRequest_BuffersContent_WhenBufferContentBeforeSendingIsTrue()
-    {
-        var client = new HttpClient { BaseAddress = new Uri("https://api.example.com/") };
-        var builder = new HttpRequestBuilder(client, "items")
-        {
-            Content = new TrackingContent(),
-            BufferContentBeforeSending = true
-        };
-
-        var trackingContent = (TrackingContent)builder.Content;
-
-        var request = await builder.BuildRequest(HttpMethod.Post, CancellationToken.None);
-
-        request.ShouldNotBeNull();
-        trackingContent.SerializeCalled.ShouldBeTrue();
-    }
-
-    [Fact]
-    public async Task BuildRequest_DoesNotBufferContent_WhenBufferContentBeforeSendingIsFalse()
-    {
-        var client = new HttpClient { BaseAddress = new Uri("https://api.example.com/") };
-        var builder = new HttpRequestBuilder(client, "items")
-        {
-            Content = new TrackingContent(),
-            BufferContentBeforeSending = false
-        };
-
-        var trackingContent = (TrackingContent)builder.Content;
-
-        var request = await builder.BuildRequest(HttpMethod.Post, CancellationToken.None);
-
-        request.ShouldNotBeNull();
-        trackingContent.SerializeCalled.ShouldBeFalse();
-    }
-
-    [Fact]
-    public async Task BuildRequest_ThrowsArgumentNullException_WhenMethodIsNull()
-    {
-        var client = new HttpClient { BaseAddress = new Uri("https://api.example.com/") };
-        var builder = new HttpRequestBuilder(client, "items");
-
-        Should.Throw<ArgumentNullException>(() =>
-            builder.BuildRequest(null!, CancellationToken.None).GetAwaiter().GetResult());
-    }
-
-    private sealed class TrackingContent : HttpContent
-    {
-        public bool SerializeCalled { get; private set; }
-
-        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
-        {
-            SerializeCalled = true;
-            return Task.CompletedTask;
+            client.BaseAddress = new Uri(baseAddress);
         }
 
-        protected override bool TryComputeLength(out long length)
+        return client;
+    }
+
+    public class ConstructorTests
+    {
+        [Fact]
+        public void Ctor_ThrowsArgumentNullException_WhenClientIsNull()
         {
-            length = 0;
-            return true;
+            Should.Throw<ArgumentNullException>(() => new HttpRequestBuilder(null!));
+        }
+
+        [Theory]
+        [InlineData("https://api.example.com/v1/")]
+        [InlineData("https://api.example.com/")]
+        public void Ctor_AllowsClientWithBaseAddressWithoutQueryOrFragment(string baseAddress)
+        {
+            using var client = CreateClient(baseAddress);
+
+            var builder = new HttpRequestBuilder(client);
+
+            builder.Route.ShouldBeNull();
+        }
+
+        [Theory]
+        [InlineData("https://api.example.com/v1/?x=1")]
+        [InlineData("https://api.example.com/v1/#fragment")]
+        [InlineData("https://api.example.com/v1/?x=1#fragment")]
+        public void Ctor_ThrowsArgumentException_WhenBaseAddressHasQueryOrFragment(string baseAddress)
+        {
+            using var client = CreateClient(baseAddress);
+
+            Should.Throw<ArgumentException>(() => new HttpRequestBuilder(client));
+        }
+
+        [Fact]
+        public void CtorWithStringRoute_ThrowsArgumentNullException_WhenRouteIsNull()
+        {
+            using var client = CreateClient();
+
+            Should.Throw<ArgumentNullException>(() => new HttpRequestBuilder(client, (string)null!));
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void CtorWithStringRoute_ThrowsArgumentException_WhenRouteIsEmptyOrWhitespace(string route)
+        {
+            using var client = CreateClient();
+
+            Should.Throw<ArgumentException>(() => new HttpRequestBuilder(client, route));
+        }
+
+        [Theory]
+        [InlineData("foo")]
+        [InlineData("/foo/bar")]
+        [InlineData(" foo ")]
+        public void CtorWithStringRoute_SetsRoute_WhenValueIsValid(string route)
+        {
+            using var client = CreateClient();
+
+            var builder = new HttpRequestBuilder(client, route);
+
+            builder.Route.ShouldBe(route.Trim());
+        }
+
+        [Theory]
+        [InlineData("foo?x=1")]
+        [InlineData("/foo#frag")]
+        [InlineData("https://api.example.com/foo?x=1")]
+        public void CtorWithStringRoute_ThrowsArgumentException_WhenRouteHasQueryOrFragment(string route)
+        {
+            using var client = CreateClient();
+
+            Should.Throw<ArgumentException>(() => new HttpRequestBuilder(client, route));
+        }
+
+        [Fact]
+        public void CtorWithUriRoute_ThrowsArgumentNullException_WhenRouteIsNull()
+        {
+            using var client = CreateClient();
+
+            Should.Throw<ArgumentNullException>(() => new HttpRequestBuilder(client, (Uri)null!));
+        }
+
+        [Theory]
+        [InlineData("https://api.example.com/foo?x=1")]
+        [InlineData("https://api.example.com/foo#frag")]
+        public void CtorWithUriRoute_ThrowsArgumentException_WhenRouteHasQueryOrFragment(string uri)
+        {
+            using var client = CreateClient();
+            var route = new Uri(uri);
+
+            Should.Throw<ArgumentException>(() => new HttpRequestBuilder(client, route));
+        }
+
+        [Theory]
+        [InlineData("https://api.example.com/foo")]
+        [InlineData("/foo")]
+        [InlineData("foo/bar")]
+        public void CtorWithUriRoute_SetsRoute_WhenRouteIsValid(string uriText)
+        {
+            using var client = CreateClient();
+            var route = new Uri(uriText, UriKind.RelativeOrAbsolute);
+
+            var builder = new HttpRequestBuilder(client, route);
+
+            builder.Route.ShouldBe(route.OriginalString);
+        }
+    }
+
+    public class RouteAndPropertiesTests
+    {
+        [Fact]
+        public void Route_IsNull_WhenConstructedWithClientOnly()
+        {
+            using var client = CreateClient();
+
+            var builder = new HttpRequestBuilder(client);
+
+            builder.Route.ShouldBeNull();
+        }
+
+        [Fact]
+        public void VersionAndVersionPolicy_HaveExpectedDefaults()
+        {
+            using var client = CreateClient();
+
+            var builder = new HttpRequestBuilder(client);
+
+            builder.Version.ShouldBe(HttpVersion.Version11);
+            builder.VersionPolicy.ShouldBe(HttpVersionPolicy.RequestVersionOrLower);
+        }
+
+        [Fact]
+        public void Cookies_HeaderConfigurators_And_OptionConfigurators_AreInitialized()
+        {
+            using var client = CreateClient();
+
+            var builder = new HttpRequestBuilder(client);
+
+            builder.Cookies.ShouldNotBeNull();
+            builder.HeaderConfigurators.ShouldNotBeNull();
+            builder.OptionConfigurators.ShouldNotBeNull();
+        }
+    }
+
+    public class BuildRequestUriTests
+    {
+        [Fact]
+        public void BuildRequestUri_ThrowsArgumentException_WhenBaseAddressAndRouteAreMissing()
+        {
+            using var client = CreateClient();
+            var builder = new HttpRequestBuilder(client);
+
+            Should.Throw<ArgumentException>(() => builder.BuildRequestUri());
+        }
+
+        [Fact]
+        public void BuildRequestUri_ReturnsEmptyRelativeUri_WhenBaseAddressExistsAndNoRouteOrQuery()
+        {
+            using var client = CreateClient("https://api.example.com/v1/");
+            var builder = new HttpRequestBuilder(client);
+
+            var uri = builder.BuildRequestUri();
+
+            uri.IsAbsoluteUri.ShouldBeFalse();
+            uri.ToString().ShouldBe(string.Empty);
+        }
+
+        [Fact]
+        public void BuildRequestUri_ReturnsRelativeQueryOnly_WhenBaseAddressExistsAndNoRoute()
+        {
+            using var client = CreateClient("https://api.example.com/v1/");
+            var builder = new HttpRequestBuilder(client);
+            builder.QueryParameters.Add("foo", "bar");
+
+            var uri = builder.BuildRequestUri();
+
+            uri.IsAbsoluteUri.ShouldBeFalse();
+            uri.ToString().ShouldBe("?foo=bar");
+        }
+
+        [Fact]
+        public void BuildRequestUri_ReturnsAbsoluteUriWithQuery_WhenRouteIsAbsolute()
+        {
+            using var client = CreateClient("https://ignored.example.com/base/");
+            var route = new Uri("https://api.example.com/resource", UriKind.Absolute);
+            var builder = new HttpRequestBuilder(client, route);
+            builder.QueryParameters.Add("foo", "bar");
+
+            var uri = builder.BuildRequestUri();
+
+            uri.IsAbsoluteUri.ShouldBeTrue();
+            uri.ToString().ShouldBe("https://api.example.com/resource?foo=bar");
+        }
+
+        [Fact]
+        public void BuildRequestUri_ReturnsRelativeUri_WhenRouteIsRelativeAndNoBaseAddress()
+        {
+            using var client = CreateClient();
+            var builder = new HttpRequestBuilder(client, "foo/bar");
+
+            var uri = builder.BuildRequestUri();
+
+            uri.IsAbsoluteUri.ShouldBeFalse();
+            uri.ToString().ShouldBe("foo/bar");
+        }
+
+        [Fact]
+        public void BuildRequestUri_ReturnsRootRelativeUri_WhenRouteIsRootRelativeAndNoBaseAddress()
+        {
+            using var client = CreateClient();
+            var builder = new HttpRequestBuilder(client, "/foo/bar");
+
+            var uri = builder.BuildRequestUri();
+
+            uri.IsAbsoluteUri.ShouldBeFalse();
+            uri.ToString().ShouldBe("/foo/bar");
+        }
+
+        [Fact]
+        public void BuildRequestUri_PreservesRouteWhitespaceSemantics_ByTrimming()
+        {
+            using var client = CreateClient();
+            var builder = new HttpRequestBuilder(client, "  foo/bar  ");
+
+            var uri = builder.BuildRequestUri();
+
+            uri.IsAbsoluteUri.ShouldBeFalse();
+            uri.ToString().ShouldBe("foo/bar");
+        }
+    }
+
+    public class BuildRequestTests
+    {
+        private sealed class TrackingContent : HttpContent
+        {
+            public bool SerializeCalled { get; private set; }
+
+            protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
+            {
+                SerializeCalled = true;
+                return Task.CompletedTask;
+            }
+
+            protected override bool TryComputeLength(out long length)
+            {
+                length = 0;
+                return true;
+            }
+        }
+
+        [Fact]
+        public async Task BuildRequest_ThrowsArgumentNullException_WhenMethodIsNull()
+        {
+            using var client = CreateClient("https://api.example.com/");
+            var builder = new HttpRequestBuilder(client);
+
+            await Should.ThrowAsync<ArgumentNullException>(
+                () => builder.BuildRequest(null!, CancellationToken.None));
+        }
+
+        [Fact]
+        public async Task BuildRequest_SetsHttpRequestMessageProperties_FromBuilder()
+        {
+            using var client = CreateClient("https://api.example.com/");
+            var builder = new HttpRequestBuilder(client, "foo");
+            builder.Version = HttpVersion.Version20;
+            builder.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            var content = new StringContent("hello");
+            builder.Content = content;
+
+            var request = await builder.BuildRequest(HttpMethod.Post, CancellationToken.None);
+
+            request.Method.ShouldBe(HttpMethod.Post);
+            request.RequestUri.ShouldNotBeNull();
+            request.Version.ShouldBe(HttpVersion.Version20);
+            request.VersionPolicy.ShouldBe(HttpVersionPolicy.RequestVersionExact);
+            request.Content.ShouldBeSameAs(content);
+        }
+
+        [Fact]
+        public async Task BuildRequest_LoadsContentIntoBuffer_WhenBufferContentBeforeSendingIsTrue()
+        {
+            using var client = CreateClient("https://api.example.com/");
+            var builder = new HttpRequestBuilder(client, "foo");
+            builder.BufferContentBeforeSending = true;
+            var trackingContent = new TrackingContent();
+            builder.Content = trackingContent;
+
+            _ = await builder.BuildRequest(HttpMethod.Get, CancellationToken.None);
+
+            trackingContent.SerializeCalled.ShouldBeTrue();
+        }
+    }
+
+    public class ApplyConfigurationTests
+    {
+        [Fact]
+        public async Task BuildRequest_DisablesExpectContinue_WhenContentIsMultipart()
+        {
+            using var client = CreateClient("https://api.example.com/");
+            var builder = new HttpRequestBuilder(client, "foo");
+            builder.Content = new MultipartContent();
+
+            var request = await builder.BuildRequest(HttpMethod.Post, CancellationToken.None);
+
+            request.Headers.ExpectContinue!.Value.ShouldBeFalse();
+        }
+
+        [Fact]
+        public async Task BuildRequest_InvokesHeaderConfigurators()
+        {
+            using var client = CreateClient("https://api.example.com/");
+            var builder = new HttpRequestBuilder(client, "foo");
+
+            builder.HeaderConfigurators.Add(headers =>
+            {
+                headers.Add("X-Test-Header", "abc");
+            });
+
+            var request = await builder.BuildRequest(HttpMethod.Get, CancellationToken.None);
+
+            request.Headers.TryGetValues("X-Test-Header", out var values).ShouldBeTrue();
+            values.ShouldContain("abc");
+        }
+
+        [Fact]
+        public async Task BuildRequest_AddsCookieHeader_WhenCookiesArePresent()
+        {
+            using var client = CreateClient("https://api.example.com/");
+            var builder = new HttpRequestBuilder(client, "foo");
+
+            builder.Cookies["session"] = "123";
+            builder.Cookies["user"] = "scott";
+
+            var request = await builder.BuildRequest(HttpMethod.Get, CancellationToken.None);
+
+            request.Headers.TryGetValues("Cookie", out var values).ShouldBeTrue();
+            var cookieHeader = values.Single();
+            cookieHeader.ShouldContain("session=123");
+            cookieHeader.ShouldContain("user=scott");
+            cookieHeader.ShouldContain("; ");
+        }
+
+        [Fact]
+        public async Task BuildRequest_DoesNotAddCookieHeader_WhenNoCookies()
+        {
+            using var client = CreateClient("https://api.example.com/");
+            var builder = new HttpRequestBuilder(client, "foo");
+
+            var request = await builder.BuildRequest(HttpMethod.Get, CancellationToken.None);
+
+            request.Headers.Contains("Cookie").ShouldBeFalse();
+        }
+
+        [Fact]
+        public async Task BuildRequest_InvokesOptionConfigurators()
+        {
+            using var client = CreateClient("https://api.example.com/");
+            var builder = new HttpRequestBuilder(client, "foo");
+
+            var key = new HttpRequestOptionsKey<string>("test-key");
+            builder.OptionConfigurators.Add(options =>
+            {
+                options.Set(key, "value");
+            });
+
+            var request = await builder.BuildRequest(HttpMethod.Get, CancellationToken.None);
+
+            request.Options.TryGetValue(key, out var value).ShouldBeTrue();
+            value.ShouldBe("value");
+        }
+    }
+
+    public class CreateRouteUriTests
+    {
+        [Fact]
+        public void CreateRouteUri_ThrowsArgumentNullException_WhenRouteIsNull()
+        {
+            Should.Throw<ArgumentNullException>(() => HttpRequestBuilder.CreateRouteUri(null!));
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void CreateRouteUri_ThrowsArgumentException_WhenRouteIsEmptyOrWhitespace(string route)
+        {
+            Should.Throw<ArgumentException>(() => HttpRequestBuilder.CreateRouteUri(route));
+        }
+
+        [Theory]
+        [InlineData("foo")]
+        [InlineData("/foo/bar")]
+        public void CreateRouteUri_ReturnsRelativeUri_WhenRouteIsRelative(string route)
+        {
+            var uri = HttpRequestBuilder.CreateRouteUri(route);
+
+            uri.IsAbsoluteUri.ShouldBeFalse();
+            uri.OriginalString.ShouldBe(route.Trim());
+        }
+
+        [Theory]
+        [InlineData("https://api.example.com/foo")]
+        [InlineData("http://example.org/")]
+        public void CreateRouteUri_ReturnsAbsoluteUri_WhenRouteIsAbsolute(string route)
+        {
+            var uri = HttpRequestBuilder.CreateRouteUri(route);
+
+            uri.IsAbsoluteUri.ShouldBeTrue();
+            uri.OriginalString.ShouldBe(route.Trim());
+        }
+
+        [Theory]
+        [InlineData("http://")]
+        public void CreateRouteUri_ThrowsArgumentException_WhenRouteIsMalformed(string route)
+        {
+            Should.Throw<ArgumentException>(() => HttpRequestBuilder.CreateRouteUri(route));
+        }
+    }
+
+    public class SendAsyncTests
+    {
+        // These tests do not use the CreateClient method, because they
+        // are using a custom handler in order to assert behavior.
+
+        [Fact]
+        public async Task SendAsync_UsesDefaultCompletionOptionAndCancellationToken_WhenNotSpecified()
+        {
+            var handler = new TestHttpMessageHandler();
+            using var client = new HttpClient(handler) { BaseAddress = new Uri("https://api.example.com/") };
+
+            var builder = new HttpRequestBuilder(client, "items");
+
+            var response = await builder.SendAsync(HttpMethod.Get);
+
+            response.ShouldNotBeNull();
+            handler.CallCount.ShouldBe(1);
+            handler.LastRequest.ShouldNotBeNull();
+            handler.LastRequest!.Method.ShouldBe(HttpMethod.Get);
+        }
+
+        [Fact]
+        public async Task SendAsync_UsesProvidedCancellationToken_WhenOverloadWithTokenIsCalled()
+        {
+            var handler = new TestHttpMessageHandler();
+            using var client = new HttpClient(handler) { BaseAddress = new Uri("https://api.example.com/") };
+
+            var builder = new HttpRequestBuilder(client, "items");
+            using var cts = new CancellationTokenSource();
+
+            var response = await builder.SendAsync(HttpMethod.Post, cts.Token);
+
+            response.ShouldNotBeNull();
+            handler.CallCount.ShouldBe(1);
+            handler.LastRequest.ShouldNotBeNull();
+            handler.LastRequest!.Method.ShouldBe(HttpMethod.Post);
+        }
+
+        [Fact]
+        public async Task SendAsync_UsesProvidedCompletionOption_WhenCompletionOptionOverloadCalled()
+        {
+            var handler = new TestHttpMessageHandler();
+            using var client = new HttpClient(handler) { BaseAddress = new Uri("https://api.example.com/") };
+
+            var builder = new HttpRequestBuilder(client, "items");
+
+            var response = await builder.SendAsync(HttpMethod.Get, HttpCompletionOption.ResponseHeadersRead);
+
+            response.ShouldNotBeNull();
+            handler.CallCount.ShouldBe(1);
+            handler.LastRequest.ShouldNotBeNull();
+            handler.LastRequest!.Method.ShouldBe(HttpMethod.Get);
+        }
+
+        [Fact]
+        public async Task SendAsync_UsesProvidedCompletionOptionAndCancellationToken_WhenAllParametersSpecified()
+        {
+            var handler = new TestHttpMessageHandler();
+            using var client = new HttpClient(handler) { BaseAddress = new Uri("https://api.example.com/") };
+
+            var builder = new HttpRequestBuilder(client, "items");
+            using var cts = new CancellationTokenSource();
+
+            var response = await builder.SendAsync(
+                HttpMethod.Delete,
+                HttpCompletionOption.ResponseHeadersRead,
+                cts.Token);
+
+            response.ShouldNotBeNull();
+            handler.CallCount.ShouldBe(1);
+            handler.LastRequest.ShouldNotBeNull();
+            handler.LastRequest!.Method.ShouldBe(HttpMethod.Delete);
+        }
+
+        [Fact]
+        public async Task SendAsync_PropagatesExceptions_FromHttpClient()
+        {
+            var handler = new TestHttpMessageHandler
+            {
+                ThrowOnSend = true
+            };
+
+            using var client = new HttpClient(handler) { BaseAddress = new Uri("https://api.example.com/") };
+
+            var builder = new HttpRequestBuilder(client, "items");
+
+            var exception = await Should.ThrowAsync<HttpRequestException>(
+                async () => await builder.SendAsync(HttpMethod.Get));
+
+            exception.Message.ShouldContain("Test failure");
+            handler.CallCount.ShouldBe(1);
+        }
+
+        private sealed class TestHttpMessageHandler : HttpMessageHandler
+        {
+            public HttpRequestMessage? LastRequest { get; private set; }
+
+            public CancellationToken LastCancellationToken { get; private set; }
+
+            public int CallCount { get; private set; }
+
+            public bool ThrowOnSend { get; set; }
+
+            protected override Task<HttpResponseMessage> SendAsync(
+                HttpRequestMessage request,
+                CancellationToken cancellationToken)
+            {
+                CallCount++;
+                LastRequest = request;
+                LastCancellationToken = cancellationToken;
+
+                if (ThrowOnSend)
+                {
+                    throw new HttpRequestException("Test failure");
+                }
+
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+            }
         }
     }
 }
