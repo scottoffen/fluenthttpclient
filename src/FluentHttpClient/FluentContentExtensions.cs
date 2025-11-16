@@ -11,6 +11,25 @@ namespace FluentHttpClient;
 public static class FluentContentExtensions
 {
     /// <summary>
+    /// Enables request content buffering for this request.
+    /// </summary>
+    /// <remarks>
+    /// <para>When enabled, the request content is fully serialized into memory
+    /// before the request is sent. This is useful for rare scenarios where
+    /// the underlying <see cref="HttpClient"/> handler requires the content
+    /// length to be known in advance, or when streaming content may cause
+    /// protocol or middleware issues.</para>
+    ///
+    /// <para>Buffering can have a significant memory impact for large payloads.</para>
+    /// </remarks>
+    /// <param name="builder"></param>
+    public static HttpRequestBuilder WithBufferedContent(this HttpRequestBuilder builder)
+    {
+        builder.BufferRequestContent = true;
+        return builder;
+    }
+
+    /// <summary>
     /// Sets the request content using an existing <see cref="HttpContent"/> instance.
     /// </summary>
     /// <remarks>

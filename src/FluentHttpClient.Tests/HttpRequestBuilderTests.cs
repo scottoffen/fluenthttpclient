@@ -295,11 +295,11 @@ public class HttpRequestBuilderTests
         }
 
         [Fact]
-        public async Task BuildRequest_LoadsContentIntoBuffer_WhenBufferContentBeforeSendingIsTrue()
+        public async Task BuildRequest_LoadsContentIntoBuffer_WhenBufferRequestContentIsTrue()
         {
             using var client = CreateClient("https://api.example.com/");
             var builder = new HttpRequestBuilder(client, "foo");
-            builder.BufferContentBeforeSending = true;
+            builder.BufferRequestContent = true;
             var trackingContent = new TrackingContent();
             builder.Content = trackingContent;
 

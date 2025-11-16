@@ -10,6 +10,22 @@ public class FluentContentExtensionsTests
     internal static HttpRequestBuilder CreateBuilder()
         => new HttpRequestBuilder(new HttpClient(), "https://example.com/");
 
+    public class BufferedContentTests
+    {
+        [Fact]
+        public void WithBufferedContent_SetsBufferRequestContentToTrue_WhenCalled()
+        {
+            var builder = new HttpRequestBuilder(new HttpClient(), "https://example.com");
+
+            builder.BufferRequestContent.ShouldBeFalse();
+
+            var result = builder.WithBufferedContent();
+
+            builder.BufferRequestContent.ShouldBeTrue();
+            result.ShouldBeSameAs(builder);
+        }
+    }
+
     public class HttpContentTests
     {
         [Fact]

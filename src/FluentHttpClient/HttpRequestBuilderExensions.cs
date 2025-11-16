@@ -18,7 +18,6 @@ public static class HttpRequestBuilderExtensions
         HttpMethod method,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(builder);
         return builder.BuildRequest(method, cancellationToken);
     }
 }

@@ -121,7 +121,7 @@ public class HttpRequestBuilder
     /// When enabled, large payloads may have a significant memory impact.
     /// See https://github.com/dotnet/runtime/issues/30283 for additional context.
     /// </remarks>
-    public bool BufferContentBeforeSending { get; set; }
+    public bool BufferRequestContent { get; set; }
 
     /// <summary>
     /// Gets the collection of query string parameters for this request.
@@ -250,7 +250,7 @@ public class HttpRequestBuilder
     {
         ArgumentNullException.ThrowIfNull(method);
 
-        if (BufferContentBeforeSending && Content != null)
+        if (BufferRequestContent && Content != null)
         {
             await Content.LoadIntoBufferAsync(cancellationToken).ConfigureAwait(false);
         }
