@@ -1,4 +1,9 @@
 using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Shouldly;
+using Xunit;
 
 namespace FluentHttpClient.Tests;
 
@@ -142,6 +147,120 @@ public class FluentSendExtensionsTests
             response.ShouldNotBeNull();
             handler.LastRequest.ShouldNotBeNull();
             handler.LastRequest!.Method.ShouldBe(HttpMethod.Get);
+        }
+    }
+
+    public class HeadAsyncTests
+    {
+        [Fact]
+        public async Task HeadAsync_UsesHeadMethod_WhenCalledWithoutParameters()
+        {
+            var handler = new TestHttpMessageHandler();
+            var builder = CreateBuilder(handler);
+
+            var response = await builder.HeadAsync();
+
+            response.ShouldNotBeNull();
+            handler.LastRequest.ShouldNotBeNull();
+            handler.LastRequest!.Method.ShouldBe(HttpMethod.Head);
+        }
+
+        [Fact]
+        public async Task HeadAsync_UsesHeadMethod_WhenCancellationTokenProvided()
+        {
+            var handler = new TestHttpMessageHandler();
+            var builder = CreateBuilder(handler);
+            using var cts = new CancellationTokenSource();
+
+            var response = await builder.HeadAsync(cts.Token);
+
+            response.ShouldNotBeNull();
+            handler.LastRequest.ShouldNotBeNull();
+            handler.LastRequest!.Method.ShouldBe(HttpMethod.Head);
+        }
+
+        [Fact]
+        public async Task HeadAsync_UsesHeadMethod_WhenCompletionOptionProvided()
+        {
+            var handler = new TestHttpMessageHandler();
+            var builder = CreateBuilder(handler);
+
+            var response = await builder.HeadAsync(HttpCompletionOption.ResponseHeadersRead);
+
+            response.ShouldNotBeNull();
+            handler.LastRequest.ShouldNotBeNull();
+            handler.LastRequest!.Method.ShouldBe(HttpMethod.Head);
+        }
+
+        [Fact]
+        public async Task HeadAsync_UsesHeadMethod_WhenCompletionOptionAndCancellationTokenProvided()
+        {
+            var handler = new TestHttpMessageHandler();
+            var builder = CreateBuilder(handler);
+            using var cts = new CancellationTokenSource();
+
+            var response = await builder.HeadAsync(HttpCompletionOption.ResponseContentRead, cts.Token);
+
+            response.ShouldNotBeNull();
+            handler.LastRequest.ShouldNotBeNull();
+            handler.LastRequest!.Method.ShouldBe(HttpMethod.Head);
+        }
+    }
+
+    public class OptionsAsyncTests
+    {
+        [Fact]
+        public async Task OptionsAsync_UsesOptionsMethod_WhenCalledWithoutParameters()
+        {
+            var handler = new TestHttpMessageHandler();
+            var builder = CreateBuilder(handler);
+
+            var response = await builder.OptionsAsync();
+
+            response.ShouldNotBeNull();
+            handler.LastRequest.ShouldNotBeNull();
+            handler.LastRequest!.Method.ShouldBe(HttpMethod.Options);
+        }
+
+        [Fact]
+        public async Task OptionsAsync_UsesOptionsMethod_WhenCancellationTokenProvided()
+        {
+            var handler = new TestHttpMessageHandler();
+            var builder = CreateBuilder(handler);
+            using var cts = new CancellationTokenSource();
+
+            var response = await builder.OptionsAsync(cts.Token);
+
+            response.ShouldNotBeNull();
+            handler.LastRequest.ShouldNotBeNull();
+            handler.LastRequest!.Method.ShouldBe(HttpMethod.Options);
+        }
+
+        [Fact]
+        public async Task OptionsAsync_UsesOptionsMethod_WhenCompletionOptionProvided()
+        {
+            var handler = new TestHttpMessageHandler();
+            var builder = CreateBuilder(handler);
+
+            var response = await builder.OptionsAsync(HttpCompletionOption.ResponseHeadersRead);
+
+            response.ShouldNotBeNull();
+            handler.LastRequest.ShouldNotBeNull();
+            handler.LastRequest!.Method.ShouldBe(HttpMethod.Options);
+        }
+
+        [Fact]
+        public async Task OptionsAsync_UsesOptionsMethod_WhenCompletionOptionAndCancellationTokenProvided()
+        {
+            var handler = new TestHttpMessageHandler();
+            var builder = CreateBuilder(handler);
+            using var cts = new CancellationTokenSource();
+
+            var response = await builder.OptionsAsync(HttpCompletionOption.ResponseContentRead, cts.Token);
+
+            response.ShouldNotBeNull();
+            handler.LastRequest.ShouldNotBeNull();
+            handler.LastRequest!.Method.ShouldBe(HttpMethod.Options);
         }
     }
 

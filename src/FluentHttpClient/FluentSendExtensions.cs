@@ -6,7 +6,7 @@ namespace FluentHttpClient;
 /// </summary>
 public static class FluentSendExtensions
 {
-    #region DELETE
+    // DELETE
 
     /// <summary>
     /// Sends an HTTP DELETE request using the configured <see cref="HttpRequestBuilder"/>.
@@ -26,7 +26,7 @@ public static class FluentSendExtensions
         this HttpRequestBuilder builder,
         CancellationToken cancellationToken)
     {
-        return builder.SendAsync(HttpMethod.Delete, cancellationToken);
+        return builder.SendAsync(HttpMethod.Delete, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -55,9 +55,7 @@ public static class FluentSendExtensions
         return builder.SendAsync(HttpMethod.Delete, completionOption, cancellationToken);
     }
 
-    #endregion
-
-    #region GET
+    // GET
 
     /// <summary>
     /// Sends an HTTP GET request using the configured <see cref="HttpRequestBuilder"/>.
@@ -77,7 +75,7 @@ public static class FluentSendExtensions
         this HttpRequestBuilder builder,
         CancellationToken cancellationToken)
     {
-        return builder.SendAsync(HttpMethod.Get, cancellationToken);
+        return builder.SendAsync(HttpMethod.Get, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -106,9 +104,105 @@ public static class FluentSendExtensions
         return builder.SendAsync(HttpMethod.Get, completionOption, cancellationToken);
     }
 
-    #endregion
+    // HEAD
 
-    #region PATCH
+    /// <summary>
+    /// Sends an HTTP HEAD request using the configured <see cref="HttpRequestBuilder"/>.
+    /// </summary>
+    /// <param name="builder"></param>
+    public static Task<HttpResponseMessage> HeadAsync(this HttpRequestBuilder builder)
+    {
+        return builder.SendAsync(HttpMethod.Head);
+    }
+
+    /// <summary>
+    /// Sends an HTTP HEAD request using the specified <see cref="CancellationToken"/>.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="cancellationToken"></param>
+    public static Task<HttpResponseMessage> HeadAsync(
+        this HttpRequestBuilder builder,
+        CancellationToken cancellationToken)
+    {
+        return builder.SendAsync(HttpMethod.Head, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Sends an HTTP HEAD request using the specified <see cref="HttpCompletionOption"/>.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="completionOption"></param>
+    public static Task<HttpResponseMessage> HeadAsync(
+        this HttpRequestBuilder builder,
+        HttpCompletionOption completionOption)
+    {
+        return builder.SendAsync(HttpMethod.Head, completionOption);
+    }
+
+    /// <summary>
+    /// Sends an HTTP HEAD request using the specified <see cref="HttpCompletionOption"/> and <see cref="CancellationToken"/>.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="completionOption"></param>
+    /// <param name="cancellationToken"></param>
+    public static Task<HttpResponseMessage> HeadAsync(
+        this HttpRequestBuilder builder,
+        HttpCompletionOption completionOption,
+        CancellationToken cancellationToken)
+    {
+        return builder.SendAsync(HttpMethod.Head, completionOption, cancellationToken);
+    }
+
+    // OPTIONS
+
+    /// <summary>
+    /// Sends an HTTP OPTIONS request using the configured <see cref="HttpRequestBuilder"/>.
+    /// </summary>
+    /// <param name="builder"></param>
+    public static Task<HttpResponseMessage> OptionsAsync(this HttpRequestBuilder builder)
+    {
+        return builder.SendAsync(HttpMethod.Options);
+    }
+
+    /// <summary>
+    /// Sends an HTTP OPTIONS request using the specified <see cref="CancellationToken"/>.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="cancellationToken"></param>
+    public static Task<HttpResponseMessage> OptionsAsync(
+        this HttpRequestBuilder builder,
+        CancellationToken cancellationToken)
+    {
+        return builder.SendAsync(HttpMethod.Options, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Sends an HTTP OPTIONS request using the specified <see cref="HttpCompletionOption"/>.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="completionOption"></param>
+    public static Task<HttpResponseMessage> OptionsAsync(
+        this HttpRequestBuilder builder,
+        HttpCompletionOption completionOption)
+    {
+        return builder.SendAsync(HttpMethod.Options, completionOption);
+    }
+
+    /// <summary>
+    /// Sends an HTTP OPTIONS request using the specified <see cref="HttpCompletionOption"/> and <see cref="CancellationToken"/>.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="completionOption"></param>
+    /// <param name="cancellationToken"></param>
+    public static Task<HttpResponseMessage> OptionsAsync(
+        this HttpRequestBuilder builder,
+        HttpCompletionOption completionOption,
+        CancellationToken cancellationToken)
+    {
+        return builder.SendAsync(HttpMethod.Options, completionOption, cancellationToken);
+    }
+
+    // PATCH
 
     /// <summary>
     /// Sends an HTTP PATCH request using the configured <see cref="HttpRequestBuilder"/>.
@@ -128,7 +222,7 @@ public static class FluentSendExtensions
         this HttpRequestBuilder builder,
         CancellationToken cancellationToken)
     {
-        return builder.SendAsync(HttpMethod.Patch, cancellationToken);
+        return builder.SendAsync(HttpMethod.Patch, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -157,9 +251,7 @@ public static class FluentSendExtensions
         return builder.SendAsync(HttpMethod.Patch, completionOption, cancellationToken);
     }
 
-    #endregion
-
-    #region POST
+    // POST
 
     /// <summary>
     /// Sends an HTTP POST request using the configured <see cref="HttpRequestBuilder"/>.
@@ -179,7 +271,7 @@ public static class FluentSendExtensions
         this HttpRequestBuilder builder,
         CancellationToken cancellationToken)
     {
-        return builder.SendAsync(HttpMethod.Post, cancellationToken);
+        return builder.SendAsync(HttpMethod.Post, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -208,9 +300,7 @@ public static class FluentSendExtensions
         return builder.SendAsync(HttpMethod.Post, completionOption, cancellationToken);
     }
 
-    #endregion
-
-    #region PUT
+    // PUT
 
     /// <summary>
     /// Sends an HTTP PUT request using the configured <see cref="HttpRequestBuilder"/>.
@@ -230,7 +320,7 @@ public static class FluentSendExtensions
         this HttpRequestBuilder builder,
         CancellationToken cancellationToken)
     {
-        return builder.SendAsync(HttpMethod.Put, cancellationToken);
+        return builder.SendAsync(HttpMethod.Put, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -258,6 +348,4 @@ public static class FluentSendExtensions
     {
         return builder.SendAsync(HttpMethod.Put, completionOption, cancellationToken);
     }
-
-    #endregion
 }
