@@ -92,7 +92,7 @@ public class HttpRequestBuilder
     public HttpContent? Content { get; set; }
 
     /// <summary>
-    /// Gets the cookies that will be sent on this HTTP request.
+    /// Returns the cookies that will be sent on this HTTP request.
     /// </summary>
     /// <remarks>
     /// These cookies are serialized into the Cookie header for this request only.
@@ -103,12 +103,26 @@ public class HttpRequestBuilder
         new Dictionary<string, string>(StringComparer.Ordinal);
 
     /// <summary>
-    /// Gets the collection of actions used to configure HTTP request headers.
+    /// Returns the collection of deferred configurators that are executed during
+    /// final request construction.
+    /// </summary>
+    /// <remarks>
+    /// Deferred configurators allow conditional or context-dependent configuration
+    /// to be applied when the <see cref="HttpRequestMessage"/> is actually built,
+    /// rather than when the fluent calls are made.
+    /// This is useful for scenarios where the condition depends on late-bound
+    /// state (such as ambient context values, feature flags, or other runtime
+    /// information available only when the request is being created).
+    /// </remarks>
+    public List<Action<HttpRequestBuilder>> DeferredConfigurators { get; } = [];
+
+    /// <summary>
+    /// Returns the collection of actions used to configure HTTP request headers.
     /// </summary>
     public List<Action<HttpRequestHeaders>> HeaderConfigurators { get; } = [];
 
     /// <summary>
-    /// Gets the collection of actions used to configure the <see cref="HttpRequestOptions"/> of the HTTP request.
+    /// Returns the collection of actions used to configure the <see cref="HttpRequestOptions"/> of the HTTP request.
     /// </summary>
     public List<Action<HttpRequestOptions>> OptionConfigurators { get; } = [];
 
@@ -124,16 +138,16 @@ public class HttpRequestBuilder
     public bool BufferRequestContent { get; set; }
 
     /// <summary>
-    /// Gets the collection of query string parameters for this request.
+    /// Returns the collection of query string parameters for this request.
     /// </summary>
     /// <remarks>
     /// All query string values should be added through this collection.
     /// <see cref="HttpClient.BaseAddress"/> and <see cref="Route"/> must not contain query components.
     /// </remarks>
-    public HttpQueryParameterCollection QueryParameters { get; } = new();
+    public HttpQueryParameterCollection QueryParameters { get; } = [];
 
     /// <summary>
-    /// Gets the route used for the HTTP request.
+    /// Returns the route used for the HTTP request.
     /// </summary>
     public string? Route => _route?.OriginalString;
 
@@ -249,6 +263,11 @@ public class HttpRequestBuilder
     internal async Task<HttpRequestMessage> BuildRequest(HttpMethod method, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(method);
+
+        foreach (var configure in DeferredConfigurators)
+        {
+            configure(this);
+        }
 
         if (BufferRequestContent && Content != null)
         {

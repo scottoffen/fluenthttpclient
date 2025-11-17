@@ -192,13 +192,7 @@ public static class FluentQueryParameterExtensions
         string? value)
     {
         ArgumentNullException.ThrowIfNull(key);
-
-        if (value is not null)
-        {
-            builder.QueryParameters.Add(key, value);
-        }
-
-        return builder;
+        return builder.When(value is not null, b => b.WithQueryParameter(key, value));
     }
 
     /// <summary>
@@ -214,12 +208,6 @@ public static class FluentQueryParameterExtensions
         object? value)
     {
         ArgumentNullException.ThrowIfNull(key);
-
-        if (value is not null)
-        {
-            builder.QueryParameters.Add(key, value.ToString());
-        }
-
-        return builder;
+        return builder.When(value is not null, b => b.WithQueryParameter(key, value));
     }
 }

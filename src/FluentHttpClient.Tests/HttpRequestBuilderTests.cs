@@ -158,6 +158,100 @@ public class HttpRequestBuilderTests
         }
     }
 
+    public class DeferredConfiguratorTests
+    {
+        [Fact]
+        public async Task BuildRequest_ExecutesDeferredConfigurators_WhenBuildingRequest()
+        {
+            var client = CreateClient();
+            var builder = new HttpRequestBuilder(client, "https://www.example.com");
+
+            builder.DeferredConfigurators.Add(b =>
+            {
+                b.WithHeader("X-Deferred", "true");
+                b.WithQueryParameter("deferred", "1");
+            });
+
+            var request = await builder.BuildRequest(HttpMethod.Get, CancellationToken.None);
+
+            request.Headers.Contains("X-Deferred").ShouldBeTrue();
+            request.Headers.GetValues("X-Deferred").ShouldContain("true");
+
+            request.RequestUri.ShouldNotBeNull();
+            request.RequestUri!.Query.ShouldContain("deferred=1");
+        }
+
+        [Fact]
+        public async Task BuildRequest_ExecutesAllDeferredConfigurators_WhenMultipleAreRegistered()
+        {
+            var client = CreateClient();
+            var builder = new HttpRequestBuilder(client, "https://www.example.com");
+
+            builder.DeferredConfigurators.Add(b => b.WithHeader("X-First", "1"));
+            builder.DeferredConfigurators.Add(b => b.WithHeader("X-Second", "2"));
+            builder.DeferredConfigurators.Add(b => b.WithQueryParameter("first", "one"));
+
+            var request = await builder.BuildRequest(HttpMethod.Get, CancellationToken.None);
+
+            request.Headers.Contains("X-First").ShouldBeTrue();
+            request.Headers.GetValues("X-First").ShouldContain("1");
+
+            request.Headers.Contains("X-Second").ShouldBeTrue();
+            request.Headers.GetValues("X-Second").ShouldContain("2");
+
+            request.RequestUri.ShouldNotBeNull();
+            request.RequestUri!.Query.ShouldContain("first=one");
+        }
+
+        [Fact]
+        public async Task BuildRequest_ExecutesDeferredConfiguratorsOnEveryCall_WhenBuildingMultipleRequests()
+        {
+            var client = CreateClient();
+            var builder = new HttpRequestBuilder(client, "https://www.example.com");
+            var invocationCount = 0;
+
+            builder.DeferredConfigurators.Add(b =>
+            {
+                invocationCount++;
+                b.WithHeader("X-Invocation", invocationCount.ToString());
+            });
+
+            var firstRequest = await builder.BuildRequest(HttpMethod.Get, CancellationToken.None);
+            var secondRequest = await builder.BuildRequest(HttpMethod.Get, CancellationToken.None);
+
+            invocationCount.ShouldBe(2);
+
+            firstRequest.Headers.Contains("X-Invocation").ShouldBeTrue();
+            firstRequest.Headers.GetValues("X-Invocation").ShouldContain("1");
+
+            secondRequest.Headers.Contains("X-Invocation").ShouldBeTrue();
+            secondRequest.Headers.GetValues("X-Invocation").ShouldContain("2");
+        }
+
+        [Fact]
+        public async Task BuildRequest_DoesNothingSpecial_WhenNoDeferredConfiguratorsAreRegistered()
+        {
+            var client = CreateClient();
+            var builder = new HttpRequestBuilder(client, "https://www.example.com");
+
+            var request = await builder.BuildRequest(HttpMethod.Get, CancellationToken.None);
+
+            request.ShouldNotBeNull();
+            request.RequestUri.ShouldNotBeNull();
+            request.Headers.ShouldBeEmpty();
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
     public class BuildRequestUriTests
     {
         [Fact]
