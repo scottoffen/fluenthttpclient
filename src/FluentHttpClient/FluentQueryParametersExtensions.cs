@@ -21,7 +21,7 @@ public static class FluentQueryParameterExtensions
         string key,
         string? value)
     {
-        ArgumentNullException.ThrowIfNull(key);
+        Guard.AgainstNull(key, nameof(key));
 
         builder.QueryParameters.Add(key, value);
         return builder;
@@ -39,7 +39,7 @@ public static class FluentQueryParameterExtensions
         string key,
         object? value)
     {
-        ArgumentNullException.ThrowIfNull(key);
+        Guard.AgainstNull(key, nameof(key));
 
         builder.QueryParameters.Add(key, value?.ToString());
         return builder;
@@ -57,8 +57,8 @@ public static class FluentQueryParameterExtensions
         string key,
         IEnumerable<string?> values)
     {
-        ArgumentNullException.ThrowIfNull(key);
-        ArgumentNullException.ThrowIfNull(values);
+        Guard.AgainstNull(key, nameof(key));
+        Guard.AgainstNull(values, nameof(values));
 
         builder.QueryParameters.AddRange(key, values);
         return builder;
@@ -76,8 +76,8 @@ public static class FluentQueryParameterExtensions
         string key,
         IEnumerable<object?> values)
     {
-        ArgumentNullException.ThrowIfNull(key);
-        ArgumentNullException.ThrowIfNull(values);
+        Guard.AgainstNull(key, nameof(key));
+        Guard.AgainstNull(values, nameof(values));
 
         var converted = new List<string?>();
 
@@ -100,7 +100,7 @@ public static class FluentQueryParameterExtensions
         this HttpRequestBuilder builder,
         IEnumerable<KeyValuePair<string, string?>> parameters)
     {
-        ArgumentNullException.ThrowIfNull(parameters);
+        Guard.AgainstNull(parameters, nameof(parameters));
 
         foreach (var parameter in parameters)
         {
@@ -120,7 +120,7 @@ public static class FluentQueryParameterExtensions
         this HttpRequestBuilder builder,
         IEnumerable<KeyValuePair<string, object?>> parameters)
     {
-        ArgumentNullException.ThrowIfNull(parameters);
+        Guard.AgainstNull(parameters, nameof(parameters));
 
         foreach (var parameter in parameters)
         {
@@ -140,7 +140,7 @@ public static class FluentQueryParameterExtensions
         this HttpRequestBuilder builder,
         IEnumerable<KeyValuePair<string, IEnumerable<string?>>> parameters)
     {
-        ArgumentNullException.ThrowIfNull(parameters);
+        Guard.AgainstNull(parameters, nameof(parameters));
 
         foreach (var parameter in parameters)
         {
@@ -160,11 +160,11 @@ public static class FluentQueryParameterExtensions
         this HttpRequestBuilder builder,
         IEnumerable<KeyValuePair<string, IEnumerable<object?>>> parameters)
     {
-        ArgumentNullException.ThrowIfNull(parameters);
+        Guard.AgainstNull(parameters, nameof(parameters));
 
         foreach (var parameter in parameters)
         {
-            ArgumentNullException.ThrowIfNull(parameter.Value);
+            Guard.AgainstNull(parameter.Value, nameof(parameter.Value));
 
             var converted = new List<string?>();
 
@@ -191,7 +191,7 @@ public static class FluentQueryParameterExtensions
         string key,
         string? value)
     {
-        ArgumentNullException.ThrowIfNull(key);
+        Guard.AgainstNull(key, nameof(key));
         return builder.When(value is not null, b => b.WithQueryParameter(key, value));
     }
 
@@ -207,7 +207,7 @@ public static class FluentQueryParameterExtensions
         string key,
         object? value)
     {
-        ArgumentNullException.ThrowIfNull(key);
+        Guard.AgainstNull(key, nameof(key));
         return builder.When(value is not null, b => b.WithQueryParameter(key, value));
     }
 }

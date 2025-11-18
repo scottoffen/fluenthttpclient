@@ -1,3 +1,4 @@
+#if NET5_0_OR_GREATER
 namespace FluentHttpClient;
 
 /// <summary>
@@ -12,7 +13,7 @@ public static class FluentOptionsExtensions
     /// <param name="action"></param>
     public static HttpRequestBuilder ConfigureOptions(this HttpRequestBuilder builder, Action<HttpRequestOptions> action)
     {
-        ArgumentNullException.ThrowIfNull(action);
+        Guard.AgainstNull(action, nameof(action));
 
         builder.OptionConfigurators.Add(action);
         return builder;
@@ -34,3 +35,4 @@ public static class FluentOptionsExtensions
         return builder;
     }
 }
+#endif

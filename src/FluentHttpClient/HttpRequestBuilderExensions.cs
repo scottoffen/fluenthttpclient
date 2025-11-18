@@ -1,3 +1,4 @@
+#if NET8_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
 
 namespace FluentHttpClient;
@@ -21,3 +22,4 @@ public static class HttpRequestBuilderExtensions
         return builder.BuildRequest(method, cancellationToken);
     }
 }
+#endif

@@ -32,8 +32,8 @@ public static class FluentResponseHandlerExtensions
         Func<HttpResponseMessage, bool> predicate,
         Action<HttpResponseMessage> handler)
     {
-        ArgumentNullException.ThrowIfNull(predicate);
-        ArgumentNullException.ThrowIfNull(handler);
+        Guard.AgainstNull(predicate, nameof(predicate));
+        Guard.AgainstNull(handler, nameof(handler));
 
         var response = await taskResponse.ConfigureAwait(false);
 
@@ -72,8 +72,8 @@ public static class FluentResponseHandlerExtensions
         Func<HttpResponseMessage, bool> predicate,
         Func<HttpResponseMessage, Task> handler)
     {
-        ArgumentNullException.ThrowIfNull(predicate);
-        ArgumentNullException.ThrowIfNull(handler);
+        Guard.AgainstNull(predicate, nameof(predicate));
+        Guard.AgainstNull(handler, nameof(handler));
 
         var response = await taskResponse.ConfigureAwait(false);
 
@@ -97,7 +97,7 @@ public static class FluentResponseHandlerExtensions
         this Task<HttpResponseMessage> taskResponse,
         Action<HttpResponseMessage> handler)
     {
-        ArgumentNullException.ThrowIfNull(handler);
+        Guard.AgainstNull(handler, nameof(handler));
         return taskResponse.When(r => r.IsSuccessStatusCode, handler);
     }
 
@@ -113,7 +113,7 @@ public static class FluentResponseHandlerExtensions
         this Task<HttpResponseMessage> taskResponse,
         Func<HttpResponseMessage, Task> handler)
     {
-        ArgumentNullException.ThrowIfNull(handler);
+        Guard.AgainstNull(handler, nameof(handler));
         return taskResponse.When(r => r.IsSuccessStatusCode, handler);
     }
 
@@ -129,7 +129,7 @@ public static class FluentResponseHandlerExtensions
         this Task<HttpResponseMessage> taskResponse,
         Action<HttpResponseMessage> handler)
     {
-        ArgumentNullException.ThrowIfNull(handler);
+        Guard.AgainstNull(handler, nameof(handler));
         return taskResponse.When(r => !r.IsSuccessStatusCode, handler);
     }
 
@@ -145,7 +145,7 @@ public static class FluentResponseHandlerExtensions
         this Task<HttpResponseMessage> taskResponse,
         Func<HttpResponseMessage, Task> handler)
     {
-        ArgumentNullException.ThrowIfNull(handler);
+        Guard.AgainstNull(handler, nameof(handler));
         return taskResponse.When(r => !r.IsSuccessStatusCode, handler);
     }
 }

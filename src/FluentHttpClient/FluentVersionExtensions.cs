@@ -56,6 +56,7 @@ public static class FluentVersionExtensions
         builder.Version = version;
         return builder;
     }
+#if NET5_0_OR_GREATER
 
     /// <summary>
     /// Sets the HTTP message version and the policy that determines how
@@ -104,5 +105,5 @@ public static class FluentVersionExtensions
         builder.VersionPolicy = policy;
         return builder;
     }
+#endif
 }
-

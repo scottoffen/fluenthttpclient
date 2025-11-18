@@ -29,7 +29,7 @@ public static class FluentConditionalExtensions
         bool condition,
         Action<HttpRequestBuilder> configure)
     {
-        ArgumentNullException.ThrowIfNull(configure);
+        Guard.AgainstNull(configure, nameof(configure));
 
         if (condition)
         {
@@ -58,8 +58,8 @@ public static class FluentConditionalExtensions
         Func<bool> predicate,
         Action<HttpRequestBuilder> configure)
     {
-        ArgumentNullException.ThrowIfNull(predicate);
-        ArgumentNullException.ThrowIfNull(configure);
+        Guard.AgainstNull(predicate, nameof(predicate));
+        Guard.AgainstNull(configure, nameof(configure));
 
         builder.DeferredConfigurators.Add(b =>
         {

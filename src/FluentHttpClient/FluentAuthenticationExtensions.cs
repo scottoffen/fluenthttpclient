@@ -17,8 +17,8 @@ public static class FluentAuthenticationExtensions
     /// <returns></returns>
     public static HttpRequestBuilder WithAuthentication(this HttpRequestBuilder builder, string scheme, string token)
     {
-        ArgumentNullException.ThrowIfNull(scheme);
-        ArgumentNullException.ThrowIfNull(token);
+        Guard.AgainstNull(scheme, nameof(scheme));
+        Guard.AgainstNull(token, nameof(token));
 
         builder.HeaderConfigurators.Add(headers =>
         {
@@ -36,7 +36,7 @@ public static class FluentAuthenticationExtensions
     /// <returns></returns>
     public static HttpRequestBuilder WithBasicAuthentication(this HttpRequestBuilder builder, string token)
     {
-        ArgumentNullException.ThrowIfNull(token);
+        Guard.AgainstNull(token, nameof(token));
 
         return builder.WithAuthentication("Basic", token);
     }
@@ -53,8 +53,8 @@ public static class FluentAuthenticationExtensions
     /// <returns></returns>
     public static HttpRequestBuilder WithBasicAuthentication(this HttpRequestBuilder builder, string username, string password)
     {
-        ArgumentNullException.ThrowIfNull(username);
-        ArgumentNullException.ThrowIfNull(password);
+        Guard.AgainstNull(username, nameof(username));
+        Guard.AgainstNull(password, nameof(password));
 
         var token = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{username}:{password}"));
         return builder.WithBasicAuthentication(token);
@@ -68,7 +68,7 @@ public static class FluentAuthenticationExtensions
     /// <returns></returns>
     public static HttpRequestBuilder WithOAuthBearerToken(this HttpRequestBuilder builder, string token)
     {
-        ArgumentNullException.ThrowIfNull(token);
+        Guard.AgainstNull(token, nameof(token));
 
         return builder.WithAuthentication("Bearer", token);
     }

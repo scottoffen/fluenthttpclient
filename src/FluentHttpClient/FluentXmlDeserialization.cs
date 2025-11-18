@@ -38,7 +38,7 @@ public static class FluentXmlDeserialization
         XmlReaderSettings settings)
         where T : class
     {
-        ArgumentNullException.ThrowIfNull(settings);
+        Guard.AgainstNull(settings, nameof(settings));
         return response.ReadXmlInternalAsync<T>(settings, CancellationToken.None);
     }
 
@@ -71,7 +71,7 @@ public static class FluentXmlDeserialization
         CancellationToken token)
         where T : class
     {
-        ArgumentNullException.ThrowIfNull(settings);
+        Guard.AgainstNull(settings, nameof(settings));
         return response.ReadXmlInternalAsync<T>(settings, token);
     }
 
@@ -84,7 +84,7 @@ public static class FluentXmlDeserialization
         this Task<HttpResponseMessage> responseMessage)
         where T : class
     {
-        ArgumentNullException.ThrowIfNull(responseMessage);
+        Guard.AgainstNull(responseMessage, nameof(responseMessage));
         return responseMessage.ReadXmlInternalAsync<T>(null, CancellationToken.None);
     }
 
@@ -100,8 +100,8 @@ public static class FluentXmlDeserialization
         XmlReaderSettings settings)
         where T : class
     {
-        ArgumentNullException.ThrowIfNull(responseMessage);
-        ArgumentNullException.ThrowIfNull(settings);
+        Guard.AgainstNull(responseMessage, nameof(responseMessage));
+        Guard.AgainstNull(settings, nameof(settings));
         return responseMessage.ReadXmlInternalAsync<T>(settings, CancellationToken.None);
     }
 
@@ -117,7 +117,7 @@ public static class FluentXmlDeserialization
         CancellationToken token)
         where T : class
     {
-        ArgumentNullException.ThrowIfNull(responseMessage);
+        Guard.AgainstNull(responseMessage, nameof(responseMessage));
         return responseMessage.ReadXmlInternalAsync<T>(null, token);
     }
 
@@ -135,8 +135,8 @@ public static class FluentXmlDeserialization
         CancellationToken token)
         where T : class
     {
-        ArgumentNullException.ThrowIfNull(responseMessage);
-        ArgumentNullException.ThrowIfNull(settings);
+        Guard.AgainstNull(responseMessage, nameof(responseMessage));
+        Guard.AgainstNull(settings, nameof(settings));
         return responseMessage.ReadXmlInternalAsync<T>(settings, token);
     }
 
@@ -198,7 +198,7 @@ public static class FluentXmlDeserialization
     public static Task<XElement?> ReadXmlElementAsync(
         this Task<HttpResponseMessage> responseMessage)
     {
-        ArgumentNullException.ThrowIfNull(responseMessage);
+        Guard.AgainstNull(responseMessage, nameof(responseMessage));
         return responseMessage.ReadXmlElementInternalAsync(LoadOptions.None, CancellationToken.None);
     }
 
@@ -212,7 +212,7 @@ public static class FluentXmlDeserialization
         this Task<HttpResponseMessage> responseMessage,
         LoadOptions options)
     {
-        ArgumentNullException.ThrowIfNull(responseMessage);
+        Guard.AgainstNull(responseMessage, nameof(responseMessage));
         return responseMessage.ReadXmlElementInternalAsync(options, CancellationToken.None);
     }
 
@@ -226,7 +226,7 @@ public static class FluentXmlDeserialization
         this Task<HttpResponseMessage> responseMessage,
         CancellationToken token)
     {
-        ArgumentNullException.ThrowIfNull(responseMessage);
+        Guard.AgainstNull(responseMessage, nameof(responseMessage));
         return responseMessage.ReadXmlElementInternalAsync(LoadOptions.None, token);
     }
 
@@ -242,7 +242,7 @@ public static class FluentXmlDeserialization
         LoadOptions options,
         CancellationToken token)
     {
-        ArgumentNullException.ThrowIfNull(responseMessage);
+        Guard.AgainstNull(responseMessage, nameof(responseMessage));
         return responseMessage.ReadXmlElementInternalAsync(options, token);
     }
 

@@ -202,6 +202,7 @@ public static class FluentSendExtensions
         return builder.SendAsync(HttpMethod.Options, completionOption, cancellationToken);
     }
 
+#if NETSTANDARD2_1 || NET5_0_OR_GREATER
     // PATCH
 
     /// <summary>
@@ -250,7 +251,7 @@ public static class FluentSendExtensions
     {
         return builder.SendAsync(HttpMethod.Patch, completionOption, cancellationToken);
     }
-
+#endif
     // POST
 
     /// <summary>

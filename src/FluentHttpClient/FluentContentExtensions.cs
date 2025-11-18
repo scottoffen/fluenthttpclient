@@ -50,7 +50,14 @@ public static class FluentContentExtensions
         this HttpRequestBuilder builder,
         Dictionary<string, string> data)
     {
+#if NET5_0
+        var pairs = data.Select(static kvp =>
+            new KeyValuePair<string?, string?>(kvp.Key, kvp.Value));
+
+        builder.Content = new FormUrlEncodedContent(pairs);
+#else
         builder.Content = new FormUrlEncodedContent(data);
+#endif
         return builder;
     }
 
@@ -62,7 +69,14 @@ public static class FluentContentExtensions
         this HttpRequestBuilder builder,
         IEnumerable<KeyValuePair<string, string>> data)
     {
+#if NET5_0
+        var pairs = data.Select(static kvp =>
+            new KeyValuePair<string?, string?>(kvp.Key, kvp.Value));
+
+        builder.Content = new FormUrlEncodedContent(pairs);
+#else
         builder.Content = new FormUrlEncodedContent(data);
+#endif
         return builder;
     }
 

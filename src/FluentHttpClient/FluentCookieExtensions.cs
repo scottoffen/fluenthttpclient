@@ -41,8 +41,11 @@ public static class FluentCookieExtensions
             throw new ArgumentNullException(nameof(cookies));
         }
 
-        foreach (var (key, value) in cookies)
+        foreach (var kvp in cookies)
         {
+            var key = kvp.Key;
+            var value = kvp.Value;
+
             if (string.IsNullOrWhiteSpace(key))
             {
                 throw new ArgumentException("Cookie name cannot be null or empty.", nameof(cookies));

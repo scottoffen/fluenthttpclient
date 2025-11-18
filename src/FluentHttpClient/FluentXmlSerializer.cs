@@ -35,8 +35,8 @@ internal static class FluentXmlSerializer
     public static T Deserialize<T>(string xml, XmlReaderSettings settings)
         where T : class
     {
-        ArgumentNullException.ThrowIfNull(xml);
-        ArgumentNullException.ThrowIfNull(settings);
+        Guard.AgainstNull(xml, nameof(xml));
+        Guard.AgainstNull(settings, nameof(settings));
 
         var serializer = SerializerCache.GetOrAdd(typeof(T), t => new XmlSerializer(t));
 
@@ -66,7 +66,7 @@ internal static class FluentXmlSerializer
     public static string Serialize<T>(T obj, XmlWriterSettings settings)
         where T : class
     {
-        ArgumentNullException.ThrowIfNull(obj);
+        Guard.AgainstNull(obj, nameof(obj));
 
         var serializer = SerializerCache.GetOrAdd(typeof(T), t => new XmlSerializer(t));
         var encoding = settings.Encoding ?? Encoding.UTF8;

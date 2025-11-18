@@ -78,7 +78,7 @@ public sealed class HttpQueryParameterCollection :
     /// </exception>
     public void AddRange(string key, IEnumerable<string?> values)
     {
-        ArgumentNullException.ThrowIfNull(values);
+        Guard.AgainstNull(values, nameof(values));
 
         ValidateKey(key);
 
@@ -128,7 +128,7 @@ public sealed class HttpQueryParameterCollection :
     /// </exception>
     public void SetRange(string key, IEnumerable<string?> values)
     {
-        ArgumentNullException.ThrowIfNull(values);
+        Guard.AgainstNull(values, nameof(values));
 
         ValidateKey(key);
 
@@ -144,7 +144,7 @@ public sealed class HttpQueryParameterCollection :
     /// </returns>
     public bool Remove(string key)
     {
-        ArgumentNullException.ThrowIfNull(key);
+        Guard.AgainstNull(key, nameof(key));
 
         return _parameters.Remove(key);
     }
@@ -166,7 +166,7 @@ public sealed class HttpQueryParameterCollection :
     /// </returns>
     public bool ContainsKey(string key)
     {
-        ArgumentNullException.ThrowIfNull(key);
+        Guard.AgainstNull(key, nameof(key));
 
         return _parameters.ContainsKey(key);
     }
@@ -184,7 +184,7 @@ public sealed class HttpQueryParameterCollection :
     /// </returns>
     public bool TryGetValues(string key, out IReadOnlyList<string?> values)
     {
-        ArgumentNullException.ThrowIfNull(key);
+        Guard.AgainstNull(key, nameof(key));
 
         if (_parameters.TryGetValue(key, out var list))
         {
@@ -274,7 +274,7 @@ public sealed class HttpQueryParameterCollection :
 
     private static void ValidateKey(string key)
     {
-        ArgumentNullException.ThrowIfNull(key);
+        Guard.AgainstNull(key, nameof(key));
 
         if (string.IsNullOrWhiteSpace(key))
         {

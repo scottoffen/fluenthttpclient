@@ -13,8 +13,8 @@ public static class FluentHeaderExtensions
     /// <param name="value"></param>
     public static HttpRequestBuilder WithHeader(this HttpRequestBuilder builder, string key, string value)
     {
-        ArgumentNullException.ThrowIfNull(key);
-        ArgumentNullException.ThrowIfNull(value);
+        Guard.AgainstNull(key, nameof(key));
+        Guard.AgainstNull(value, nameof(value));
 
         builder.HeaderConfigurators.Add(target =>
             target.TryAddWithoutValidation(key, value));
@@ -30,8 +30,8 @@ public static class FluentHeaderExtensions
     /// <param name="values"></param>
     public static HttpRequestBuilder WithHeader(this HttpRequestBuilder builder, string key, IEnumerable<string> values)
     {
-        ArgumentNullException.ThrowIfNull(key);
-        ArgumentNullException.ThrowIfNull(values);
+        Guard.AgainstNull(key, nameof(key));
+        Guard.AgainstNull(values, nameof(values));
 
         builder.HeaderConfigurators.Add(target =>
             target.TryAddWithoutValidation(key, values));
@@ -46,7 +46,7 @@ public static class FluentHeaderExtensions
     /// <param name="headers"></param>
     public static HttpRequestBuilder WithHeaders(this HttpRequestBuilder builder, IEnumerable<KeyValuePair<string, string>> headers)
     {
-        ArgumentNullException.ThrowIfNull(headers);
+        Guard.AgainstNull(headers, nameof(headers));
 
         builder.HeaderConfigurators.Add(target =>
         {
@@ -80,7 +80,7 @@ public static class FluentHeaderExtensions
         this HttpRequestBuilder builder,
         IEnumerable<KeyValuePair<string, IEnumerable<string>>> headers)
     {
-        ArgumentNullException.ThrowIfNull(headers);
+        Guard.AgainstNull(headers, nameof(headers));
 
         builder.HeaderConfigurators.Add(target =>
         {

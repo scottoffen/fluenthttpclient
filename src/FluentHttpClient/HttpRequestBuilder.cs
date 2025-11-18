@@ -65,7 +65,7 @@ public class HttpRequestBuilder
     /// </exception>
     public HttpRequestBuilder(HttpClient client, Uri route) : this(client)
     {
-        ArgumentNullException.ThrowIfNull(route);
+        Guard.AgainstNull(route, nameof(route));
 
         if (route.IsAbsoluteUri)
         {
@@ -121,11 +121,13 @@ public class HttpRequestBuilder
     /// </summary>
     public List<Action<HttpRequestHeaders>> HeaderConfigurators { get; } = [];
 
+#if NET5_0_OR_GREATER
     /// <summary>
     /// Returns the collection of actions used to configure the <see cref="HttpRequestOptions"/> of the HTTP request.
     /// </summary>
     public List<Action<HttpRequestOptions>> OptionConfigurators { get; } = [];
 
+#endif
     /// <summary>
     /// Gets or sets a value that indicates whether content should be buffered
     /// (fully serialized into memory) prior to sending the request.
@@ -157,6 +159,7 @@ public class HttpRequestBuilder
     /// <remarks>Defaults to HTTP/1.1.</remarks>
     public Version Version { get; set; } = HttpVersion.Version11;
 
+#if NET5_0_OR_GREATER
     /// <summary>
     /// Gets or sets the policy that determines how <see cref="Version"/> is interpreted
     /// and how the final HTTP version is negotiated with the server.
@@ -164,6 +167,7 @@ public class HttpRequestBuilder
     /// <remarks>Defaults to <see cref="HttpVersionPolicy.RequestVersionOrLower"/>.</remarks>
     public HttpVersionPolicy VersionPolicy { get; set; } = HttpVersionPolicy.RequestVersionOrLower;
 
+#endif
     /// <summary>
     /// Sends an HTTP request as an asynchronous operation.
     /// </summary>
@@ -262,7 +266,7 @@ public class HttpRequestBuilder
     /// </exception>
     internal async Task<HttpRequestMessage> BuildRequest(HttpMethod method, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(method);
+        Guard.AgainstNull(method, nameof(method));
 
         foreach (var configure in DeferredConfigurators)
         {
@@ -271,7 +275,11 @@ public class HttpRequestBuilder
 
         if (BufferRequestContent && Content != null)
         {
+#if NET9_0_OR_GREATER
             await Content.LoadIntoBufferAsync(cancellationToken).ConfigureAwait(false);
+#else
+            await Content.LoadIntoBufferAsync().ConfigureAwait(false);
+#endif
         }
 
         var uri = BuildRequestUri();
@@ -280,7 +288,9 @@ public class HttpRequestBuilder
         {
             Content = Content,
             Version = Version,
+#if NET5_0_OR_GREATER
             VersionPolicy = VersionPolicy
+#endif
         };
 
         ApplyConfiguration(request);
@@ -347,11 +357,13 @@ public class HttpRequestBuilder
                 request.Headers.Add(CookieHeaderName, cookieHeader);
             }
         }
+#if NET5_0_OR_GREATER
 
         for (var i = 0; i < OptionConfigurators.Count; i++)
         {
             OptionConfigurators[i](request.Options);
         }
+#endif
     }
 
     /// <summary>
@@ -363,7 +375,7 @@ public class HttpRequestBuilder
     /// </remarks>
     internal static Uri CreateRouteUri(string route)
     {
-        ArgumentNullException.ThrowIfNull(route);
+        Guard.AgainstNull(route, nameof(route));
 
         var trimmed = route.Trim();
 
