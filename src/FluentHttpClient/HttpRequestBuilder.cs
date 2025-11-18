@@ -28,7 +28,7 @@ public class HttpRequestBuilder
     /// Thrown when <paramref name="client"/> has a <see cref="HttpClient.BaseAddress"/> that
     /// contains a query string or fragment.
     /// </exception>
-    public HttpRequestBuilder(HttpClient client)
+    internal HttpRequestBuilder(HttpClient client)
     {
         _client = client ?? throw new ArgumentNullException(nameof(client));
 
@@ -48,7 +48,7 @@ public class HttpRequestBuilder
     /// </summary>
     /// <param name="client"></param>
     /// <param name="route"></param>
-    public HttpRequestBuilder(HttpClient client, string route)
+    internal HttpRequestBuilder(HttpClient client, string route)
         : this(client, CreateRouteUri(route))
     {
     }
@@ -63,7 +63,7 @@ public class HttpRequestBuilder
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="route"/> contains a query string or fragment.
     /// </exception>
-    public HttpRequestBuilder(HttpClient client, Uri route) : this(client)
+    internal HttpRequestBuilder(HttpClient client, Uri route) : this(client)
     {
         Guard.AgainstNull(route, nameof(route));
 
@@ -183,8 +183,45 @@ public class HttpRequestBuilder
     /// Thrown when the request URI cannot be constructed because neither <see cref="HttpClient.BaseAddress"/>
     /// nor <see cref="Route"/> is specified.
     /// </exception>
+    public Task<HttpResponseMessage> SendAsync(string method)
+        => SendAsync(method, HttpCompletionOption.ResponseContentRead, CancellationToken.None);
+
+    /// <summary>
+    /// Sends an HTTP request as an asynchronous operation.
+    /// </summary>
+    /// <remarks>
+    /// Uses <see cref="HttpCompletionOption.ResponseContentRead"/> and a default cancellation token.
+    /// </remarks>
+    /// <param name="method"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="method"/> is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the request URI cannot be constructed because neither <see cref="HttpClient.BaseAddress"/>
+    /// nor <see cref="Route"/> is specified.
+    /// </exception>
     public Task<HttpResponseMessage> SendAsync(HttpMethod method)
         => SendAsync(method, HttpCompletionOption.ResponseContentRead, CancellationToken.None);
+
+    /// <summary>
+    /// Sends an HTTP request as an asynchronous operation.
+    /// </summary>
+    /// <remarks>
+    /// Uses <see cref="HttpCompletionOption.ResponseContentRead"/>.
+    /// </remarks>
+    /// <param name="method"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="method"/> is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the request URI cannot be constructed because neither <see cref="HttpClient.BaseAddress"/>
+    /// nor <see cref="Route"/> is specified.
+    /// </exception>
+    public Task<HttpResponseMessage> SendAsync(string method, CancellationToken cancellationToken)
+        => SendAsync(method, HttpCompletionOption.ResponseContentRead, cancellationToken);
 
     /// <summary>
     /// Sends an HTTP request as an asynchronous operation.
@@ -221,8 +258,50 @@ public class HttpRequestBuilder
     /// Thrown when the request URI cannot be constructed because neither <see cref="HttpClient.BaseAddress"/>
     /// nor <see cref="Route"/> is specified.
     /// </exception>
+    public Task<HttpResponseMessage> SendAsync(string method, HttpCompletionOption completionOption)
+        => SendAsync(method, completionOption, CancellationToken.None);
+
+    /// <summary>
+    /// Sends an HTTP request as an asynchronous operation.
+    /// </summary>
+    /// <remarks>
+    /// Uses the specified <see cref="HttpCompletionOption"/> and a default cancellation token.
+    /// </remarks>
+    /// <param name="method"></param>
+    /// <param name="completionOption"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="method"/> is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the request URI cannot be constructed because neither <see cref="HttpClient.BaseAddress"/>
+    /// nor <see cref="Route"/> is specified.
+    /// </exception>
     public Task<HttpResponseMessage> SendAsync(HttpMethod method, HttpCompletionOption completionOption)
         => SendAsync(method, completionOption, CancellationToken.None);
+
+    /// <summary>
+    /// Sends an HTTP request as an asynchronous operation using the configured builder state.
+    /// </summary>
+    /// <param name="method"></param>
+    /// <param name="completionOption"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="method"/> is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the request URI cannot be constructed because neither <see cref="HttpClient.BaseAddress"/>
+    /// nor <see cref="Route"/> is specified.
+    /// </exception>
+    public Task<HttpResponseMessage> SendAsync(
+        string method,
+        HttpCompletionOption completionOption,
+        CancellationToken cancellationToken)
+    {
+        Guard.AgainstNullOrEmpty(method, nameof(method));
+        return SendAsync(new HttpMethod(method.ToUpper()), completionOption, cancellationToken);
+    }
 
     /// <summary>
     /// Sends an HTTP request as an asynchronous operation using the configured builder state.

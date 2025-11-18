@@ -9,4 +9,12 @@ internal static class Guard
             throw new ArgumentNullException(paramName);
         }
     }
+
+    public static void AgainstNullOrEmpty(string? value, string? paramName = null)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            throw new ArgumentNullException(paramName);
+        }
+    }
 }

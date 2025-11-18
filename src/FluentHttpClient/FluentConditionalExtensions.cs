@@ -1,7 +1,7 @@
 namespace FluentHttpClient;
 
 /// <summary>
-/// Provides conditional configuration helpers for <see cref="HttpRequestBuilder"/> instances.
+/// Provides conditional configuration delegates for <see cref="HttpRequestBuilder"/> instances.
 /// </summary>
 /// <remarks>
 /// These extension methods allow callers to apply additional configuration to a request

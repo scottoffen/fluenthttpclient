@@ -202,7 +202,6 @@ public static class FluentSendExtensions
         return builder.SendAsync(HttpMethod.Options, completionOption, cancellationToken);
     }
 
-#if NETSTANDARD2_1 || NET5_0_OR_GREATER
     // PATCH
 
     /// <summary>
@@ -211,7 +210,11 @@ public static class FluentSendExtensions
     /// <param name="builder"></param>
     public static Task<HttpResponseMessage> PatchAsync(this HttpRequestBuilder builder)
     {
+#if NETSTANDARD2_0
+        return builder.SendAsync(new HttpMethod("PATCH"));
+#else
         return builder.SendAsync(HttpMethod.Patch);
+#endif
     }
 
     /// <summary>
@@ -223,7 +226,11 @@ public static class FluentSendExtensions
         this HttpRequestBuilder builder,
         CancellationToken cancellationToken)
     {
+#if NETSTANDARD2_0
+        return builder.SendAsync(new HttpMethod("PATCH"), cancellationToken: cancellationToken);
+#else
         return builder.SendAsync(HttpMethod.Patch, cancellationToken: cancellationToken);
+#endif
     }
 
     /// <summary>
@@ -235,7 +242,11 @@ public static class FluentSendExtensions
         this HttpRequestBuilder builder,
         HttpCompletionOption completionOption)
     {
+#if NETSTANDARD2_0
+        return builder.SendAsync(new HttpMethod("PATCH"), completionOption);
+#else
         return builder.SendAsync(HttpMethod.Patch, completionOption);
+#endif
     }
 
     /// <summary>
@@ -249,9 +260,13 @@ public static class FluentSendExtensions
         HttpCompletionOption completionOption,
         CancellationToken cancellationToken)
     {
+#if NETSTANDARD2_0
+        return builder.SendAsync(new HttpMethod("PATCH"), completionOption, cancellationToken);
+#else
         return builder.SendAsync(HttpMethod.Patch, completionOption, cancellationToken);
-    }
 #endif
+    }
+
     // POST
 
     /// <summary>

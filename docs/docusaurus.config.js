@@ -23,6 +23,10 @@ export default {
     v4: true,
   },
 
+  clientModules: [
+    require.resolve('./src/clientModules/version-attribute.js'),
+  ],
+
   presets: [
     [
       'classic',
@@ -31,6 +35,21 @@ export default {
           routeBasePath: '/', // Serve docs at the root (no /docs prefix)
           sidebarPath: './sidebars.js',
           editUrl: 'https://github.com/scottoffen/fluenthttpclient/edit/main/docs/',
+          lastVersion: 'current', // "current" = whatever is in /docs
+          versions: {
+            current: {
+              label: '5.0',
+              path: '/',
+            },
+            '4.x': {
+              label: '4.x',
+              path: '4.x',
+            },
+            '3.x': {
+              label: '3.x/2.x',
+              path: '3.x',
+            },
+          }
         },
         blog: false, // Disable blog
         theme: {
@@ -53,6 +72,11 @@ export default {
           sidebarId: 'docsSidebar',
           position: 'left',
           label: 'Docs',
+        },
+        {
+          type: 'docsVersionDropdown',
+          position: 'right',
+          dropdownActiveClassDisabled: true,
         },
         {
           href: 'https://github.com/scottoffen/fluenthttpclient',

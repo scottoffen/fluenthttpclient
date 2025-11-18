@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace FluentHttpClient;
 
 /// <summary>
@@ -334,43 +332,4 @@ public static class FluentResponseContentExtensions
         return await response.ReadContentAsByteArrayAsync(cancellationToken)
             .ConfigureAwait(false);
     }
-
-    // Compatibility shims for older method names.
-    // Mark them as error:true in future 5.x release, and remove them in v6.0.0
-
-    /// <inheritdoc cref="ReadContentAsStringAsync(HttpResponseMessage)"/>
-    [Obsolete("Use ReadContentAsStringAsync instead.")]
-    [ExcludeFromCodeCoverage]
-    public static Task<string> GetResponseStringAsync(this HttpResponseMessage responseMessage) =>
-        responseMessage.ReadContentAsStringAsync();
-
-    /// <inheritdoc cref="ReadContentAsStringAsync(Task{HttpResponseMessage})"/>
-    [Obsolete("Use ReadContentAsStringAsync instead.")]
-    [ExcludeFromCodeCoverage]
-    public static Task<string> GetResponseStringAsync(this Task<HttpResponseMessage> responseTask) =>
-        responseTask.ReadContentAsStringAsync();
-
-    /// <inheritdoc cref="ReadContentAsStreamAsync(HttpResponseMessage)"/>
-    [Obsolete("Use ReadContentAsStreamAsync instead.")]
-    [ExcludeFromCodeCoverage]
-    public static Task<Stream> GetResponseStreamAsync(this HttpResponseMessage responseMessage) =>
-        responseMessage.ReadContentAsStreamAsync();
-
-    /// <inheritdoc cref="ReadContentAsStreamAsync(Task{HttpResponseMessage})"/>
-    [Obsolete("Use ReadContentAsStreamAsync instead.")]
-    [ExcludeFromCodeCoverage]
-    public static Task<Stream> GetResponseStreamAsync(this Task<HttpResponseMessage> responseTask) =>
-        responseTask.ReadContentAsStreamAsync();
-
-    /// <inheritdoc cref="ReadContentAsByteArrayAsync(HttpResponseMessage)"/>
-    [Obsolete("Use ReadContentAsByteArrayAsync instead.")]
-    [ExcludeFromCodeCoverage]
-    public static Task<byte[]> GetResponseBytesAsync(this HttpResponseMessage responseMessage) =>
-        responseMessage.ReadContentAsByteArrayAsync();
-
-    /// <inheritdoc cref="ReadContentAsByteArrayAsync(Task{HttpResponseMessage})"/>
-    [Obsolete("Use ReadContentAsByteArrayAsync instead.")]
-    [ExcludeFromCodeCoverage]
-    public static Task<byte[]> GetResponseBytesAsync(this Task<HttpResponseMessage> responseTask) =>
-        responseTask.ReadContentAsByteArrayAsync();
 }

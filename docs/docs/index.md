@@ -1,71 +1,49 @@
 ---
-sidebar_position: 1
+sidebar_position: 0
 title: Introduction
 ---
 
 # FluentHttpClient
 
-FluentHttpClient exposes a set of extensions methods to make sending REST requests with `HttpClient` both readable and chainable.
+FluentHttpClient brings a modern, chainable API to [`HttpClient`](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient), turning verbose request setup into clean, expressive fluency. It handles headers, options, cookies, query parameters, conditional configurators, buffering, and *both* JSON/XML serialization and deserialization, along with success and failure handlers, all with minimal ceremony. It multitargets from **.NET Standard 2.0** all the way up through **.NET 10**, giving you broad compatibility across older runtimes and the latest platforms.
 
-## Using HttpClient
+## Compatibility Matrix
 
-[HttpClient](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient) is the [recommended way](https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines) to make HTTP requests in C# applications for several reasons:
+FluentHttpClient is optimized for .NET 10 and the newest .NET releases, while also supporting older platforms through .NET Standard 2.1 and 2.0 for teams maintaining long-lived or legacy applications.
 
-- **Asynchronous Operations**: `HttpClient` is designed for asynchronous programming with async/await, which is crucial for building responsive applications that don't block the main thread while waiting for network responses.
+| Target                    | Supported | Notes                         |
+| ------------------------- | --------- | ----------------------------- |
+| **.NET Standard 2.0**     | ✔️        | Broadest compatibility target |
+| **.NET Standard 2.1**     | ✔️        | Improved modern API surface   |
+| **.NET Framework 4.6.1+** | ✔️        | Via `netstandard2.0`          |
+| **.NET 6**                | ✔️        | LTS                           |
+| **.NET 7**                | ✔️        |                               |
+| **.NET 8**                | ✔️        | LTS                           |
+| **.NET 9**                | ✔️        |                               |
+| **.NET 10**               | ✔️        | LTS                           |
 
-- **Connection Pooling**: It efficiently manages and reuses HTTP connections, reducing overhead, especially for secure HTTPS connections where the handshake is performed only once. This optimizes performance by minimizing the creation of new connections.
+## A Better Way to Send HTTP Requests
 
-- **Extensibility and Customization**: `HttpClient` utilizes a plug-in architecture based on [HttpMessageHandler](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpmessagehandler). This allows developers to customize the underlying HTTP behavior, such as implementing custom caching, handling cookies, or even replacing the entire network stack with a native implementation on platforms like iOS and Android.
+FluentHttpClient is built around the way you actually write HTTP code: configure the request, send it, and handle/deserialize the response. Instead of scattering headers, query parameters, content, and deserialization across multiple calls and helper classes, you express the whole flow as a single, readable chain that sits naturally on top of `HttpClient`.
 
-- **Resilience and Policies**: When used with [`IHttpClientFactory`](https://learn.microsoft.com/en-us/dotnet/core/extensions/httpclient-factory) in ASP.NET Core, `HttpClient` can be integrated with policies for handling transient faults, such as retries with exponential backoff and circuit breakers, improving the robustness of network communication in distributed systems (e.g. using [Polly](https://www.pollydocs.org/))
+- **Configure** - Start from `HttpClient` and fluently add headers, cookies, options, query parameters, and content (string, JSON, XML, form data), with optional conditional configurators for late-bound values.
 
-- **Centralized Configuration**: `IHttpClientFactory` provides a central location for configuring `HttpClient` instances, including setting default headers, base addresses, and applying middleware, which simplifies the management of HTTP clients, especially for different external APIs.
+- **Send** - Use a focused `SendAsync` extension that builds the `HttpRequestMessage`, applies deferred configuration, and sends the request using your existing `HttpClient` instance and lifetime management.
 
-- **Lifetime Management and Socket Exhaustion**: `IHttpClientFactory` manages the pooling and lifetime of `HttpMessageHandler` instances, preventing common issues like socket exhaustion that can occur with improper manual `HttpClient` lifetime management.
+- **Handle Responses** - Use `OnSuccess` and `OnFailure` to branch based on status codes without cluttering your code with manual checks or repeated boilerplate.
 
-- **`CancellationToken` Support**: `HttpClient` supports `CancellationToken` for canceling long-running HTTP requests, which is essential for user experience and resource management in applications.
-
-:::note
-
-The socket exhaustion problems associated with the incorrect usage of the HttpClient class in .NET applications has been well documented. Microsoft has published an article introducing IHttpClientFactory, which is used to configure and create HttpClient instances in an app.
-
-:::
-
-## Using FluentHttpClient
-
-Using `HttpClient` involves creating an [`HttpRequestMessage`](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httprequestmessage), configuring it's properties (e.g. headers, query string, route, etc.), serializing any content that should be in the body of the request, and finally sending the request and getting a response. The response then needs to be inspected and deserialized.
-
-The extension methods available in this library are intended to simplify that lifecycle. These extension methods fall into three categories:
-
-### Configuring the `HttpRequestMessage`
-
-The `UsingRoute()` extension method on `HttpClient` returns an `HttpRequestBuilder` object, which exposes extension methods on it for configuring the request.
-
-### Sending the Request
-
-`HttpRequestBuilder` also has extension methods for sending the request using the common HTTP verbs, and a generic method for using custom verbs.
-
-### Deserializing the Response
-
-Finally, there are extension methods for both [`HttpResponseMessage`](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpresponsemessage) and `Task<HttpResponseMessage>` for deserializing the content returned in the response.
-
-
-### Example
-
-To enjoy the benefits of using these chaining methods, you can configure the request and send it all in one chain. The example below proceeds in that topical order.
+- **Deserialize** - Handle responses with extensions for reading content (string, bytes, stream) and strongly-typed JSON/XML deserialization, so the last step in your chain gives you the shape you actually care about.
 
 ```csharp
-var content = await _client
-    .UsingRoute("/repos/scottoffen/grapevine/issues")
-    .WithQueryParam("state", "open")
-    .WithQueryParam("sort", "created")
-    .WithQueryParam("direction", "desc")
+var httpClient = new HttpClient();
+
+var weather = await httpClient
+    .UsingRoute("https://api.example.com/weather")
+    .WithQueryParameter("city", "Denver")
+    .WithHeader("X-Correlation-Id", correlationId)
+    .When(_ => isPreviewEnvironment, b => b.WithQueryParameter("preview", "true"))
     .GetAsync()
-    .GetResponseStreamAsync();
+    .OnSuccess(r => logger.LogInformation("Success: {Status}", r.StatusCode))
+    .OnFailure(r => logger.LogWarning("Failed: {Status}", r.StatusCode))
+    .ReadJsonAsync<WeatherForecast>();
 ```
-
-:::important
-
-Note that the method name difference between setting a single instance of a property and multiples is that the multiple instance will use the plural form. For example, you can add a single query parameter using the method `WithQueryParam()` and multiple query parameters at once using `WithQueryParams()`.
-
-:::

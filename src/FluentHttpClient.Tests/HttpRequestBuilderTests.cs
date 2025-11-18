@@ -242,16 +242,6 @@ public class HttpRequestBuilderTests
         }
     }
 
-
-
-
-
-
-
-
-
-
-
     public class BuildRequestUriTests
     {
         [Fact]
@@ -648,4 +638,211 @@ public class HttpRequestBuilderTests
             }
         }
     }
+
+    public class SendAsyncStringTests
+    {
+        private sealed class TestHttpMessageHandler : HttpMessageHandler
+        {
+            public HttpRequestMessage? LastRequest { get; private set; }
+
+            protected override Task<HttpResponseMessage> SendAsync(
+                HttpRequestMessage request,
+                CancellationToken cancellationToken)
+            {
+                LastRequest = request;
+
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    RequestMessage = request
+                };
+
+                return Task.FromResult(response);
+            }
+        }
+
+        private static HttpRequestBuilder CreateBuilder(TestHttpMessageHandler handler)
+        {
+            var client = new HttpClient(handler)
+            {
+                BaseAddress = new Uri("https://example.com/")
+            };
+
+            // Constructors are internal, tests rely on InternalsVisibleTo
+            return new HttpRequestBuilder(client);
+        }
+
+        public class MethodOnlyOverload
+        {
+            [Fact]
+            public async Task SendAsync_UsesUppercaseHttpMethod_WhenOnlyMethodProvided()
+            {
+                var handler = new TestHttpMessageHandler();
+                var builder = CreateBuilder(handler);
+
+                var response = await builder.SendAsync("get");
+
+                response.ShouldNotBeNull();
+                handler.LastRequest.ShouldNotBeNull();
+                handler.LastRequest!.Method.Method.ShouldBe("GET");
+            }
+
+            [Fact]
+            public async Task SendAsync_ThrowsArgumentNullException_WhenMethodIsNull()
+            {
+                var handler = new TestHttpMessageHandler();
+                var builder = CreateBuilder(handler);
+
+                var exception = await Should
+                    .ThrowAsync<ArgumentNullException>(() => builder.SendAsync((string)null!));
+
+                exception.ParamName.ShouldBe("method");
+            }
+
+            [Fact]
+            public async Task SendAsync_ThrowsArgumentException_WhenMethodIsEmpty()
+            {
+                var handler = new TestHttpMessageHandler();
+                var builder = CreateBuilder(handler);
+
+                var exception = await Should
+                    .ThrowAsync<ArgumentException>(() => builder.SendAsync(string.Empty));
+
+                exception.ParamName.ShouldBe("method");
+            }
+        }
+
+        public class MethodAndCancellationTokenOverload
+        {
+            [Fact]
+            public async Task SendAsync_UsesUppercaseHttpMethod_WhenCancellationTokenProvided()
+            {
+                var handler = new TestHttpMessageHandler();
+                var builder = CreateBuilder(handler);
+                using var cts = new CancellationTokenSource();
+
+                var response = await builder.SendAsync("post", cts.Token);
+
+                response.ShouldNotBeNull();
+                handler.LastRequest.ShouldNotBeNull();
+                handler.LastRequest!.Method.Method.ShouldBe("POST");
+            }
+
+            [Fact]
+            public async Task SendAsync_ThrowsArgumentNullException_WhenMethodIsNull()
+            {
+                var handler = new TestHttpMessageHandler();
+                var builder = CreateBuilder(handler);
+                using var cts = new CancellationTokenSource();
+
+                var exception = await Should
+                    .ThrowAsync<ArgumentNullException>(() => builder.SendAsync((string)null!, cts.Token));
+
+                exception.ParamName.ShouldBe("method");
+            }
+
+            [Fact]
+            public async Task SendAsync_ThrowsArgumentException_WhenMethodIsEmpty()
+            {
+                var handler = new TestHttpMessageHandler();
+                var builder = CreateBuilder(handler);
+                using var cts = new CancellationTokenSource();
+
+                var exception = await Should
+                    .ThrowAsync<ArgumentException>(() => builder.SendAsync(string.Empty, cts.Token));
+
+                exception.ParamName.ShouldBe("method");
+            }
+        }
+
+        public class MethodAndCompletionOptionOverload
+        {
+            [Fact]
+            public async Task SendAsync_UsesUppercaseHttpMethod_WhenCompletionOptionProvided()
+            {
+                var handler = new TestHttpMessageHandler();
+                var builder = CreateBuilder(handler);
+
+                var response = await builder.SendAsync("delete", HttpCompletionOption.ResponseHeadersRead);
+
+                response.ShouldNotBeNull();
+                handler.LastRequest.ShouldNotBeNull();
+                handler.LastRequest!.Method.Method.ShouldBe("DELETE");
+            }
+
+            [Fact]
+            public async Task SendAsync_ThrowsArgumentNullException_WhenMethodIsNull()
+            {
+                var handler = new TestHttpMessageHandler();
+                var builder = CreateBuilder(handler);
+
+                var exception = await Should
+                    .ThrowAsync<ArgumentNullException>(() =>
+                        builder.SendAsync((string)null!, HttpCompletionOption.ResponseContentRead));
+
+                exception.ParamName.ShouldBe("method");
+            }
+
+            [Fact]
+            public async Task SendAsync_ThrowsArgumentException_WhenMethodIsEmpty()
+            {
+                var handler = new TestHttpMessageHandler();
+                var builder = CreateBuilder(handler);
+
+                var exception = await Should
+                    .ThrowAsync<ArgumentException>(() =>
+                        builder.SendAsync(string.Empty, HttpCompletionOption.ResponseContentRead));
+
+                exception.ParamName.ShouldBe("method");
+            }
+        }
+
+        public class MethodCompletionOptionAndCancellationTokenOverload
+        {
+            [Fact]
+            public async Task SendAsync_UsesUppercaseHttpMethod_WhenCompletionOptionAndCancellationTokenProvided()
+            {
+                var handler = new TestHttpMessageHandler();
+                var builder = CreateBuilder(handler);
+                using var cts = new CancellationTokenSource();
+
+                var response = await builder.SendAsync(
+                    "patch",
+                    HttpCompletionOption.ResponseContentRead,
+                    cts.Token);
+
+                response.ShouldNotBeNull();
+                handler.LastRequest.ShouldNotBeNull();
+                handler.LastRequest!.Method.Method.ShouldBe("PATCH");
+            }
+
+            [Fact]
+            public async Task SendAsync_ThrowsArgumentNullException_WhenMethodIsNull()
+            {
+                var handler = new TestHttpMessageHandler();
+                var builder = CreateBuilder(handler);
+                using var cts = new CancellationTokenSource();
+
+                var exception = await Should
+                    .ThrowAsync<ArgumentNullException>(() =>
+                        builder.SendAsync((string)null!, HttpCompletionOption.ResponseContentRead, cts.Token));
+
+                exception.ParamName.ShouldBe("method");
+            }
+
+            [Fact]
+            public async Task SendAsync_ThrowsArgumentException_WhenMethodIsEmpty()
+            {
+                var handler = new TestHttpMessageHandler();
+                var builder = CreateBuilder(handler);
+                using var cts = new CancellationTokenSource();
+
+                var exception = await Should
+                    .ThrowAsync<ArgumentException>(() =>
+                        builder.SendAsync(string.Empty, HttpCompletionOption.ResponseContentRead, cts.Token));
+
+                exception.ParamName.ShouldBe("method");
+            }
+        }
+    }
+
 }
