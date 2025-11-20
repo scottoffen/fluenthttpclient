@@ -4,11 +4,87 @@ using System.Net.Http.Headers;
 namespace FluentHttpClient;
 
 /// <summary>
-/// Provides a builder pattern for generating and sending an <see cref="HttpRequestMessage"/> 
+/// Provides a builder pattern for generating and sending an <see cref="HttpRequestMessage"/>
+/// using a configured <see cref="HttpClient"/>.
 /// </summary>
 public class HttpRequestBuilder
 {
+    internal static readonly string MessageInvalidBaseAddress = "HttpClient.BaseAddress must not contain a query string or fragment.";
+    internal static readonly string MessageInvalidRoute = "Route must not contain a query string or fragment. Use QueryParameters to specify query values.";
+    internal static readonly string MessageEmptyRoute = "Missing or invalid route provided to constructor.";
+    internal static readonly string MessageMissingRoute = "Client has no base address and no route information was provided.";
+    internal static readonly string CookieHeaderName = "Cookie";
+
     private readonly HttpClient _client;
+    private readonly Uri? _route;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HttpRequestBuilder"/> class
+    /// with the specified <see cref="HttpClient"/>.
+    /// </summary>
+    /// <param name="client"></param>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="client"/> has a <see cref="HttpClient.BaseAddress"/> that
+    /// contains a query string or fragment.
+    /// </exception>
+    internal HttpRequestBuilder(HttpClient client)
+    {
+        _client = client ?? throw new ArgumentNullException(nameof(client));
+
+        if (_client.BaseAddress is not null)
+        {
+            if (!string.IsNullOrEmpty(_client.BaseAddress.Query) ||
+                !string.IsNullOrEmpty(_client.BaseAddress.Fragment))
+            {
+                throw new ArgumentException(MessageInvalidBaseAddress, nameof(client));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HttpRequestBuilder"/> class
+    /// with the specified <see cref="HttpClient"/> and route.
+    /// </summary>
+    /// <param name="client"></param>
+    /// <param name="route"></param>
+    internal HttpRequestBuilder(HttpClient client, string route)
+        : this(client, CreateRouteUri(route))
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HttpRequestBuilder"/> class
+    /// with the specified <see cref="HttpClient"/> and route.
+    /// </summary>
+    /// <param name="client"></param>
+    /// <param name="route"></param>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="route"/> contains a query string or fragment.
+    /// </exception>
+    internal HttpRequestBuilder(HttpClient client, Uri route) : this(client)
+    {
+        Guard.AgainstNull(route, nameof(route));
+
+        if (route.IsAbsoluteUri)
+        {
+            if (!string.IsNullOrEmpty(route.Query) || !string.IsNullOrEmpty(route.Fragment))
+            {
+                throw new ArgumentException(MessageInvalidRoute, nameof(route));
+            }
+        }
+        else
+        {
+            var text = route.OriginalString;
+            if (text.IndexOfAny(['?', '#']) >= 0)
+            {
+                throw new ArgumentException(MessageInvalidRoute, nameof(route));
+            }
+        }
+
+        _route = route;
+    }
 
     /// <summary>
     /// Gets or sets the contents of the HTTP message.
@@ -16,186 +92,384 @@ public class HttpRequestBuilder
     public HttpContent? Content { get; set; }
 
     /// <summary>
-    /// Gets the collection of cookies for the request.
-    /// </summary>
-    public CookieContainer Cookies { get; } = new CookieContainer();
-
-    /// <summary>
-    /// Gets the collection of actions used to configure HTTP request headers.
-    /// </summary>
-    public List<Action<HttpRequestHeaders>> ConfigureHeaders { get; } = [];
-
-    /// <summary>
-    /// Gets or set an action to configure the <see cref="HttpRequestOptions"/>  of the HTTP request.
-    /// </summary>
-    public Action<HttpRequestOptions>? ConfigureOptionsAction { get; set; }
-
-    /// <summary>
-    /// Gets or sets a boolean value to indicate whether content should be buffered (serialized) prior to sending the request.
-    /// </summary>
-    /// <remarks>For use in rare edge cases; see <a href="https://github.com/dotnet/runtime/issues/30283">this issue</a>.</remarks>
-    public bool BufferContentBeforeSending { get; set; }
-
-    /// <summary>
-    /// Gets the collection of request query parameters.
+    /// Returns the cookies that will be sent on this HTTP request.
     /// </summary>
     /// <remarks>
-    /// Use extension methods WithQueryParam() and WithQueryParams() to add values to the collection.
+    /// These cookies are serialized into the Cookie header for this request only.
+    /// Long-lived cookie management should be configured on the underlying handler used by <see cref="HttpClient"/>.
+    /// Values are not automatically encoded when sending; encoding should occur prior to adding the cookie.
     /// </remarks>
-    public List<string> QueryParams { get; } = [];
+    public IDictionary<string, string> Cookies { get; } =
+        new Dictionary<string, string>(StringComparer.Ordinal);
 
     /// <summary>
-    /// Gets or sets the route used for the HTTP request.
+    /// Returns the collection of deferred configurators that are executed during
+    /// final request construction.
     /// </summary>
     /// <remarks>
-    /// Trailing slashes on the route will be removed. If <see cref="HttpClient.BaseAddress"/> has a value, then this value will be appended to it.
+    /// Deferred configurators allow conditional or context-dependent configuration
+    /// to be applied when the <see cref="HttpRequestMessage"/> is actually built,
+    /// rather than when the fluent calls are made.
+    /// This is useful for scenarios where the condition depends on late-bound
+    /// state (such as ambient context values, feature flags, or other runtime
+    /// information available only when the request is being created).
     /// </remarks>
-    public string? Route { get; private set; }
+    public List<Action<HttpRequestBuilder>> DeferredConfigurators { get; } = [];
+
+    /// <summary>
+    /// Returns the collection of actions used to configure HTTP request headers.
+    /// </summary>
+    public List<Action<HttpRequestHeaders>> HeaderConfigurators { get; } = [];
+
+#if NET5_0_OR_GREATER
+    /// <summary>
+    /// Returns the collection of actions used to configure the <see cref="HttpRequestOptions"/> of the HTTP request.
+    /// </summary>
+    public List<Action<HttpRequestOptions>> OptionConfigurators { get; } = [];
+
+#endif
+    /// <summary>
+    /// Gets or sets a value that indicates whether content should be buffered
+    /// (fully serialized into memory) prior to sending the request.
+    /// </summary>
+    /// <remarks>
+    /// This is intended for rare edge cases where buffering is required.
+    /// When enabled, large payloads may have a significant memory impact.
+    /// See https://github.com/dotnet/runtime/issues/30283 for additional context.
+    /// </remarks>
+    public bool BufferRequestContent { get; set; }
+
+    /// <summary>
+    /// Returns the collection of query string parameters for this request.
+    /// </summary>
+    /// <remarks>
+    /// All query string values should be added through this collection.
+    /// <see cref="HttpClient.BaseAddress"/> and <see cref="Route"/> must not contain query components.
+    /// </remarks>
+    public HttpQueryParameterCollection QueryParameters { get; } = [];
+
+    /// <summary>
+    /// Returns the route used for the HTTP request.
+    /// </summary>
+    public string? Route => _route?.OriginalString;
 
     /// <summary>
     /// Gets or sets the HTTP message version.
     /// </summary>
-    /// <remarks>Defaults to 1.1</remarks>
-    public Version Version { get; set; } = new Version("1.1");
+    /// <remarks>Defaults to HTTP/1.1.</remarks>
+    public Version Version { get; set; } = HttpVersion.Version11;
 
+#if NET5_0_OR_GREATER
     /// <summary>
-    /// Gets or sets the policy that determines how <see cref="Version"/> is interpreted and how the final HTTP version is negotiated with the server.
+    /// Gets or sets the policy that determines how <see cref="Version"/> is interpreted
+    /// and how the final HTTP version is negotiated with the server.
     /// </summary>
-    /// <remarks>Defaults to <see cref="HttpVersionPolicy.RequestVersionOrLower"/> </remarks>
+    /// <remarks>Defaults to <see cref="HttpVersionPolicy.RequestVersionOrLower"/>.</remarks>
     public HttpVersionPolicy VersionPolicy { get; set; } = HttpVersionPolicy.RequestVersionOrLower;
 
+#endif
     /// <summary>
-    /// Constructs an <see cref="HttpRequestBuilder"/> with the supplied client.
+    /// Sends an HTTP request as an asynchronous operation.
     /// </summary>
-    /// <param name="client"></param>
-    public HttpRequestBuilder(HttpClient client)
-    {
-        _client = client;
-    }
-
-    /// <summary>
-    /// Constructs an <see cref="HttpRequestBuilder"/> with the supplied client and route.
-    /// </summary>
-    /// <param name="client"></param>
-    /// <param name="route"></param>
-    public HttpRequestBuilder(HttpClient client, string route) : this(client)
-    {
-        Route = route;
-    }
-
-    /// <summary>
-    /// Send an HTTP request as an asynchronous operation.
-    /// </summary>
+    /// <remarks>
+    /// Uses <see cref="HttpCompletionOption.ResponseContentRead"/> and a default cancellation token.
+    /// </remarks>
     /// <param name="method"></param>
     /// <returns>The task object representing the asynchronous operation.</returns>
-    /// <exception cref="ArgumentNullException">The request is null or the route is invalid</exception>
-    /// <exception cref="InvalidOperationException">The request message was already sent by the HttpClient instance.</exception>
-    /// <exception cref="HttpRequestException">The request failed due to an underlying issue such as network connectivity, DNS failure, server certificate validation or timeout.</exception>
-    /// <exception cref="TaskCanceledException">The request failed due to timeout.</exception>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="method"/> is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the request URI cannot be constructed because neither <see cref="HttpClient.BaseAddress"/>
+    /// nor <see cref="Route"/> is specified.
+    /// </exception>
+    public Task<HttpResponseMessage> SendAsync(string method)
+        => SendAsync(method, HttpCompletionOption.ResponseContentRead, CancellationToken.None);
+
+    /// <summary>
+    /// Sends an HTTP request as an asynchronous operation.
+    /// </summary>
+    /// <remarks>
+    /// Uses <see cref="HttpCompletionOption.ResponseContentRead"/> and a default cancellation token.
+    /// </remarks>
+    /// <param name="method"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="method"/> is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the request URI cannot be constructed because neither <see cref="HttpClient.BaseAddress"/>
+    /// nor <see cref="Route"/> is specified.
+    /// </exception>
     public Task<HttpResponseMessage> SendAsync(HttpMethod method)
-    {
-        return SendAsync(method, HttpCompletionOption.ResponseContentRead, CancellationToken.None);
-    }
+        => SendAsync(method, HttpCompletionOption.ResponseContentRead, CancellationToken.None);
 
     /// <summary>
-    /// Send an HTTP request as an asynchronous operation.
+    /// Sends an HTTP request as an asynchronous operation.
     /// </summary>
+    /// <remarks>
+    /// Uses <see cref="HttpCompletionOption.ResponseContentRead"/>.
+    /// </remarks>
+    /// <param name="method"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="method"/> is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the request URI cannot be constructed because neither <see cref="HttpClient.BaseAddress"/>
+    /// nor <see cref="Route"/> is specified.
+    /// </exception>
+    public Task<HttpResponseMessage> SendAsync(string method, CancellationToken cancellationToken)
+        => SendAsync(method, HttpCompletionOption.ResponseContentRead, cancellationToken);
+
+    /// <summary>
+    /// Sends an HTTP request as an asynchronous operation.
+    /// </summary>
+    /// <remarks>
+    /// Uses <see cref="HttpCompletionOption.ResponseContentRead"/>.
+    /// </remarks>
+    /// <param name="method"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="method"/> is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the request URI cannot be constructed because neither <see cref="HttpClient.BaseAddress"/>
+    /// nor <see cref="Route"/> is specified.
+    /// </exception>
+    public Task<HttpResponseMessage> SendAsync(HttpMethod method, CancellationToken cancellationToken)
+        => SendAsync(method, HttpCompletionOption.ResponseContentRead, cancellationToken);
+
+    /// <summary>
+    /// Sends an HTTP request as an asynchronous operation.
+    /// </summary>
+    /// <remarks>
+    /// Uses the specified <see cref="HttpCompletionOption"/> and a default cancellation token.
+    /// </remarks>
     /// <param name="method"></param>
     /// <param name="completionOption"></param>
     /// <returns>The task object representing the asynchronous operation.</returns>
-    /// <exception cref="ArgumentNullException">The request is null or the route is invalid</exception>
-    /// <exception cref="InvalidOperationException">The request message was already sent by the HttpClient instance.</exception>
-    /// <exception cref="HttpRequestException">The request failed due to an underlying issue such as network connectivity, DNS failure, server certificate validation or timeout.</exception>
-    /// <exception cref="TaskCanceledException">The request failed due to timeout.</exception>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="method"/> is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the request URI cannot be constructed because neither <see cref="HttpClient.BaseAddress"/>
+    /// nor <see cref="Route"/> is specified.
+    /// </exception>
+    public Task<HttpResponseMessage> SendAsync(string method, HttpCompletionOption completionOption)
+        => SendAsync(method, completionOption, CancellationToken.None);
+
+    /// <summary>
+    /// Sends an HTTP request as an asynchronous operation.
+    /// </summary>
+    /// <remarks>
+    /// Uses the specified <see cref="HttpCompletionOption"/> and a default cancellation token.
+    /// </remarks>
+    /// <param name="method"></param>
+    /// <param name="completionOption"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="method"/> is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the request URI cannot be constructed because neither <see cref="HttpClient.BaseAddress"/>
+    /// nor <see cref="Route"/> is specified.
+    /// </exception>
     public Task<HttpResponseMessage> SendAsync(HttpMethod method, HttpCompletionOption completionOption)
-    {
-        return SendAsync(method, completionOption, CancellationToken.None);
-    }
+        => SendAsync(method, completionOption, CancellationToken.None);
 
     /// <summary>
-    /// Send an HTTP request as an asynchronous operation.
-    /// </summary>
-    /// <param name="method"></param>
-    /// <param name="token"></param>
-    /// <returns>The task object representing the asynchronous operation.</returns>
-    /// <exception cref="ArgumentNullException">The request is null or the route is invalid</exception>
-    /// <exception cref="InvalidOperationException">The request message was already sent by the HttpClient instance.</exception>
-    /// <exception cref="HttpRequestException">The request failed due to an underlying issue such as network connectivity, DNS failure, server certificate validation or timeout.</exception>
-    /// <exception cref="TaskCanceledException">The request failed due to timeout.</exception>
-    public Task<HttpResponseMessage> SendAsync(HttpMethod method, CancellationToken token)
-    {
-        return SendAsync(method, HttpCompletionOption.ResponseContentRead, token);
-    }
-
-    /// <summary>
-    /// Send an HTTP request as an asynchronous operation.
+    /// Sends an HTTP request as an asynchronous operation using the configured builder state.
     /// </summary>
     /// <param name="method"></param>
     /// <param name="completionOption"></param>
-    /// <param name="token"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns>The task object representing the asynchronous operation.</returns>
-    /// <exception cref="ArgumentNullException">The request is null or the route is invalid</exception>
-    /// <exception cref="InvalidOperationException">The request message was already sent by the HttpClient instance.</exception>
-    /// <exception cref="HttpRequestException">The request failed due to an underlying issue such as network connectivity, DNS failure, server certificate validation or timeout.</exception>
-    /// <exception cref="TaskCanceledException">The request failed due to timeout.</exception>
-    public async Task<HttpResponseMessage> SendAsync(HttpMethod method, HttpCompletionOption completionOption, CancellationToken token)
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="method"/> is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the request URI cannot be constructed because neither <see cref="HttpClient.BaseAddress"/>
+    /// nor <see cref="Route"/> is specified.
+    /// </exception>
+    public Task<HttpResponseMessage> SendAsync(
+        string method,
+        HttpCompletionOption completionOption,
+        CancellationToken cancellationToken)
     {
-        if (BufferContentBeforeSending && Content != null)
-            await Content.LoadIntoBufferAsync();
+        Guard.AgainstNullOrEmpty(method, nameof(method));
+        return SendAsync(new HttpMethod(method.ToUpper()), completionOption, cancellationToken);
+    }
 
-        var request = new HttpRequestMessage(method, GenerateRequestUri())
-        {
-            Content = Content,
-            Method = method,
-            Version = Version,
-            VersionPolicy = VersionPolicy
-        };
-
-        ConfigureMessage(request);
-        ConfigureOptionsAction?.Invoke(request.Options);
+    /// <summary>
+    /// Sends an HTTP request as an asynchronous operation using the configured builder state.
+    /// </summary>
+    /// <param name="method"></param>
+    /// <param name="completionOption"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="method"/> is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the request URI cannot be constructed because neither <see cref="HttpClient.BaseAddress"/>
+    /// nor <see cref="Route"/> is specified.
+    /// </exception>
+    public async Task<HttpResponseMessage> SendAsync(
+        HttpMethod method,
+        HttpCompletionOption completionOption,
+        CancellationToken cancellationToken)
+    {
+        using var request = await BuildRequest(method, cancellationToken).ConfigureAwait(false);
 
         return await _client
-            .SendAsync(request, completionOption, token)
+            .SendAsync(request, completionOption, cancellationToken)
             .ConfigureAwait(false);
     }
 
-    private Uri GenerateRequestUri()
+    /// <summary>
+    /// Builds and configures the <see cref="HttpRequestMessage"/> for this builder instance.
+    /// Intended for internal and testing use. Use <see cref="SendAsync(HttpMethod)"/> and its overloads to send requests.
+    /// </summary>
+    /// <param name="method"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>The configured <see cref="HttpRequestMessage"/>.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="method"/> is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the request URI cannot be constructed because neither <see cref="HttpClient.BaseAddress"/>
+    /// nor <see cref="Route"/> is specified.
+    /// </exception>
+    internal async Task<HttpRequestMessage> BuildRequest(HttpMethod method, CancellationToken cancellationToken)
     {
-        var baseAddress = _client.BaseAddress?.ToString().TrimEnd('/') ?? string.Empty;
-        var route = Route?.TrimStart('/') ?? string.Empty;
+        Guard.AgainstNull(method, nameof(method));
 
-        var missingBaseAddress = string.IsNullOrWhiteSpace(baseAddress);
-        var missingRoute = string.IsNullOrWhiteSpace(route);
-
-        if (missingBaseAddress && missingRoute)
-            throw new ArgumentException("Invalid Route: Client has no base address and no route information was provided");
-
-        if (missingBaseAddress)
+        foreach (var configure in DeferredConfigurators)
         {
-            return new Uri($"{route}{QueryParams.ToQueryString()}");
+            configure(this);
         }
 
-        if (missingRoute)
+        if (BufferRequestContent && Content != null)
         {
-            return new Uri($"{baseAddress}{QueryParams.ToQueryString()}");
+#if NET9_0_OR_GREATER
+            await Content.LoadIntoBufferAsync(cancellationToken).ConfigureAwait(false);
+#else
+            await Content.LoadIntoBufferAsync().ConfigureAwait(false);
+#endif
         }
 
-        return new Uri($"{baseAddress}/{route}{QueryParams.ToQueryString()}");
+        var uri = BuildRequestUri();
+
+        var request = new HttpRequestMessage(method, uri)
+        {
+            Content = Content,
+            Version = Version,
+#if NET5_0_OR_GREATER
+            VersionPolicy = VersionPolicy
+#endif
+        };
+
+        ApplyConfiguration(request);
+
+        return request;
     }
 
-    private void ConfigureMessage(HttpRequestMessage request)
+    /// <summary>
+    /// Builds the final request URI from <see cref="HttpClient.BaseAddress"/>,
+    /// <see cref="Route"/>, and <see cref="QueryParameters"/>.
+    /// </summary>
+    /// <returns>The constructed <see cref="Uri"/>.</returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown when both <see cref="HttpClient.BaseAddress"/> and <see cref="Route"/> are missing.
+    /// </exception>
+    internal Uri BuildRequestUri()
     {
-        if (request.RequestUri == null)
-            throw new ArgumentException($"{nameof(HttpRequestMessage.RequestUri)} cannot be null");
+        if (_client.BaseAddress is null && _route is null)
+        {
+            throw new ArgumentException(MessageMissingRoute, nameof(Route));
+        }
 
-        if (Content is MultipartContent) request.Headers.ExpectContinue = false;
+        var queryString = QueryParameters.ToQueryString();
 
-        ConfigureHeaders.ForEach(x => x.Invoke(request.Headers));
+        if (_route is null)
+        {
+            return new Uri(queryString, UriKind.Relative);
+        }
+
+        if (_route.IsAbsoluteUri)
+        {
+            var path = _route.GetLeftPart(UriPartial.Path);
+            return new Uri($"{path}{queryString}", UriKind.Absolute);
+        }
+
+        var routeText = _route.OriginalString.Trim();
+        return new Uri($"{routeText}{queryString}", UriKind.RelativeOrAbsolute);
+    }
+
+    /// <summary>
+    /// Applies headers, cookies, and options from the builder to the request.
+    /// </summary>
+    /// <param name="request"></param>
+    private void ApplyConfiguration(HttpRequestMessage request)
+    {
+        if (Content is MultipartContent)
+        {
+            request.Headers.ExpectContinue = false;
+        }
+
+        for (var i = 0; i < HeaderConfigurators.Count; i++)
+        {
+            HeaderConfigurators[i](request.Headers);
+        }
 
         if (Cookies.Count > 0)
         {
-            var cookieHeader = Cookies.GetCookieHeader(request.RequestUri);
-            request.Headers.Add("Cookie", cookieHeader);
+            var cookieHeader = string.Join(
+                "; ",
+                Cookies.Select(kvp => $"{kvp.Key}={kvp.Value}"));
+
+            if (!string.IsNullOrEmpty(cookieHeader))
+            {
+                request.Headers.Add(CookieHeaderName, cookieHeader);
+            }
+        }
+#if NET5_0_OR_GREATER
+
+        for (var i = 0; i < OptionConfigurators.Count; i++)
+        {
+            OptionConfigurators[i](request.Options);
+        }
+#endif
+    }
+
+    /// <summary>
+    /// Creates a <see cref="Uri"/> instance from the specified route string,
+    /// trimming whitespace and validating that the value is not null or empty.
+    /// </summary>
+    /// <remarks>
+    /// This method should only be used by the <see cref="HttpRequestBuilder"/> constructors.
+    /// </remarks>
+    internal static Uri CreateRouteUri(string route)
+    {
+        Guard.AgainstNull(route, nameof(route));
+
+        var trimmed = route.Trim();
+
+        if (trimmed.Length == 0)
+        {
+            throw new ArgumentException(MessageEmptyRoute, nameof(route));
+        }
+
+        try
+        {
+            return new Uri(trimmed, UriKind.RelativeOrAbsolute);
+        }
+        catch (UriFormatException ex)
+        {
+            throw new ArgumentException(MessageEmptyRoute, nameof(route), ex);
         }
     }
 }

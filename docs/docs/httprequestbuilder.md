@@ -1,225 +1,150 @@
 ---
-sidebar_position: 2
+sidebar_position: 1
 title: HttpRequestBuilder
 ---
 
-The `HttpRequestBuilder` class provides a fluent, flexible way to construct and send HTTP requests using an existing `HttpClient` instance. It follows the builder pattern to let you configure headers, cookies, content, and other options before sending the request.
+`HttpRequestBuilder` is the core building block of FluentHttpClient. It wraps an existing `HttpClient` instance and gives you a focused, chainable way to build up a single HTTP request before sending it.
 
-None of the properties is required as long as the provided `HttpClient` instance knows where to send the request.
+Instead of configuring headers, cookies, query strings, content, and HTTP version directly on `HttpRequestMessage`, you work with a builder that tracks all of that state. Extension methods hang off `HttpRequestBuilder` to keep the call site clean and readable. When you finally call `SendAsync` (or one of it's overloads), the builder composes the URI, applies headers, cookies, options, and content, and then uses the underlying `HttpClient` to send the request.
 
-:::important Recommendation
-Wherever possible, prefer configuring properties and calling methods through the **FluentHttpClient** extension methods, rather than modifying `HttpRequestBuilder` directly.
+At a high level, the workflow looks like this:
+- You create an `HttpRequestBuilder` from an existing `HttpClient` (optionally with a route).
+- You use fluent extension methods to configure the builder state.
+- You call `SendAsync` with the desired `HttpMethod` (or one of it's overloads) to send the request.
+
+This keeps each request self-contained and avoids mutating shared `HttpClient` state like `DefaultRequestHeaders`.
+
+## Fluent Workflow
+
+FluentHttpClient is built around a simple pattern:
+
+```csharp
+var response = await client
+    .UsingRoute("/api/widgets")   // produces a HttpRequestBuilder
+    .WithHeader("X-Tenant", tenantId)
+    .WithQueryParameter("state", "active")
+    .WithJsonContent(payload)
+    .PostAsync();
+```
+
+In this example:
+- The `UsingRoute` extension constructs an `HttpRequestBuilder`.
+- Each `With*` call adds configuration to the builder by updating its properties and configurator collections.
+- `PostAsync` (an overload for `SendAsync(HttpMethod.Post)`) uses the builder state to:
+    - Build the final request URI from `HttpClient.BaseAddress`, `Route`, and `QueryParameters`.
+    - Apply headers, cookies, and options.
+    - Attach content and set HTTP version and version policy.
+    - Optionally buffer the request content if requested (not shown in this example).
+    - Send the request via the underlying `HttpClient`.
+
+`HttpRequestBuilder` itself is intentionally small and focused. It holds state and provides the minimal sending API. All the DX sugar lives in extension methods that operate on the builder.
+
+## Constructors
+
+Starting in FluentHttpClient 5.0, `HttpRequestBuilder` is no longer able to be constructed directly. Its constructors are now internal to ensure consistent validation and to guide users toward the supported creation patterns. To begin building a request, use one of the `HttpClient` extension methods described below. Each one returns a fresh builder instance scoped to a single request.
+
+:::warning Query Strings and Fragments
+
+`BaseAddress` and `Route` must remain clean—free of query strings and fragments—so that FluentHttpClient has a single, predictable source of truth for all query-related behavior. Allowing query components in multiple places leads to ambiguous URI construction, duplicated encoding, and inconsistent request signatures. By enforcing that all query values flow through `QueryParameters`, the builder can reliably compose the final URI, ensure consistent encoding rules, and prevent subtle bugs caused by mixing inline query strings with fluent configuration.
+
 :::
 
-## Creating a Request
-
-You can create a new `HttpRequestBuilder` by passing an `HttpClient` instance. An optional route can also be provided to target a specific endpoint.
+### `UsingBase()`
 
 ```csharp
-var request = new HttpRequestBuilder(client);
-var request = new HttpRequestBuilder(client, "/users/12345");
+var bulder = client.UsingBase();
 ```
 
-While you *can* create the request builder directly, it is recommended to use the extension methods on `HttpClient`.
+Creates a new `HttpRequestBuilder` using the `HttpClient`'s configured `BaseAddress` as the starting point. This is the preferred way to build requests when your client already has a base URI set - or will before the request is sent -and no additional route is needed.
+
+Use this when:
+- You already set `HttpClient.BaseAddress`.
+- You want all requests to be sent to that `Uri`.
+
+*If `BaseAddress` is not set prior to sending the request an exception will be thrown.*
+
+### `UsingRoute(string route)`
 
 ```csharp
-var request = client.UsingRoute("/users/12345");
-var request = client.WithoutRoute();
+var builder = client.UsingRoute("api/v1/users");
 ```
 
-When the request is sent:
-- If the `HttpClient.BaseAddress` is set, the route is appended to it.
-- If not, the route becomes the full request URL.
+Creates a builder using the provided `route` as the initial request URI. The `route` may be either:
+- A relative path (e.g. "api/widgets/42"), or
+- An absolute URI ("https://api.example.com/v1/widgets").
 
----
+FluentHttpClient validates that the route does not include query strings or fragments. All query parameters should be added through the builder's `QueryParameters` collection (preferably through the provided overloads).
+
+Use this overload when you want to target an endpoint that is either different from or relative to the `BaseAddress` property on the client.
+
+### `UsingRoute(Uri uri)`
+
+```csharp
+var builder = client.UsingRoute(new Uri("api/v1/users"));
+```
+
+This overload behaves the same as the string version but takes a pre-constructed Uri instance. Use it when:
+- You already have a Uri from configuration or another component.
+- You want to avoid the overhead or ambiguity of parsing a raw string.
+- You need to pass a `UriKind.Absolute` or `UriKind.Relative` explicitly.
+
+As with the string-based overload, the provided `Uri` must not contain query or fragment components.
 
 ## Properties
 
-### Content
+The table below lists the key properties on `HttpRequestBuilder` and how they are used.
 
-Specifies the `HttpContent` to send with the request (e.g., JSON, form data, or multipart content).
+| Property                                                 | Description                                                                                                                                                              |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `HttpContent? Content`                                   | The request body to send. Set by content-related extensions such as JSON, XML, or form encoded data.                                                                          |
+| `IDictionary<string,string> Cookies`                     | Per-request cookies serialized into a single `Cookie` header. Values are not encoded automatically; long-lived cookie storage should come from the `HttpClient` handler. |
+| `List<Action<HttpRequestBuilder>> DeferredConfigurators` | Actions executed immediately before building the request, enabling late-bound or conditional configuration (used by `.When(...)` extensions).                               |
+| `List<Action<HttpRequestHeaders>> HeaderConfigurators`   | Actions that mutate `HttpRequestMessage.Headers` during request construction. Populated by header-related extensions.                                                    |
+| `List<Action<HttpRequestOptions>> OptionConfigurators`*  | Actions that set values in `HttpRequestMessage.Options`. Useful for per-request flags, tracing, or contextual data.                                                      |
+| `bool BufferRequestContent`                              | Forces the request content to be fully buffered in memory before sending. Intended only for compatibility edge cases where buffering is required.                        |
+| `HttpQueryParameterCollection QueryParameters`           | Represents all query string values for the request. The route and base address must not contain query components; this collection is the single source of truth.         |
+| `string? Route`                                          | The relative or absolute request route originally provided to the builder; validated so it contains no query or fragment.                                                |
+| `Version Version`                                        | The HTTP protocol version applied to the outgoing request. Defaults to HTTP/1.1.                                                                                         |
+| `HttpVersionPolicy VersionPolicy`*                       | Controls how the requested HTTP version is interpreted and negotiated (e.g., upgrade, downgrade, or strict). Defaults to `RequestVersionOrLower`.                        |
 
-```csharp
-builder.Content = new StringContent(json, Encoding.UTF8, "application/json");
-```
-
-See:
-- `WithContent(HttpContent content)`
-- `WithContent(string content)`
-- `WithContent(string content, string contentType)`
-- `WithContent(string content, MediaTypeHeaderValue contentTypeHeaderValue)`
-- `WithJsonContent<T>(T content)`
-- `WithJsonContent<T>(T content, JsonSerializerOptions options)`
-- `WithXmlContent<T>(T obj)`
-- `WithXmlContent<T>(T obj, Encoding encoding)`
-- `WithXmlContent<T>(T obj, string contentType)`
-- `WithXmlContent<T>(T obj, Encoding encoding, string contentType)`
-- `WithXmlContent(string xml)`
-- `WithXmlContent(string xml, Encoding encoding)`
-- `WithXmlContent(string xml, string contentType)`
-- `WithXmlContent(string xml, Encoding encoding, string contentType)`
-
-### Cookies
-
-Manages cookies to include with the request via a [`CookieContainer`](https://learn.microsoft.com/en-us/dotnet/api/system.net.cookiecontainer).
-
-```csharp
-builder.Cookies.Add(new Uri("https://api.example.com"), new Cookie("session", "abc123"));
-```
-
-See:
-- `WithCookie(Cookie cookie)`
-- `WithCookie(CookieCollection cookieCollection)`
-
-### ConfigureHeaders
-
-A collection of actions that can modify request headers before sending.
-
-```csharp
-builder.ConfigureHeaders.Add(headers => headers.Add("X-Custom-Header", "value"));
-```
-
-See:
-- `WithHeader(string key, string value)`
-- `WithHeader(string key, IEnumerable<string> values)`
-- `WithHeaders(IEnumerable<KeyValuePair<string, string>> headers)`
-- `WithAuthentication(string scheme, string token)`
-- `WithBasicAuthentication(string token)`
-- `WithBasicAuthentication(string username, string password)`
-- `WithOAuthBearerToken(string token)`
-
-### ConfigureOptionsAction
-
-An optional action for configuring [`HttpRequestOptions`](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httprequestoptions).
-
-```csharp
-builder.ConfigureOptionsAction = options =>
-{
-    options.Set("RetryCount", 3);
-};
-```
-
-See:
-- `ConfigureOptions(Action<HttpRequestOptions> action)`
-
-### BufferContentBeforeSending
-
-A boolean value that indicates whether content should be buffered before sending.
-
-See:
-- `WithPreloadedContent()`
-
-### QueryParams
-
-A list of query parameters to append to the request URI.
-
-See:
-- `WithQueryParam(string key, string? value)`
-- `WithQueryParam(string key, object? value)`
-- `WithQueryParams(IEnumerable<KeyValuePair<string, string?>> values)`
-- `WithQueryParams(IEnumerable<KeyValuePair<string, object?>> values)`
-- `WithQueryParams(NameValueCollection values)`
-- `WithQueryParamIfNotNull(string key, string? value)`
-- `WithQueryParamIfNotNull(string key, object? value)`
-
-### Route
-
-Defines the request route, appended to `BaseAddress` when sending.
-
-```csharp
-builder.Route = "/users/12345";
-```
-
-See:
-- `UsingRoute(string route)`
-- `WithoutRoute()`
-
-### Version and VersionPolicy
-
-Controls the HTTP version and negotiation policy for the request.
-
-```csharp
-builder.Version = new Version("2.0");
-builder.VersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
-```
-
-See:
-- `UsingVersion(string version)`
-- `UsingVersion(Version version)`
-- `UsingVersion(string version, HttpVersionPolicy policy)`
-- `UsingVersion(Version version, HttpVersionPolicy policy)`
+\* *Available only on target frameworks that support `HttpRequestOptions` / `HttpVersionPolicy` (e.g., .NET 5+).*
 
 ## Sending Requests
 
-You can send a request using one of the `SendAsync` overloads. All of them take an `HttpMethod` as the first parameter. [`HttpCompleteOption`](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpcompletionoption) flags and a [`CancellationToken`](https://learn.microsoft.com/en-us/dotnet/api/system.threading.cancellationtoken) are optional parameters.
+`HttpRequestBuilder` exposes a small set of sending methods:
+- `Task<HttpResponseMessage> SendAsync(HttpMethod method)`
+- `Task<HttpResponseMessage> SendAsync(HttpMethod method, CancellationToken cancellationToken)`
+- `Task<HttpResponseMessage> SendAsync(HttpMethod method, HttpCompletionOption completionOption)`
+- `Task<HttpResponseMessage> SendAsync(HttpMethod method, HttpCompletionOption completionOption, CancellationToken cancellationToken)`
 
-```csharp
-var response = await builder.SendAsync(
-    HttpMethod.Post,
-    HttpCompletionOption.ResponseContentRead,
-    CancellationToken.None
-);
-```
+:::important Use Recommended Overloads
 
-See:
-- `DeleteAsync()`
-- `GetAsync()`
-- `PostAsync()`
-- `PutAsync()`
+While `SendAsync` is the core sending primitive, most consumers should prefer the convenience extensions such as `GetAsync`, `PostAsync`, `PutAsync`, `DeleteAsync`, `HeadAsync`, `OptionsAsync`, and `PatchAsync` (where available). These extensions select the correct `HttpMethod`, keep your call sites clean, and make intent immediately obvious. Use `SendAsync` directly only when you are using a non-standard `HttpMethod`.
 
-### Error Handling
+:::
 
-`SendAsync` can throw several exceptions.
+All overloads delegate to the most complete overload. That method:
 
-| Exception                   | Reason                                |
-|-----------------------------|---------------------------------------|
-| `ArgumentNullException`     | The route or request is invalid.      |
-| `InvalidOperationException` | The request message was already sent. |
-| `HttpRequestException`      | For network, DNS, or SSL errors.      |
-| `TaskCanceledException`     | The request timed out.                |
+1. Runs `DeferredConfigurators` so late-bound configuration can modify the builder.
+2. Optionally buffers Content if `BufferRequestContent` is true.
+3. Builds the final URI by combining:
+    - `HttpClient.BaseAddress`
+    - `Route`
+    - `QueryParameters`
+4. Creates an `HttpRequestMessage` with:
+    - The chosen `HttpMethod`
+    - The constructed `Uri`
+    - The configured `Content`
+    - `Version` and (when available) `VersionPolicy`
+5. Applies deferred configurations such as:
+    - Disable `ExpectContinue` for multipart content.
+    - Apply each `HeaderConfigurator`.
+    - Serialize Cookies into the Cookie header.
+    - Apply each `OptionConfigurator` (when available).
+6. Sends the request via `_client.SendAsync`.
 
----
+:::danger Experimental Method
 
-## Design Notes
+For testing and advanced scenarios, there is an experimental `BuildRequest` method that constructs and returns the `HttpRequestMessage` without sending it. This is primarily intended for unit tests and internal usage. **Do not depend on this method being available in future versions.**
 
-### When to Buffer Content Before Sending
-
-Setting `BufferContentBeforeSending` controls whether the request content is pre-buffered (fully serialized into memory) before the HTTP request is sent.
-
-**When `true`:**
-The entire request body (e.g., JSON, multipart form data, file uploads) is serialized and loaded into memory before transmission begins. This ensures that the `Content-Length` header can be accurately set and that retries or redirects can reuse the buffered content. However, it can significantly increase memory usage, especially for large payloads.
-
-**When `false` (default):**
-The content is streamed directly to the network without being fully buffered first. This reduces memory pressure and allows for more efficient transmission of large or streaming payloads, but may prevent the `Content-Length` header from being calculated ahead of time.
-Some edge cases - such as certain authentication flows or proxies - might fail when the length isn't known in advance.
-
-**Recommendation:**
-Keep this value false unless you are encountering issues with streaming content or need to ensure the full payload is buffered for retry, redirect, or compatibility scenarios (e.g., [dotnet/runtime#30283](https://github.com/dotnet/runtime/issues/30283)).
-
-### Why Headers Use a Collection of Actions
-
-Headers in `HttpRequestBuilder` are implemented as a **collection of actions** (`List<Action<HttpRequestHeaders>>`) instead of a direct collection of header values.
-This design provides several key advantages:
-
-1. **Deferred Execution**
-   Each action is executed *when the request is being built*, ensuring that headers are applied to the actual `HttpRequestMessage` instance just before sending.
-   This avoids premature binding and ensures headers are always applied in the correct context.
-
-2. **Access to Full `HttpRequestHeaders` API**
-   By passing the `HttpRequestHeaders` object into each action, callers can use the full native API (e.g., `Add`, `TryAddWithoutValidation`, `UserAgent.Add`, etc.) without being limited to simple key-value pairs.
-
-3. **Support for Fluent Composition**
-   Fluent extension methods (like `WithHeader()`, `WithAuthorization()`, or `WithJsonContent()`) can easily append new configuration actions without interfering with existing ones.
-   This allows multiple methods to independently contribute to the final request headers.
-
-4. **No Premature Materialization**
-   Because actions are stored rather than concrete headers, there's no need to maintain a mutable intermediate header dictionary or merge duplicates.
-   Headers are added directly to the outgoing request at send time, ensuring correct behavior even if the same builder is reused with different configurations.
-
-While this adds complexity when working directly with the `ConfigureHeaders` property, it is recommended instead to use the extension methods provided, which abstracts away this complexity.
-
----
-
-## Summary
-
-`HttpRequestBuilder` provides the foundation of **FluentHttpClient**'s fluent API. It handles low-level details such as combining routes, applying headers, managing cookies, and sending requests. In most cases, you'll interact with it through fluent methods like `UsingRoute()`, `WithHeader()`, and `WithJsonContent()` for a cleaner, more expressive workflow.
+:::

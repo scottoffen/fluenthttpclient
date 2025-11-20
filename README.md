@@ -1,11 +1,16 @@
 # FluentHttpClient
 
 [![docs](https://img.shields.io/badge/docs-github.io-blue)](https://scottoffen.github.io/fluenthttpclient)
-[![NuGet](https://img.shields.io/nuget/v/Cron.Extensions.Expressiosn)](https://www.nuget.org/packages/FluentHttpClient/)
+[![NuGet](https://img.shields.io/nuget/v/fluenthttpclient)](https://www.nuget.org/packages/FluentHttpClient/)
 [![MIT](https://img.shields.io/github/license/scottoffen/fluenthttpclient?color=blue)](./LICENSE)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-blue.svg)](code_of_conduct.md)
 
-FluentHttpClient exposes a set of extensions methods to make sending REST requests with HttpClient both readable and chainable.
+FluentHttpClient exposes a set of extensions methods to make sending HTTP requests with [`HttpClient`](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient) both readable and chainable.
+
+> [!NOTE]
+> FluentHttpClient 5.0 publishes targets for the following [TFMs](https://learn.microsoft.com/en-us/nuget/reference/target-frameworks):
+> 
+> .NET Standard 2.0, .NET Standard 2.1, .NET 5.0, .NET 6.0, .NET 7.0, .NET 8.0, .NET 9.0, .NET 10.0
 
 ## Installation
 

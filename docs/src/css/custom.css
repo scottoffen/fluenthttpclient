@@ -28,3 +28,71 @@
   --ifm-color-primary-lightest: #ffccaa;
   --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.1);
 }
+
+/* 4.x docs – purple accent + muted orange background */
+html[data-doc-version='4.x'] {
+  /* Muted amber primary */
+  --ifm-color-primary: #b45309;
+  --ifm-color-primary-dark: #92400e;
+  --ifm-color-primary-darker: #78350f;
+  --ifm-color-primary-darkest: #4a2109;
+  --ifm-color-primary-light: #f97316;
+  --ifm-color-primary-lighter: #fdba74;
+  --ifm-color-primary-lightest: #ffedd5;
+
+  --ifm-link-color: var(--ifm-color-primary);
+
+  /* 🔸 Muted orange background (what you liked before) */
+  --ifm-background-color: #fff7ed;
+  --ifm-background-surface-color: #fff7ed;
+}
+
+/* 4.x in dark mode – keep it clean, slightly cool */
+html[data-theme='dark'][data-doc-version='4.x'] {
+  --ifm-color-primary: #fdba74;
+  --ifm-color-primary-dark: #f97316;
+  --ifm-color-primary-darker: #ea580c;
+  --ifm-color-primary-light: #fed7aa;
+  --ifm-color-primary-lighter: #ffedd5;
+  --ifm-color-primary-lightest: #fffbeb;
+
+  --ifm-link-color: var(--ifm-color-primary);
+
+  /* Subtle dark background; not as warm as legacy 3.x */
+  --ifm-background-color: #020617;
+  --ifm-background-surface-color: #020617;
+}
+
+/* 3.x / 2.x legacy docs – amber + aged parchment background */
+html[data-doc-version='3.x'] {
+  /* Primary: purple accent */
+  --ifm-color-primary: #652f94;
+  --ifm-color-primary-dark: #58287f;
+  --ifm-color-primary-darker: #4a216b;
+  --ifm-color-primary-darkest: #3a1952;
+  --ifm-color-primary-light: #7b46a6;
+  --ifm-color-primary-lighter: #9360b8;
+  --ifm-color-primary-lightest: #af80cc;
+
+  --ifm-link-color: var(--ifm-color-primary);
+
+  /* 🧾 More “aged paper” than orange */
+  --ifm-background-color: #f5f1e6;
+  --ifm-background-surface-color: #ede1cf;
+}
+
+/* 3.x in dark mode – warm, old-paper feel */
+html[data-theme='dark'][data-doc-version='3.x'] {
+  --ifm-color-primary: #a855f7;
+  --ifm-color-primary-dark: #9333ea;
+  --ifm-color-primary-darker: #7e22ce;
+  --ifm-color-primary-light: #c084fc;
+  --ifm-color-primary-lighter: #d8b4fe;
+  --ifm-color-primary-lightest: #ede9fe;
+
+  --ifm-link-color: var(--ifm-color-primary);
+
+  /* Warmer, more brownish dark background than current/4.x */
+  --ifm-background-color: #1f1b16;
+  --ifm-background-surface-color: #262018;
+}

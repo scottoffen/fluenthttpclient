@@ -1,957 +1,581 @@
 using System.Text.Json;
 
+#if NET6_0_OR_GREATER
+using System.Text.Json.Nodes;
+#endif
+
 namespace FluentHttpClient;
 
 /// <summary>
-/// Extension methods for JSON deserialization.
+/// Fluent extension methods for deserializing JSON from an <see cref="HttpRequestMessage"/> instance.
 /// </summary>
 public static class FluentJsonDeserialization
 {
-    #region StringDeserialization
+    private static readonly JsonDocumentOptions _jsonDocumentOptions = new();
+#if NET6_0_OR_GREATER
+    private static readonly JsonNodeOptions _jsonNodeOptions = default;
+#endif
 
     /// <summary>
-    /// Parses the text representing a single JSON value into an instance of the type specified by a generic type parameter.
+    /// Reads the JSON content of the response and deserializes it to <typeparamref name="T"/>.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    /// <param name="value"></param>
-    /// <returns>A T representation of the JSON value.</returns>
-    /// <exception cref="JsonException" />
-    /// <exception cref="NotSupportedException" />
-    /// <exception cref="ArgumentNullException" />
-    public static T? DeserializeJson<T>(this string value)
+    /// <param name="response"></param>
+    /// <returns></returns>
+    public static Task<T?> ReadJsonAsync<T>(this HttpResponseMessage response)
     {
-        return value.DeserializeJson<T>(FluentHttpClientOptions.DefaultJsonSerializerOptions);
+        return response.ReadJsonAsync<T>(
+            FluentJsonSerializer.DefaultJsonSerializerOptions,
+            CancellationToken.None);
     }
 
     /// <summary>
-    /// Parses the text representing a single JSON value into an instance of the type specified by a generic type parameter.
+    /// Reads the JSON content of the response and deserializes it to <typeparamref name="T"/>,
+    /// using the specified serializer options.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    /// <param name="value"></param>
+    /// <param name="response"></param>
     /// <param name="options"></param>
-    /// <returns>A T representation of the JSON value.</returns>
-    /// <exception cref="JsonException" />
-    /// <exception cref="NotSupportedException" />
-    /// <exception cref="ArgumentNullException" />
-    public static T? DeserializeJson<T>(this string value, JsonSerializerOptions options)
+    /// <returns></returns>
+    public static Task<T?> ReadJsonAsync<T>(
+        this HttpResponseMessage response,
+        JsonSerializerOptions? options)
     {
-        return JsonSerializer.Deserialize<T>(value, options);
+        return response.ReadJsonAsync<T>(options, CancellationToken.None);
     }
 
     /// <summary>
-    /// Parses the text representing a single JSON value into an instance of the type specified by a generic type parameter.
+    /// Reads the JSON content of the response and deserializes it to <typeparamref name="T"/>,
+    /// observing the provided cancellation token.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    /// <param name="stringTask"></param>
-    /// <returns>A T representation of the JSON value.</returns>
-    /// <exception cref="JsonException" />
-    /// <exception cref="NotSupportedException" />
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<string> stringTask)
+    /// <param name="response"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public static Task<T?> ReadJsonAsync<T>(
+        this HttpResponseMessage response,
+        CancellationToken cancellationToken)
     {
-        return await stringTask
-            .DeserializeJsonAsync<T>(FluentHttpClientOptions.DefaultJsonSerializerOptions)
-            .ConfigureAwait(false);
+        return response.ReadJsonAsync<T>(
+            FluentJsonSerializer.DefaultJsonSerializerOptions,
+            cancellationToken);
     }
 
     /// <summary>
-    /// Parses the text representing a single JSON value into an instance of the type specified by a generic type parameter.
+    /// Reads the JSON content of the response and deserializes it to <typeparamref name="T"/>,
+    /// using the specified serializer options and cancellation token.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    /// <param name="stringTask"></param>
+    /// <param name="response"></param>
     /// <param name="options"></param>
-    /// <returns>A T representation of the JSON value.</returns>
-    /// <exception cref="JsonException" />
-    /// <exception cref="NotSupportedException" />
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<string> stringTask, JsonSerializerOptions options)
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public static async Task<T?> ReadJsonAsync<T>(
+        this HttpResponseMessage response,
+        JsonSerializerOptions? options,
+        CancellationToken cancellationToken)
     {
-        var value = await stringTask.ConfigureAwait(false);
-        return JsonSerializer.Deserialize<T>(value, options);
-    }
-
-    #endregion StringDeserialization
-
-    #region TaskHttpResponseMessageDeserialization
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessageTask"></param>
-    /// <param name="defaultAction"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<HttpResponseMessage> responseMessageTask, Func<HttpResponseMessage, Exception, Task<T>> defaultAction)
-    {
-        return await responseMessageTask
-            .DeserializeJsonAsync<T>(defaultAction, FluentHttpClientOptions.DefaultJsonSerializerOptions, CancellationToken.None)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessageTask"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="options"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<HttpResponseMessage> responseMessageTask, Func<HttpResponseMessage, Exception, Task<T>> defaultAction, JsonSerializerOptions options)
-    {
-        return await responseMessageTask
-            .DeserializeJsonAsync<T>(defaultAction, options, CancellationToken.None)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessageTask"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<HttpResponseMessage> responseMessageTask, Func<HttpResponseMessage, Exception, Task<T>> defaultAction, CancellationToken token)
-    {
-        return await responseMessageTask
-            .DeserializeJsonAsync<T>(defaultAction, FluentHttpClientOptions.DefaultJsonSerializerOptions, token)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessageTask"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="options"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<HttpResponseMessage> responseMessageTask, Func<HttpResponseMessage, Exception, Task<T>> defaultAction, JsonSerializerOptions options, CancellationToken token)
-    {
-        if (defaultAction == null) throw new ArgumentNullException(nameof(defaultAction));
-
-        try
+        // NOTE: HttpResponseMessage.Content is never null on modern TFMs, but can be on older platforms.
+        // These checks exist for cross-target safety and are not hit in current test runs.
+        if (response.Content is null)
         {
-            return await responseMessageTask
-                .DeserializeJsonAsync<T>(options, token)
-                .ConfigureAwait(false);
+            return default;
         }
-        catch (Exception e)
-        {
-            var responseMessage = await responseMessageTask.ConfigureAwait(false);
-            return await defaultAction(responseMessage, e).ConfigureAwait(false);
-        }
-    }
 
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessageTask"></param>
-    /// <param name="defaultAction"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<HttpResponseMessage> responseMessageTask, Func<HttpResponseMessage, Exception, T> defaultAction)
-    {
-        return await responseMessageTask
-            .DeserializeJsonAsync<T>(defaultAction, FluentHttpClientOptions.DefaultJsonSerializerOptions, CancellationToken.None)
+        options ??= FluentJsonSerializer.DefaultJsonSerializerOptions;
+
+#if NET5_0_OR_GREATER
+        var stream = await response.Content
+            .ReadAsStreamAsync(cancellationToken)
             .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessageTask"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="options"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<HttpResponseMessage> responseMessageTask, Func<HttpResponseMessage, Exception, T> defaultAction, JsonSerializerOptions options)
-    {
-        return await responseMessageTask
-            .DeserializeJsonAsync<T>(defaultAction, options, CancellationToken.None)
+#else
+        var stream = await response.Content
+            .ReadAsStreamAsync()
             .ConfigureAwait(false);
-    }
+#endif
 
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessageTask"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<HttpResponseMessage> responseMessageTask, Func<HttpResponseMessage, Exception, T> defaultAction, CancellationToken token)
-    {
-        return await responseMessageTask
-            .DeserializeJsonAsync<T>(defaultAction, FluentHttpClientOptions.DefaultJsonSerializerOptions, token)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessageTask"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="options"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<HttpResponseMessage> responseMessageTask, Func<HttpResponseMessage, Exception, T> defaultAction, JsonSerializerOptions options, CancellationToken token)
-    {
-        if (defaultAction == null) throw new ArgumentNullException(nameof(defaultAction));
-
-        try
-        {
-            return await responseMessageTask
-                .DeserializeJsonAsync<T>(options, token)
-                .ConfigureAwait(false);
-        }
-        catch (Exception e)
-        {
-            var responseMessage = await responseMessageTask.ConfigureAwait(false);
-            return defaultAction(responseMessage, e);
-        }
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessageTask"></param>
-    /// <returns>A T representation of the JSON value.</returns>
-    /// <exception cref="JsonException" />
-    /// <exception cref="NotSupportedException" />
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<HttpResponseMessage> responseMessageTask)
-    {
-        return await responseMessageTask
-            .DeserializeJsonAsync<T>(FluentHttpClientOptions.DefaultJsonSerializerOptions, CancellationToken.None)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessageTask"></param>
-    /// <param name="options"></param>
-    /// <returns>A T representation of the JSON value.</returns>
-    /// <exception cref="JsonException" />
-    /// <exception cref="NotSupportedException" />
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<HttpResponseMessage> responseMessageTask, JsonSerializerOptions options)
-    {
-        return await responseMessageTask
-            .DeserializeJsonAsync<T>(options, CancellationToken.None)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessageTask"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value.</returns>
-    /// <exception cref="JsonException" />
-    /// <exception cref="NotSupportedException" />
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<HttpResponseMessage> responseMessageTask, CancellationToken token)
-    {
-        return await responseMessageTask
-            .DeserializeJsonAsync<T>(FluentHttpClientOptions.DefaultJsonSerializerOptions, token)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessageTask"></param>
-    /// <param name="options"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value.</returns>
-    /// <exception cref="JsonException" />
-    /// <exception cref="NotSupportedException" />
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<HttpResponseMessage> responseMessageTask, JsonSerializerOptions options, CancellationToken token)
-    {
-        return await responseMessageTask
-            .GetResponseStreamAsync()
-            .DeserializeJsonAsync<T>(options, token)
-            .ConfigureAwait(false);
-    }
-
-    #endregion TaskHttpResponseMessageDeserialization
-
-    #region HttpResponseMessageDeserialization
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessage"></param>
-    /// <param name="defaultAction"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this HttpResponseMessage responseMessage, Func<HttpResponseMessage, Exception, Task<T>> defaultAction)
-    {
-        return await responseMessage
-            .DeserializeJsonAsync<T>(defaultAction, FluentHttpClientOptions.DefaultJsonSerializerOptions, CancellationToken.None)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessage"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="options"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this HttpResponseMessage responseMessage, Func<HttpResponseMessage, Exception, Task<T>> defaultAction, JsonSerializerOptions options)
-    {
-        return await responseMessage
-            .DeserializeJsonAsync<T>(defaultAction, options, CancellationToken.None)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessage"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this HttpResponseMessage responseMessage, Func<HttpResponseMessage, Exception, Task<T>> defaultAction, CancellationToken token)
-    {
-        return await responseMessage
-            .DeserializeJsonAsync<T>(defaultAction, FluentHttpClientOptions.DefaultJsonSerializerOptions, token)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessage"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="options"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this HttpResponseMessage responseMessage, Func<HttpResponseMessage, Exception, Task<T>> defaultAction, JsonSerializerOptions options, CancellationToken token)
-    {
-        if (defaultAction == null) throw new ArgumentNullException(nameof(defaultAction));
-
-        try
-        {
-            return await responseMessage
-                .DeserializeJsonAsync<T>(options, token)
-                .ConfigureAwait(false);
-        }
-        catch (Exception e)
-        {
-            return await defaultAction
-                .Invoke(responseMessage, e)
-                .ConfigureAwait(false);
-        }
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessage"></param>
-    /// <param name="defaultAction"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this HttpResponseMessage responseMessage, Func<HttpResponseMessage, Exception, T> defaultAction)
-    {
-        return await responseMessage
-            .DeserializeJsonAsync<T>(defaultAction, FluentHttpClientOptions.DefaultJsonSerializerOptions, CancellationToken.None)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessage"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="options"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this HttpResponseMessage responseMessage, Func<HttpResponseMessage, Exception, T> defaultAction, JsonSerializerOptions options)
-    {
-        return await responseMessage
-            .DeserializeJsonAsync<T>(defaultAction, options, CancellationToken.None)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessage"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this HttpResponseMessage responseMessage, Func<HttpResponseMessage, Exception, T> defaultAction, CancellationToken token)
-    {
-        return await responseMessage
-            .DeserializeJsonAsync<T>(defaultAction, FluentHttpClientOptions.DefaultJsonSerializerOptions, token)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessage"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="options"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this HttpResponseMessage responseMessage, Func<HttpResponseMessage, Exception, T> defaultAction, JsonSerializerOptions options, CancellationToken token)
-    {
-        if (defaultAction == null) throw new ArgumentNullException(nameof(defaultAction));
-
-        try
-        {
-            return await responseMessage
-                .DeserializeJsonAsync<T>(options, token)
-                .ConfigureAwait(false);
-        }
-        catch (Exception e)
-        {
-            return defaultAction.Invoke(responseMessage, e);
-        }
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessage"></param>
-    /// <returns>A T representation of the JSON value.</returns>
-    /// <exception cref="JsonException" />
-    /// <exception cref="NotSupportedException" />
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this HttpResponseMessage responseMessage)
-    {
-        return await responseMessage
-            .DeserializeJsonAsync<T>(FluentHttpClientOptions.DefaultJsonSerializerOptions, CancellationToken.None)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessage"></param>
-    /// <param name="options"></param>
-    /// <returns>A T representation of the JSON value.</returns>
-    /// <exception cref="JsonException" />
-    /// <exception cref="NotSupportedException" />
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this HttpResponseMessage responseMessage, JsonSerializerOptions options)
-    {
-        return await responseMessage
-            .DeserializeJsonAsync<T>(options, CancellationToken.None)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessage"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value.</returns>
-    /// <exception cref="JsonException" />
-    /// <exception cref="NotSupportedException" />
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this HttpResponseMessage responseMessage, CancellationToken token)
-    {
-        return await responseMessage
-            .DeserializeJsonAsync<T>(FluentHttpClientOptions.DefaultJsonSerializerOptions, token)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text of <see cref="HttpResponseMessage.Content"/> representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessage"></param>
-    /// <param name="options"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value.</returns>
-    /// <exception cref="JsonException" />
-    /// <exception cref="NotSupportedException" />
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this HttpResponseMessage responseMessage, JsonSerializerOptions options, CancellationToken token)
-    {
-        return await responseMessage
-            .GetResponseStreamAsync()
-            .DeserializeJsonAsync<T>(options, token)
-            .ConfigureAwait(false);
-    }
-
-    #endregion HttpResponseMessageDeserialization
-
-    #region TaskStreamDeserialization
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="streamTask"></param>
-    /// <param name="defaultAction"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<Stream> streamTask, Func<Exception, Task<T>> defaultAction)
-    {
-        return await streamTask
-            .DeserializeJsonAsync<T>(defaultAction, FluentHttpClientOptions.DefaultJsonSerializerOptions, CancellationToken.None)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="streamTask"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="options"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<Stream> streamTask, Func<Exception, Task<T>> defaultAction, JsonSerializerOptions options)
-    {
-        return await streamTask
-            .DeserializeJsonAsync<T>(defaultAction, options, CancellationToken.None)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="streamTask"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<Stream> streamTask, Func<Exception, Task<T>> defaultAction, CancellationToken token)
-    {
-        return await streamTask
-            .DeserializeJsonAsync<T>(defaultAction, FluentHttpClientOptions.DefaultJsonSerializerOptions, token)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="streamTask"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="options"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<Stream> streamTask, Func<Exception, Task<T>> defaultAction, JsonSerializerOptions options, CancellationToken token)
-    {
-        if (defaultAction == null) throw new ArgumentNullException(nameof(defaultAction));
-
-        try
-        {
-            return await streamTask
-                .DeserializeJsonAsync<T>(options, token)
-                .ConfigureAwait(false);
-        }
-        catch (Exception e)
-        {
-            return await defaultAction
-                .Invoke(e)
-                .ConfigureAwait(false);
-        }
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="streamTask"></param>
-    /// <param name="defaultAction"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<Stream> streamTask, Func<Exception, T> defaultAction)
-    {
-        return await streamTask
-            .DeserializeJsonAsync<T>(defaultAction, FluentHttpClientOptions.DefaultJsonSerializerOptions, CancellationToken.None)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="streamTask"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="options"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<Stream> streamTask, Func<Exception, T> defaultAction, JsonSerializerOptions options)
-    {
-        return await streamTask
-            .DeserializeJsonAsync<T>(defaultAction, options, CancellationToken.None)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="streamTask"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<Stream> streamTask, Func<Exception, T> defaultAction, CancellationToken token)
-    {
-        return await streamTask
-            .DeserializeJsonAsync<T>(defaultAction, FluentHttpClientOptions.DefaultJsonSerializerOptions, token)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="streamTask"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="options"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<Stream> streamTask, Func<Exception, T> defaultAction, JsonSerializerOptions options, CancellationToken token)
-    {
-        if (defaultAction == null) throw new ArgumentNullException(nameof(defaultAction));
-
-        try
-        {
-            return await streamTask
-                .DeserializeJsonAsync<T>(options, token)
-                .ConfigureAwait(false);
-        }
-        catch (Exception e)
-        {
-            return defaultAction.Invoke(e);
-        }
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="streamTask"></param>
-    /// <returns>A T representation of the JSON value.</returns>
-    /// <exception cref="JsonException" />
-    /// <exception cref="NotSupportedException" />
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<Stream> streamTask)
-    {
-        return await streamTask
-            .DeserializeJsonAsync<T>(FluentHttpClientOptions.DefaultJsonSerializerOptions, CancellationToken.None)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="streamTask"></param>
-    /// <param name="options"></param>
-    /// <returns>A T representation of the JSON value.</returns>
-    /// <exception cref="JsonException" />
-    /// <exception cref="NotSupportedException" />
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<Stream> streamTask, JsonSerializerOptions options)
-    {
-        return await streamTask
-            .DeserializeJsonAsync<T>(options, CancellationToken.None)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="streamTask"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value.</returns>
-    /// <exception cref="JsonException" />
-    /// <exception cref="NotSupportedException" />
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<Stream> streamTask, CancellationToken token)
-    {
-        return await streamTask
-            .DeserializeJsonAsync<T>(FluentHttpClientOptions.DefaultJsonSerializerOptions, token)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="streamTask"></param>
-    /// <param name="options"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value.</returns>
-    /// <exception cref="JsonException" />
-    /// <exception cref="NotSupportedException" />
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Task<Stream> streamTask, JsonSerializerOptions options, CancellationToken token)
-    {
-        var stream = await streamTask.ConfigureAwait(false);
-        return await stream
-            .DeserializeJsonAsync<T>(options, token)
-            .ConfigureAwait(false);
-    }
-
-    #endregion TaskStreamDeserialization
-
-    #region StreamDeserialization
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="stream"></param>
-    /// <param name="defaultAction"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Stream stream, Func<Exception, Task<T>> defaultAction)
-    {
-        return await stream
-            .DeserializeJsonAsync<T>(defaultAction, FluentHttpClientOptions.DefaultJsonSerializerOptions, CancellationToken.None)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="stream"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="options"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Stream stream, Func<Exception, Task<T>> defaultAction, JsonSerializerOptions options)
-    {
-        return await stream
-            .DeserializeJsonAsync<T>(defaultAction, options, CancellationToken.None)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="stream"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Stream stream, Func<Exception, Task<T>> defaultAction, CancellationToken token)
-    {
-        return await stream
-            .DeserializeJsonAsync<T>(defaultAction, FluentHttpClientOptions.DefaultJsonSerializerOptions, token)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="stream"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="options"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Stream stream, Func<Exception, Task<T>> defaultAction, JsonSerializerOptions options, CancellationToken token)
-    {
-        if (defaultAction == null) throw new ArgumentNullException(nameof(defaultAction));
-
-        try
-        {
-            return await stream
-                .DeserializeJsonAsync<T>(options, token)
-                .ConfigureAwait(false);
-        }
-        catch (Exception e)
-        {
-            return await defaultAction
-                .Invoke(e)
-                .ConfigureAwait(false);
-        }
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="stream"></param>
-    /// <param name="defaultAction"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Stream stream, Func<Exception, T> defaultAction)
-    {
-        return await stream
-            .DeserializeJsonAsync<T>(defaultAction, FluentHttpClientOptions.DefaultJsonSerializerOptions, CancellationToken.None)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="stream"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="options"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Stream stream, Func<Exception, T> defaultAction, JsonSerializerOptions options)
-    {
-        return await stream
-            .DeserializeJsonAsync<T>(defaultAction, options, CancellationToken.None)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="stream"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Stream stream, Func<Exception, T> defaultAction, CancellationToken token)
-    {
-        return await stream
-            .DeserializeJsonAsync<T>(defaultAction, FluentHttpClientOptions.DefaultJsonSerializerOptions, token)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="stream"></param>
-    /// <param name="defaultAction"></param>
-    /// <param name="options"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value or the result of the default action if an exception is thrown during the deserialization process.</returns>
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Stream stream, Func<Exception, T> defaultAction, JsonSerializerOptions options, CancellationToken token)
-    {
-        if (defaultAction == null) throw new ArgumentNullException(nameof(defaultAction));
-
-        try
-        {
-            return await stream
-                .DeserializeJsonAsync<T>(options, token)
-                .ConfigureAwait(false);
-        }
-        catch (Exception e)
-        {
-            return defaultAction.Invoke(e);
-        }
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="stream"></param>
-    /// <returns>A T representation of the JSON value.</returns>
-    /// <exception cref="JsonException" />
-    /// <exception cref="NotSupportedException" />
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Stream stream)
-    {
-        return await stream
-            .DeserializeJsonAsync<T>(FluentHttpClientOptions.DefaultJsonSerializerOptions, CancellationToken.None)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="stream"></param>
-    /// <param name="options"></param>
-    /// <returns>A T representation of the JSON value.</returns>
-    /// <exception cref="JsonException" />
-    /// <exception cref="NotSupportedException" />
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Stream stream, JsonSerializerOptions options)
-    {
-        return await stream
-            .DeserializeJsonAsync<T>(options, CancellationToken.None)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="stream"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value.</returns>
-    /// <exception cref="JsonException" />
-    /// <exception cref="NotSupportedException" />
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Stream stream, CancellationToken token)
-    {
-        return await stream
-            .DeserializeJsonAsync<T>(FluentHttpClientOptions.DefaultJsonSerializerOptions, token)
-            .ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Asynchronously reads the UTF-8 encoded text representing a single JSON value into an instance of a type specified by a generic type parameter. The stream will be read to completion.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="stream"></param>
-    /// <param name="options"></param>
-    /// <param name="token"></param>
-    /// <returns>A T representation of the JSON value.</returns>
-    /// <exception cref="JsonException" />
-    /// <exception cref="NotSupportedException" />
-    /// <exception cref="ArgumentNullException" />
-    public static async Task<T?> DeserializeJsonAsync<T>(this Stream stream, JsonSerializerOptions options, CancellationToken token)
-    {
         return await JsonSerializer
-            .DeserializeAsync<T>(stream, options, token)
+            .DeserializeAsync<T>(stream, options, cancellationToken)
             .ConfigureAwait(false);
     }
 
-    #endregion StreamDeserialization
+    /// <summary>
+    /// Awaits the HTTP response task, then reads and deserializes the JSON content to <typeparamref name="T"/>.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="responseTask"></param>
+    /// <returns></returns>
+    public static Task<T?> ReadJsonAsync<T>(this Task<HttpResponseMessage> responseTask)
+    {
+        return responseTask.ReadJsonAsync<T>(
+            FluentJsonSerializer.DefaultJsonSerializerOptions,
+            CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Awaits the HTTP response task, then reads and deserializes the JSON content to <typeparamref name="T"/>,
+    /// using the specified serializer options.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="responseTask"></param>
+    /// <param name="options"></param>
+    /// <returns></returns>
+    public static Task<T?> ReadJsonAsync<T>(
+        this Task<HttpResponseMessage> responseTask,
+        JsonSerializerOptions? options)
+    {
+        return responseTask.ReadJsonAsync<T>(options, CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Awaits the HTTP response task, then reads and deserializes the JSON content to <typeparamref name="T"/>,
+    /// observing the provided cancellation token.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="responseTask"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public static Task<T?> ReadJsonAsync<T>(
+        this Task<HttpResponseMessage> responseTask,
+        CancellationToken cancellationToken)
+    {
+        return responseTask.ReadJsonAsync<T>(
+            FluentJsonSerializer.DefaultJsonSerializerOptions,
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Awaits the HTTP response task, then reads and deserializes the JSON content to <typeparamref name="T"/>,
+    /// using the specified serializer options and cancellation token.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="responseTask"></param>
+    /// <param name="options"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public static async Task<T?> ReadJsonAsync<T>(
+        this Task<HttpResponseMessage> responseTask,
+        JsonSerializerOptions? options,
+        CancellationToken cancellationToken)
+    {
+        var response = await responseTask.ConfigureAwait(false);
+
+        return await response
+            .ReadJsonAsync<T>(options, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Reads the JSON content of the response and parses it into a <see cref="JsonDocument"/>.
+    /// </summary>
+    /// <param name="response"></param>
+    /// <returns></returns>
+    public static Task<JsonDocument?> ReadJsonDocumentAsync(this HttpResponseMessage response)
+    {
+        return response.ReadJsonDocumentAsync(_jsonDocumentOptions, CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Reads the JSON content of the response and parses it into a <see cref="JsonDocument"/>,
+    /// using the specified <see cref="JsonDocumentOptions"/>.
+    /// </summary>
+    /// <param name="response"></param>
+    /// <param name="documentOptions"></param>
+    /// <returns></returns>
+    public static Task<JsonDocument?> ReadJsonDocumentAsync(
+        this HttpResponseMessage response,
+        JsonDocumentOptions documentOptions)
+    {
+        return response.ReadJsonDocumentAsync(documentOptions, CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Reads the JSON content of the response and parses it into a <see cref="JsonDocument"/>,
+    /// observing the provided cancellation token.
+    /// </summary>
+    /// <param name="response"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public static Task<JsonDocument?> ReadJsonDocumentAsync(
+        this HttpResponseMessage response,
+        CancellationToken cancellationToken)
+    {
+        return response.ReadJsonDocumentAsync(_jsonDocumentOptions, cancellationToken);
+    }
+
+    /// <summary>
+    /// Reads the JSON content of the response and parses it into a <see cref="JsonDocument"/>,
+    /// using the specified <see cref="JsonDocumentOptions"/> and cancellation token.
+    /// </summary>
+    /// <param name="response"></param>
+    /// <param name="documentOptions"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public static async Task<JsonDocument?> ReadJsonDocumentAsync(
+        this HttpResponseMessage response,
+        JsonDocumentOptions documentOptions,
+        CancellationToken cancellationToken)
+    {
+        if (response.Content is null)
+        {
+            return null;
+        }
+
+#if NET5_0_OR_GREATER
+        var stream = await response.Content
+            .ReadAsStreamAsync(cancellationToken)
+            .ConfigureAwait(false);
+#else
+        var stream = await response.Content
+            .ReadAsStreamAsync()
+            .ConfigureAwait(false);
+#endif
+
+        return JsonDocument.Parse(stream, documentOptions);
+    }
+
+    /// <summary>
+    /// Awaits the HTTP response task, then reads the JSON content and parses it into a <see cref="JsonDocument"/>.
+    /// </summary>
+    /// <param name="responseTask"></param>
+    /// <returns></returns>
+    public static Task<JsonDocument?> ReadJsonDocumentAsync(this Task<HttpResponseMessage> responseTask)
+    {
+        return responseTask.ReadJsonDocumentAsync(_jsonDocumentOptions, CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Awaits the HTTP response task, then reads the JSON content and parses it into a <see cref="JsonDocument"/>,
+    /// using the specified <see cref="JsonDocumentOptions"/>.
+    /// </summary>
+    /// <param name="responseTask"></param>
+    /// <param name="documentOptions"></param>
+    /// <returns></returns>
+    public static Task<JsonDocument?> ReadJsonDocumentAsync(
+        this Task<HttpResponseMessage> responseTask,
+        JsonDocumentOptions documentOptions)
+    {
+        return responseTask.ReadJsonDocumentAsync(documentOptions, CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Awaits the HTTP response task, then reads the JSON content and parses it into a <see cref="JsonDocument"/>,
+    /// observing the provided cancellation token.
+    /// </summary>
+    /// <param name="responseTask"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public static Task<JsonDocument?> ReadJsonDocumentAsync(
+        this Task<HttpResponseMessage> responseTask,
+        CancellationToken cancellationToken)
+    {
+        return responseTask.ReadJsonDocumentAsync(_jsonDocumentOptions, cancellationToken);
+    }
+
+    /// <summary>
+    /// Awaits the HTTP response task, then reads the JSON content and parses it into a <see cref="JsonDocument"/>,
+    /// using the specified <see cref="JsonDocumentOptions"/> and cancellation token.
+    /// </summary>
+    /// <param name="responseTask"></param>
+    /// <param name="documentOptions"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public static async Task<JsonDocument?> ReadJsonDocumentAsync(
+        this Task<HttpResponseMessage> responseTask,
+        JsonDocumentOptions documentOptions,
+        CancellationToken cancellationToken)
+    {
+        var response = await responseTask.ConfigureAwait(false);
+
+        return await response
+            .ReadJsonDocumentAsync(documentOptions, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+#if NET6_0_OR_GREATER
+    /// <summary>
+    /// Reads the JSON content of the response and parses it into a <see cref="JsonObject"/>.
+    /// </summary>
+    /// <param name="response"></param>
+    public static Task<JsonObject?> ReadJsonObjectAsync(this HttpResponseMessage response)
+    {
+        return response.ReadJsonObjectAsync(
+            _jsonNodeOptions,
+            _jsonDocumentOptions,
+            CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Reads the JSON content of the response and parses it into a <see cref="JsonObject"/>,
+    /// observing the provided cancellation token.
+    /// </summary>
+    /// <param name="response"></param>
+    /// <param name="cancellationToken"></param>
+    public static Task<JsonObject?> ReadJsonObjectAsync(
+        this HttpResponseMessage response,
+        CancellationToken cancellationToken)
+    {
+        return response.ReadJsonObjectAsync(
+            _jsonNodeOptions,
+            _jsonDocumentOptions,
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Reads the JSON content of the response and parses it into a <see cref="JsonObject"/>,
+    /// using the specified <see cref="JsonNodeOptions"/>.
+    /// </summary>
+    /// <param name="response"></param>
+    /// <param name="nodeOptions"></param>
+    public static Task<JsonObject?> ReadJsonObjectAsync(
+        this HttpResponseMessage response,
+        JsonNodeOptions nodeOptions)
+    {
+        return response.ReadJsonObjectAsync(
+            nodeOptions,
+            _jsonDocumentOptions,
+            CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Reads the JSON content of the response and parses it into a <see cref="JsonObject"/>,
+    /// using the specified <see cref="JsonNodeOptions"/> and observing the provided cancellation token.
+    /// </summary>
+    /// <param name="response"></param>
+    /// <param name="nodeOptions"></param>
+    /// <param name="cancellationToken"></param>
+    public static Task<JsonObject?> ReadJsonObjectAsync(
+        this HttpResponseMessage response,
+        JsonNodeOptions nodeOptions,
+        CancellationToken cancellationToken)
+    {
+        return response.ReadJsonObjectAsync(
+            nodeOptions,
+            _jsonDocumentOptions,
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Reads the JSON content of the response and parses it into a <see cref="JsonObject"/>,
+    /// using the specified <see cref="JsonDocumentOptions"/>.
+    /// </summary>
+    /// <param name="response"></param>
+    /// <param name="documentOptions"></param>
+    public static Task<JsonObject?> ReadJsonObjectAsync(
+        this HttpResponseMessage response,
+        JsonDocumentOptions documentOptions)
+    {
+        return response.ReadJsonObjectAsync(
+            _jsonNodeOptions,
+            documentOptions,
+            CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Reads the JSON content of the response and parses it into a <see cref="JsonObject"/>,
+    /// using the specified <see cref="JsonDocumentOptions"/> and observing the provided cancellation token.
+    /// </summary>
+    /// <param name="response"></param>
+    /// <param name="documentOptions"></param>
+    /// <param name="cancellationToken"></param>
+    public static Task<JsonObject?> ReadJsonObjectAsync(
+        this HttpResponseMessage response,
+        JsonDocumentOptions documentOptions,
+        CancellationToken cancellationToken)
+    {
+        return response.ReadJsonObjectAsync(
+            _jsonNodeOptions,
+            documentOptions,
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Reads the JSON content of the response and parses it into a <see cref="JsonObject"/>,
+    /// using the specified <see cref="JsonNodeOptions"/> and <see cref="JsonDocumentOptions"/>.
+    /// </summary>
+    /// <param name="response"></param>
+    /// <param name="nodeOptions"></param>
+    /// <param name="documentOptions"></param>
+    public static Task<JsonObject?> ReadJsonObjectAsync(
+        this HttpResponseMessage response,
+        JsonNodeOptions nodeOptions,
+        JsonDocumentOptions documentOptions)
+    {
+        return response.ReadJsonObjectAsync(
+            nodeOptions,
+            documentOptions,
+            CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Reads the JSON content of the response and parses it into a <see cref="JsonObject"/>,
+    /// using the specified <see cref="JsonNodeOptions"/>, <see cref="JsonDocumentOptions"/>,
+    /// and observing the provided cancellation token.
+    /// </summary>
+    /// <param name="response"></param>
+    /// <param name="nodeOptions"></param>
+    /// <param name="documentOptions"></param>
+    /// <param name="cancellationToken"></param>
+    public static async Task<JsonObject?> ReadJsonObjectAsync(
+        this HttpResponseMessage response,
+        JsonNodeOptions nodeOptions,
+        JsonDocumentOptions documentOptions,
+        CancellationToken cancellationToken)
+    {
+        if (response.Content is null)
+        {
+            return null;
+        }
+
+        var stream = await response.Content
+            .ReadAsStreamAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+#if NET8_0_OR_GREATER
+        var node = await JsonNode
+            .ParseAsync(stream, nodeOptions, documentOptions, cancellationToken)
+            .ConfigureAwait(false);
+#else
+        var node = JsonNode.Parse(stream, nodeOptions, documentOptions);
+#endif
+        return node as JsonObject;
+    }
+
+    /// <summary>
+    /// Awaits the HTTP response task, then reads the JSON content and parses it into a <see cref="JsonObject"/>.
+    /// </summary>
+    /// <param name="responseTask"></param>
+    public static Task<JsonObject?> ReadJsonObjectAsync(this Task<HttpResponseMessage> responseTask)
+    {
+        return responseTask.ReadJsonObjectAsync(
+            _jsonNodeOptions,
+            _jsonDocumentOptions,
+            CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Awaits the HTTP response task, then reads the JSON content and parses it into a <see cref="JsonObject"/>,
+    /// observing the provided cancellation token.
+    /// </summary>
+    /// <param name="responseTask"></param>
+    /// <param name="cancellationToken"></param>
+    public static Task<JsonObject?> ReadJsonObjectAsync(
+        this Task<HttpResponseMessage> responseTask,
+        CancellationToken cancellationToken)
+    {
+        return responseTask.ReadJsonObjectAsync(
+            _jsonNodeOptions,
+            _jsonDocumentOptions,
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Awaits the HTTP response task, then reads the JSON content and parses it into a <see cref="JsonObject"/>,
+    /// using the specified <see cref="JsonNodeOptions"/>.
+    /// </summary>
+    /// <param name="responseTask"></param>
+    /// <param name="nodeOptions"></param>
+    public static Task<JsonObject?> ReadJsonObjectAsync(
+        this Task<HttpResponseMessage> responseTask,
+        JsonNodeOptions nodeOptions)
+    {
+        return responseTask.ReadJsonObjectAsync(
+            nodeOptions,
+            _jsonDocumentOptions,
+            CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Awaits the HTTP response task, then reads the JSON content and parses it into a <see cref="JsonObject"/>,
+    /// using the specified <see cref="JsonNodeOptions"/> and observing the provided cancellation token.
+    /// </summary>
+    /// <param name="responseTask"></param>
+    /// <param name="nodeOptions"></param>
+    /// <param name="cancellationToken"></param>
+    public static Task<JsonObject?> ReadJsonObjectAsync(
+        this Task<HttpResponseMessage> responseTask,
+        JsonNodeOptions nodeOptions,
+        CancellationToken cancellationToken)
+    {
+        return responseTask.ReadJsonObjectAsync(
+            nodeOptions,
+            _jsonDocumentOptions,
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Awaits the HTTP response task, then reads the JSON content and parses it into a <see cref="JsonObject"/>,
+    /// using the specified <see cref="JsonDocumentOptions"/>.
+    /// </summary>
+    /// <param name="responseTask"></param>
+    /// <param name="documentOptions"></param>
+    public static Task<JsonObject?> ReadJsonObjectAsync(
+        this Task<HttpResponseMessage> responseTask,
+        JsonDocumentOptions documentOptions)
+    {
+        return responseTask.ReadJsonObjectAsync(
+            _jsonNodeOptions,
+            documentOptions,
+            CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Awaits the HTTP response task, then reads the JSON content and parses it into a <see cref="JsonObject"/>,
+    /// using the specified <see cref="JsonDocumentOptions"/> and observing the provided cancellation token.
+    /// </summary>
+    /// <param name="responseTask"></param>
+    /// <param name="documentOptions"></param>
+    /// <param name="cancellationToken"></param>
+    public static Task<JsonObject?> ReadJsonObjectAsync(
+        this Task<HttpResponseMessage> responseTask,
+        JsonDocumentOptions documentOptions,
+        CancellationToken cancellationToken)
+    {
+        return responseTask.ReadJsonObjectAsync(
+            _jsonNodeOptions,
+            documentOptions,
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Awaits the HTTP response task, then reads the JSON content and parses it into a <see cref="JsonObject"/>,
+    /// using the specified <see cref="JsonNodeOptions"/> and <see cref="JsonDocumentOptions"/>.
+    /// </summary>
+    /// <param name="responseTask"></param>
+    /// <param name="nodeOptions"></param>
+    /// <param name="documentOptions"></param>
+    public static Task<JsonObject?> ReadJsonObjectAsync(
+        this Task<HttpResponseMessage> responseTask,
+        JsonNodeOptions nodeOptions,
+        JsonDocumentOptions documentOptions)
+    {
+        return responseTask.ReadJsonObjectAsync(
+            nodeOptions,
+            documentOptions,
+            CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Awaits the HTTP response task, then reads the JSON content and parses it into a <see cref="JsonObject"/>,
+    /// using the specified <see cref="JsonNodeOptions"/>, <see cref="JsonDocumentOptions"/>,
+    /// and observing the provided cancellation token.
+    /// </summary>
+    /// <param name="responseTask"></param>
+    /// <param name="nodeOptions"></param>
+    /// <param name="documentOptions"></param>
+    /// <param name="cancellationToken"></param>
+    public static async Task<JsonObject?> ReadJsonObjectAsync(
+        this Task<HttpResponseMessage> responseTask,
+        JsonNodeOptions nodeOptions,
+        JsonDocumentOptions documentOptions,
+        CancellationToken cancellationToken)
+    {
+        var response = await responseTask.ConfigureAwait(false);
+
+        return await response
+            .ReadJsonObjectAsync(nodeOptions, documentOptions, cancellationToken)
+            .ConfigureAwait(false);
+    }
+#endif
 }
+
