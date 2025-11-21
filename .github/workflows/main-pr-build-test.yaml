@@ -139,5 +139,5 @@ jobs:
     # Publishes the package to GitHub Packages
     - name: Publish to GitHub Packages
       run: |
-        dotnet nuget push ./publish/*.nupkg --source https://nuget.pkg.github.com/scottoffen/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
-        dotnet nuget push ./publish/*.snupkg --source https://nuget.pkg.github.com/scottoffen/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
+        dotnet nuget push ./publish/*.nupkg --source https://nuget.pkg.github.com/scottoffen/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+        dotnet nuget push ./publish/*.snupkg --source https://nuget.pkg.github.com/scottoffen/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate

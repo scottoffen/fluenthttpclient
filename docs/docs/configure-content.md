@@ -61,6 +61,12 @@ All overloads generate a `StringContent` instance and optionally set the `Conten
 
 JSON content can be supplied as raw JSON strings or objects that will be serialized using `System.Text.Json`.
 
+:::warning AOT and JSON
+
+For Native AOT builds, only the section for raw JSON strings applies. For typed JSON serialization, see the [JSON AOT Support](./aot-support.md) documentation for AOT-friendly overloads.
+
+:::
+
 ### Raw JSON strings
 
 ```csharp
@@ -95,6 +101,12 @@ All JSON extensions serialize the object, create `StringContent`, and apply the 
 ## XML Content
 
 These methods attach XML content either from raw XML or using `System.Xml.Serialization` to serialize objects.
+
+:::danger AOT and XML
+
+For Native AOT buids, only the section for raw XML strings applies. FluentHttpClient does not have typed XML serialization overloads that are AOT-friendly.
+
+:::
 
 ### Raw XML strings
 

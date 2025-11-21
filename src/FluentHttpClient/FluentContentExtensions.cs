@@ -1,7 +1,5 @@
 using System.Net.Http.Headers;
 using System.Text;
-using System.Text.Json;
-using System.Xml;
 
 namespace FluentHttpClient;
 
@@ -161,7 +159,7 @@ public static class FluentContentExtensions
 
     #endregion
 
-    #region XML Content
+    #region XML String Content
 
     /// <summary>
     /// Sets the request content to the provided XML string using UTF-8 encoding and the default XML media type.
@@ -240,108 +238,9 @@ public static class FluentContentExtensions
         return builder;
     }
 
-    /// <summary>
-    /// Serializes the specified value as XML using the default settings and sets it as the request content
-    /// with UTF-8 encoding and the default XML media type.
-    /// </summary>
-    public static HttpRequestBuilder WithXmlContent<T>(
-        this HttpRequestBuilder builder,
-        T obj)
-        where T : class
-    {
-        var xml = FluentXmlSerializer.Serialize<T>(obj);
-        builder.Content = new StringContent(xml, Encoding.UTF8, FluentXmlSerializer.DefaultContentType);
-        return builder;
-    }
-
-    /// <summary>
-    /// Serializes the specified value as XML using the provided settings and sets it as the request content
-    /// with the encoding derived from the provided <see cref="XmlWriterSettings"/> and the default XML media type.
-    /// </summary>
-    public static HttpRequestBuilder WithXmlContent<T>(
-        this HttpRequestBuilder builder,
-        T obj,
-        XmlWriterSettings settings)
-        where T : class
-    {
-        var xml = FluentXmlSerializer.Serialize<T>(obj, settings);
-        var encoding = settings.Encoding ?? Encoding.UTF8;
-        builder.Content = new StringContent(xml, encoding, FluentXmlSerializer.DefaultContentType);
-        return builder;
-    }
-
-    /// <summary>
-    /// Serializes the specified value as XML using the default settings and sets it as the request content
-    /// with UTF-8 encoding and the specified media type.
-    /// </summary>
-    public static HttpRequestBuilder WithXmlContent<T>(
-        this HttpRequestBuilder builder,
-        T obj,
-        string contentType)
-        where T : class
-    {
-        var xml = FluentXmlSerializer.Serialize<T>(obj);
-        builder.Content = new StringContent(xml, Encoding.UTF8, contentType);
-        return builder;
-    }
-
-    /// <summary>
-    /// Serializes the specified value as XML using the provided settings and sets it as the request content
-    /// with the encoding derived from the provided <see cref="XmlWriterSettings"/> and the specified media type.
-    /// </summary>
-    public static HttpRequestBuilder WithXmlContent<T>(
-        this HttpRequestBuilder builder,
-        T obj,
-        XmlWriterSettings settings,
-        string contentType)
-        where T : class
-    {
-        var xml = FluentXmlSerializer.Serialize<T>(obj, settings);
-        var encoding = settings.Encoding ?? Encoding.UTF8;
-        builder.Content = new StringContent(xml, encoding, contentType);
-        return builder;
-    }
-
-    /// <summary>
-    /// Serializes the specified value as XML using the default settings and sets it as the request content
-    /// with UTF-8 encoding and applies the specified <see cref="MediaTypeHeaderValue"/>.
-    /// </summary>
-    public static HttpRequestBuilder WithXmlContent<T>(
-        this HttpRequestBuilder builder,
-        T obj,
-        MediaTypeHeaderValue contentTypeHeaderValue)
-        where T : class
-    {
-        var xml = FluentXmlSerializer.Serialize<T>(obj);
-        var sc = new StringContent(xml, Encoding.UTF8);
-        sc.Headers.ContentType = contentTypeHeaderValue;
-        builder.Content = sc;
-        return builder;
-    }
-
-    /// <summary>
-    /// Serializes the specified value as XML using the provided settings and sets it as the request content
-    /// with the encoding derived from the provided <see cref="XmlWriterSettings"/> and applies the given
-    /// <see cref="MediaTypeHeaderValue"/>.
-    /// </summary>
-    public static HttpRequestBuilder WithXmlContent<T>(
-        this HttpRequestBuilder builder,
-        T obj,
-        XmlWriterSettings settings,
-        MediaTypeHeaderValue contentTypeHeaderValue)
-        where T : class
-    {
-        var xml = FluentXmlSerializer.Serialize<T>(obj, settings);
-        var encoding = settings.Encoding ?? Encoding.UTF8;
-        var sc = new StringContent(xml, encoding);
-        sc.Headers.ContentType = contentTypeHeaderValue;
-        builder.Content = sc;
-        return builder;
-    }
-
     #endregion
 
-    #region JSON Content
+    #region JSON String Content
 
     /// <summary>
     /// Sets the request content to the provided JSON string using UTF-8 encoding and the default JSON media type.
@@ -415,101 +314,6 @@ public static class FluentContentExtensions
         MediaTypeHeaderValue contentTypeHeaderValue)
     {
         var sc = new StringContent(json, encoding);
-        sc.Headers.ContentType = contentTypeHeaderValue;
-        builder.Content = sc;
-        return builder;
-    }
-
-    /// <summary>
-    /// Serializes the specified value as JSON using the default serializer options and sets it as the request content
-    /// with UTF-8 encoding and the default JSON media type.
-    /// </summary>
-    public static HttpRequestBuilder WithJsonContent<T>(
-        this HttpRequestBuilder builder,
-        T value)
-        where T : class
-    {
-        var json = JsonSerializer.Serialize(value, FluentJsonSerializer.DefaultJsonSerializerOptions);
-        builder.Content = new StringContent(json, Encoding.UTF8, FluentJsonSerializer.DefaultContentType);
-        return builder;
-    }
-
-    /// <summary>
-    /// Serializes the specified value as JSON using the provided serializer options and sets it as the request content
-    /// with UTF-8 encoding and the default JSON media type.
-    /// </summary>
-    public static HttpRequestBuilder WithJsonContent<T>(
-        this HttpRequestBuilder builder,
-        T value,
-        JsonSerializerOptions options)
-        where T : class
-    {
-        var json = JsonSerializer.Serialize(value, options);
-        builder.Content = new StringContent(json, Encoding.UTF8, FluentJsonSerializer.DefaultContentType);
-        return builder;
-    }
-
-    /// <summary>
-    /// Serializes the specified value as JSON using the default serializer options and sets it as the request content
-    /// with UTF-8 encoding and the specified media type.
-    /// </summary>
-    public static HttpRequestBuilder WithJsonContent<T>(
-        this HttpRequestBuilder builder,
-        T value,
-        string contentType)
-        where T : class
-    {
-        var json = JsonSerializer.Serialize(value, FluentJsonSerializer.DefaultJsonSerializerOptions);
-        builder.Content = new StringContent(json, Encoding.UTF8, contentType);
-        return builder;
-    }
-
-    /// <summary>
-    /// Serializes the specified value as JSON using the provided serializer options and sets it as the request content
-    /// with UTF-8 encoding and the specified media type.
-    /// </summary>
-    public static HttpRequestBuilder WithJsonContent<T>(
-        this HttpRequestBuilder builder,
-        T value,
-        JsonSerializerOptions options,
-        string contentType)
-        where T : class
-    {
-        var json = JsonSerializer.Serialize(value, options);
-        builder.Content = new StringContent(json, Encoding.UTF8, contentType);
-        return builder;
-    }
-
-    /// <summary>
-    /// Serializes the specified value as JSON using the default serializer options and sets it as the request content
-    /// with UTF-8 encoding and applies the specified content type header value.
-    /// </summary>
-    public static HttpRequestBuilder WithJsonContent<T>(
-        this HttpRequestBuilder builder,
-        T value,
-        MediaTypeHeaderValue contentTypeHeaderValue)
-        where T : class
-    {
-        var json = JsonSerializer.Serialize(value, FluentJsonSerializer.DefaultJsonSerializerOptions);
-        var sc = new StringContent(json, Encoding.UTF8);
-        sc.Headers.ContentType = contentTypeHeaderValue;
-        builder.Content = sc;
-        return builder;
-    }
-
-    /// <summary>
-    /// Serializes the specified value as JSON using the provided serializer options and sets it as the request content
-    /// with UTF-8 encoding and applies the given content type header value.
-    /// </summary>
-    public static HttpRequestBuilder WithJsonContent<T>(
-        this HttpRequestBuilder builder,
-        T value,
-        JsonSerializerOptions options,
-        MediaTypeHeaderValue contentTypeHeaderValue)
-        where T : class
-    {
-        var json = JsonSerializer.Serialize(value, options);
-        var sc = new StringContent(json, Encoding.UTF8);
         sc.Headers.ContentType = contentTypeHeaderValue;
         builder.Content = sc;
         return builder;

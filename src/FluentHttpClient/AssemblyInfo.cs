@@ -18,4 +18,4 @@ using System.Runtime.InteropServices;
 // are visible to another assembly. This is often used for unit testing purposes.
 // The specified assembly name must match the name of the assembly that will access the internal types.
 // See https://learn.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.internalsvisibletoattribute
-[assembly: InternalsVisibleTo("FluentHttpClient.Tests")]
+[assembly: InternalsVisibleTo("FluentHttpClient.Tests, PublicKey=0024000004800000940000000602000000240000525341310004000001000100e1adf9793254ed4e9a9068dbcbb2d9f062ca131bca90fedd7b1f0b5aecb4a6561d32f674c3c459b3aa910a43bede8e8ac5953e03ac29209aec1f3b8d5a112382ad517e3dacc2872cb8444552bd70a41420e93ddfd75b208ab2af3a11bddf5ecdf1e26f0a8f9d0e58d45ec359e3debedb55fa62e66f190e21995be769ba67aeae")]
