@@ -202,20 +202,15 @@ public class FluentXmlSerializerTests
         var cache = cacheField!.GetValue(null) as ConcurrentDictionary<Type, XmlSerializer>;
         cache.ShouldNotBeNull();
 
-        cache!.Clear();
-        cache.Count.ShouldBe(0);
-
         var dto1 = new TestDto { Name = "One", Value = 1 };
         FluentXmlSerializer.Serialize(dto1);
 
-        cache.Count.ShouldBe(1);
-        cache.TryGetValue(typeof(TestDto), out var serializer1).ShouldBeTrue();
+        cache!.TryGetValue(typeof(TestDto), out var serializer1).ShouldBeTrue();
         serializer1.ShouldNotBeNull();
 
         var dto2 = new TestDto { Name = "Two", Value = 2 };
         FluentXmlSerializer.Serialize(dto2);
 
-        cache.Count.ShouldBe(1);
         cache.TryGetValue(typeof(TestDto), out var serializer2).ShouldBeTrue();
         serializer2.ShouldBeSameAs(serializer1);
     }

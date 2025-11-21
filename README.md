@@ -4,13 +4,26 @@
 [![NuGet](https://img.shields.io/nuget/v/fluenthttpclient)](https://www.nuget.org/packages/FluentHttpClient/)
 [![MIT](https://img.shields.io/github/license/scottoffen/fluenthttpclient?color=blue)](./LICENSE)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-blue.svg)](code_of_conduct.md)
+[![FluentHttpClient](https://img.shields.io/badge/FluentHttpClient-strong%20named-ff8038.svg)](https://learn.microsoft.com/dotnet/standard/assembly/strong-named)
+[![Multi-targeted](https://img.shields.io/badge/TFMs-multi--targeted-652f94)](#compatibility-matrix)
+
 
 FluentHttpClient exposes a set of extensions methods to make sending HTTP requests with [`HttpClient`](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient) both readable and chainable.
 
-> [!NOTE]
-> FluentHttpClient 5.0 publishes targets for the following [TFMs](https://learn.microsoft.com/en-us/nuget/reference/target-frameworks):
-> 
-> .NET Standard 2.0, .NET Standard 2.1, .NET 5.0, .NET 6.0, .NET 7.0, .NET 8.0, .NET 9.0, .NET 10.0
+## Compatibility Matrix
+
+FluentHttpClient is optimized for .NET 10 and the newest .NET releases, while also supporting older platforms through .NET Standard 2.1 and 2.0 for teams maintaining long-lived or legacy applications. It includes full Native AOT compatibility and provides strong-named assemblies for environments that require them.
+
+| Target                    | Supported | Notes                         |
+| ------------------------- | --------- | ----------------------------- |
+| **.NET Standard 2.0**     | ✔️        | Broadest compatibility target |
+| **.NET Standard 2.1**     | ✔️        | Improved modern API surface   |
+| **.NET Framework 4.6.1+** | ✔️        | Via `netstandard2.0`          |
+| **.NET 6**                | ✔️        | LTS                           |
+| **.NET 7**                | ✔️        |                               |
+| **.NET 8**                | ✔️        | LTS                           |
+| **.NET 9**                | ✔️        |                               |
+| **.NET 10**               | ✔️        | LTS                           |
 
 ## Installation
 

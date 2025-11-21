@@ -5,6 +5,12 @@ title: Deserializing XML
 
 FluentHttpClient provides a set of extensions for reading and deserializing XML from `HttpResponseMessage` instances and from tasks that produce them. These extensions support deserializing XML into concrete .NET types or parsing XML into `XElement` for flexible document-style access.
 
+:::danger AOT and XML
+
+For Native AOT builds, only the sections for `XElement` apply. FluentHttpClient does not have typed XML deserialization overloads that are AOT-friendly.
+
+:::
+
 ## Typed Deserialization
 
 Use these methods when you want to deserialize XML into a .NET reference type from either `HttpResponseMessage` or `Task<HttpResponseMessage>`.

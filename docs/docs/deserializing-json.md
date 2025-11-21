@@ -5,6 +5,12 @@ title: Deserializing JSON
 
 FluentHttpClient provides a set of extensions for reading and deserializing JSON from `HttpResponseMessage` instances and from tasks that produce them. These extensions support strongly typed models, `JsonDocument`, and - on .NET 6 and later - `JsonObject` from `System.Text.Json.Nodes`.
 
+:::warning AOT and JSON
+
+For Native AOT builds, only the sections for `JsonDocument` and `JsonObject` apply. For typed JSON deserialization, see the [JSON AOT Support](./aot-support.md) documentation for overloads are AOT-friendly.
+
+:::
+
 ## Typed Deserialization
 
 Use these methods when you want to deserialize JSON into a .NET type from `Task<HttpResponseMessage>` or `HttpResponseMessage`.

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using System.Xml;
@@ -28,10 +29,22 @@ internal static class FluentXmlSerializer
 
     public static readonly string DefaultContentType = "application/xml";
 
+#if NET7_0_OR_GREATER
+    [RequiresDynamicCode("XmlSerializer uses dynamic code generation which is not supported with Native AOT.")]
+#endif
+#if NET6_0_OR_GREATER
+    [RequiresUnreferencedCode("XML serialization using XmlSerializer may be incompatible with trimming. Ensure all required members are preserved or use these APIs only in non-trimmed scenarios.")]
+#endif
     public static T Deserialize<T>(string xml)
         where T : class
         => Deserialize<T>(xml, DefaultReaderSettings);
 
+#if NET7_0_OR_GREATER
+    [RequiresDynamicCode("XmlSerializer uses dynamic code generation which is not supported with Native AOT.")]
+#endif
+#if NET6_0_OR_GREATER
+    [RequiresUnreferencedCode("XML serialization using XmlSerializer may be incompatible with trimming. Ensure all required members are preserved or use these APIs only in non-trimmed scenarios.")]
+#endif
     public static T Deserialize<T>(string xml, XmlReaderSettings settings)
         where T : class
     {
@@ -59,10 +72,22 @@ internal static class FluentXmlSerializer
         return typed;
     }
 
+#if NET7_0_OR_GREATER
+    [RequiresDynamicCode("XmlSerializer uses dynamic code generation which is not supported with Native AOT.")]
+#endif
+#if NET6_0_OR_GREATER
+    [RequiresUnreferencedCode("XML serialization using XmlSerializer may be incompatible with trimming. Ensure all required members are preserved or use these APIs only in non-trimmed scenarios.")]
+#endif
     public static string Serialize<T>(T obj)
         where T : class
         => Serialize(obj, DefaultWriterSettings);
 
+#if NET7_0_OR_GREATER
+    [RequiresDynamicCode("XmlSerializer uses dynamic code generation which is not supported with Native AOT.")]
+#endif
+#if NET6_0_OR_GREATER
+    [RequiresUnreferencedCode("XML serialization using XmlSerializer may be incompatible with trimming. Ensure all required members are preserved or use these APIs only in non-trimmed scenarios.")]
+#endif
     public static string Serialize<T>(T obj, XmlWriterSettings settings)
         where T : class
     {

@@ -5,7 +5,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\FluentHttpClient\FluentHttpClient.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
+
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.4" />

@@ -9,7 +9,7 @@ FluentHttpClient brings a modern, chainable API to [`HttpClient`](https://learn.
 
 ## Compatibility Matrix
 
-FluentHttpClient is optimized for .NET 10 and the newest .NET releases, while also supporting older platforms through .NET Standard 2.1 and 2.0 for teams maintaining long-lived or legacy applications.
+FluentHttpClient is optimized for .NET 10 and the newest .NET releases, while also supporting older platforms through .NET Standard 2.1 and 2.0 for teams maintaining long-lived or legacy applications. It includes full Native AOT compatibility and provides strong-named assemblies for environments that require them.
 
 | Target                    | Supported | Notes                         |
 | ------------------------- | --------- | ----------------------------- |
