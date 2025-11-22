@@ -5,6 +5,14 @@ namespace FluentHttpClient;
 /// </summary>
 public static class FluentHeaderExtensions
 {
+    private static readonly HashSet<string> _reservedHeaders =
+    new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Host",
+        "Content-Length",
+        "Transfer-Encoding"
+    };
+
     /// <summary>
     /// Adds the specified header and its value to the request.
     /// </summary>
@@ -15,6 +23,14 @@ public static class FluentHeaderExtensions
     {
         Guard.AgainstNull(key, nameof(key));
         Guard.AgainstNull(value, nameof(value));
+
+        if (_reservedHeaders.Contains(key))
+        {
+            throw new ArgumentException(
+                $"Header '{key}' is managed by HttpClient/HttpContent and cannot be set using FluentHttpClient. " +
+                "Configure the request URI or content instead.",
+                nameof(key));
+        }
 
         builder.HeaderConfigurators.Add(target =>
             target.TryAddWithoutValidation(key, value));
@@ -32,6 +48,14 @@ public static class FluentHeaderExtensions
     {
         Guard.AgainstNull(key, nameof(key));
         Guard.AgainstNull(values, nameof(values));
+
+        if (_reservedHeaders.Contains(key))
+        {
+            throw new ArgumentException(
+                $"Header '{key}' is managed by HttpClient/HttpContent and cannot be set using FluentHttpClient. " +
+                "Configure the request URI or content instead.",
+                nameof(key));
+        }
 
         builder.HeaderConfigurators.Add(target =>
             target.TryAddWithoutValidation(key, values));
@@ -52,16 +76,15 @@ public static class FluentHeaderExtensions
         {
             foreach (var header in headers)
             {
-                if (header.Key is null)
-                {
-                    throw new ArgumentException("Header name cannot be null.", nameof(headers));
-                }
+                Guard.AgainstNull(header.Key, "key");
+                Guard.AgainstNull(header.Value, "value");
 
-                if (header.Value is null)
+                if (_reservedHeaders.Contains(header.Key))
                 {
                     throw new ArgumentException(
-                        $"Header values for '{header.Key}' cannot be null.",
-                        nameof(headers));
+                    $"Header '{header.Key}' is managed by HttpClient/HttpContent and cannot be set using FluentHttpClient. " +
+                    "Configure the request URI or content instead.",
+                    "key");
                 }
 
                 target.TryAddWithoutValidation(header.Key, header.Value);
@@ -86,16 +109,15 @@ public static class FluentHeaderExtensions
         {
             foreach (var header in headers)
             {
-                if (header.Key is null)
-                {
-                    throw new ArgumentException("Header name cannot be null.", nameof(headers));
-                }
+                Guard.AgainstNull(header.Key, "key");
+                Guard.AgainstNull(header.Value, "values");
 
-                if (header.Value is null)
+                if (_reservedHeaders.Contains(header.Key))
                 {
                     throw new ArgumentException(
-                        $"Header values for '{header.Key}' cannot be null.",
-                        nameof(headers));
+                    $"Header '{header.Key}' is managed by HttpClient/HttpContent and cannot be set using FluentHttpClient. " +
+                    "Configure the request URI or content instead.",
+                    "key");
                 }
 
                 target.TryAddWithoutValidation(header.Key, header.Value);
