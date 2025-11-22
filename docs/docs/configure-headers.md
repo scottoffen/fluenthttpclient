@@ -83,6 +83,30 @@ Use the bulk overloads when you already have headers in a collection (e.g. from 
 
 :::
 
+## Reserved Headers
+
+FluentHttpClient intentionally restricts a small set of HTTP headers that are controlled by the underlying `HttpClient` and its transport layers. These headers define wire-level framing and routing behavior, and overriding them can produce ambiguous requests, protocol violations, or security issues.
+
+Because of this, the fluent header extensions do **not** allow setting the following headers:
+
+* `Host`
+* `Content-Length`
+* `Transfer-Encoding`
+
+These values are determined automatically based on the request URI, the configured `HttpContent`, and the negotiated HTTP version. Preventing them from being set through the fluent API helps avoid accidental misuse - such as combining `Content-Length` with `Transfer-Encoding: chunked` - while keeping request construction predictable.
+
+### Advanced Usage
+
+This restriction only applies to the high-level fluent extensions. If advanced scenarios require manual control of these headers, you can still modify the underlying `HttpRequestMessage` using a configuration delegate (for example, via [`When`](./conditional-configuration.md) with an always-true bool or predicate). This opt-in approach allows experienced users to take full control without exposing casual users to common footguns.
+
+In short, the fluent API keeps the safe path safe, while still leaving the door open for expert customization or tom-foolery when needed.
+
+:::tip Indirect Control
+
+When you need indirect control over `Content-Length` or chunked transfer behavior, your lever is [`WithBufferedContent`](./configure-content.md#buffering-request-content). Buffered content *usually* produces a `Content-Length` header, while unbuffered or unknown-length content lets the runtime fall back to chunked transfer for HTTP/1.1. Nevertheless, FluentHttpClient itself **never sets these headers explicitly**.
+
+:::
+
 ## Authentication Headers
 
 For authentication, FluentHttpClient provides dedicated extensions that set the `Authorization` header.

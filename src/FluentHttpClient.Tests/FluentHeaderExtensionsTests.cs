@@ -41,6 +41,20 @@ public class FluentHeaderExtensionsTests
             ex.ParamName.ShouldBe("key");
         }
 
+        [Theory]
+        [InlineData("Host")]
+        [InlineData("Content-Length")]
+        [InlineData("Transfer-Encoding")]
+        public void WithHeader_ThrowsArgumentException_WhenKeyIsReserved(string key)
+        {
+            var builder = CreateBuilder();
+
+            var ex = Should.Throw<ArgumentException>(() =>
+                builder.WithHeader(key, "value"));
+
+            ex.ParamName.ShouldBe("key");
+        }
+
         [Fact]
         public void WithHeader_ThrowsArgumentNullException_WhenValueIsNull()
         {
@@ -91,6 +105,21 @@ public class FluentHeaderExtensionsTests
 
             var ex = Should.Throw<ArgumentNullException>(() =>
                 builder.WithHeader(null!, values));
+
+            ex.ParamName.ShouldBe("key");
+        }
+
+        [Theory]
+        [InlineData("Host")]
+        [InlineData("Content-Length")]
+        [InlineData("Transfer-Encoding")]
+        public void WithHeader_ThrowsArgumentException_WhenKeyIsReserved(string key)
+        {
+            var builder = CreateBuilder();
+            var values = new[] { "one", "two" };
+
+            var ex = Should.Throw<ArgumentException>(() =>
+                builder.WithHeader(key, values));
 
             ex.ParamName.ShouldBe("key");
         }
@@ -175,8 +204,27 @@ public class FluentHeaderExtensionsTests
             var ex = Should.Throw<ArgumentException>(() =>
                 configurator(message.Headers));
 
-            ex.ParamName.ShouldBe("headers");
-            ex.Message.ShouldStartWith("Header name cannot be null.");
+            ex.ParamName.ShouldBe("key");
+        }
+
+        [Theory]
+        [InlineData("Host")]
+        [InlineData("Content-Length")]
+        [InlineData("Transfer-Encoding")]
+        public async Task WithHeader_ThrowsArgumentException_WhenKeyIsReserved(string key)
+        {
+            var builder = CreateBuilder();
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(key, "1")
+            };
+
+            builder.WithHeaders(headers);
+
+            var ex = await Should.ThrowAsync<ArgumentException>(async () =>
+                await builder.BuildRequest(HttpMethod.Get, CancellationToken.None));
+
+            ex.ParamName.ShouldBe("key");
         }
 
         [Fact]
@@ -195,8 +243,7 @@ public class FluentHeaderExtensionsTests
             var ex = Should.Throw<ArgumentException>(() =>
                 configurator(message.Headers));
 
-            ex.ParamName.ShouldBe("headers");
-            ex.Message.ShouldStartWith("Header values for 'X-One' cannot be null.");
+            ex.ParamName.ShouldBe("value");
         }
     }
 
@@ -252,6 +299,26 @@ public class FluentHeaderExtensionsTests
             ex.ParamName.ShouldBe("headers");
         }
 
+        [Theory]
+        [InlineData("Host")]
+        [InlineData("Content-Length")]
+        [InlineData("Transfer-Encoding")]
+        public async Task WithHeader_ThrowsArgumentException_WhenKeyIsReserved(string key)
+        {
+            var builder = CreateBuilder();
+            var headers = new[]
+            {
+                new KeyValuePair<string, IEnumerable<string>>(key, new[] { "1" })
+            };
+
+            builder.WithHeaders(headers);
+
+            var ex = await Should.ThrowAsync<ArgumentException>(async () =>
+                await builder.BuildRequest(HttpMethod.Get, CancellationToken.None));
+
+            ex.ParamName.ShouldBe("key");
+        }
+
         [Fact]
         public void WithHeaders_ThrowsArgumentException_WhenHeaderKeyIsNull()
         {
@@ -268,8 +335,7 @@ public class FluentHeaderExtensionsTests
             var ex = Should.Throw<ArgumentException>(() =>
                 configurator(message.Headers));
 
-            ex.ParamName.ShouldBe("headers");
-            ex.Message.ShouldStartWith("Header name cannot be null.");
+            ex.ParamName.ShouldBe("key");
         }
 
         [Fact]
@@ -288,8 +354,7 @@ public class FluentHeaderExtensionsTests
             var ex = Should.Throw<ArgumentException>(() =>
                 configurator(message.Headers));
 
-            ex.ParamName.ShouldBe("headers");
-            ex.Message.ShouldStartWith("Header values for 'X-One' cannot be null.");
+            ex.ParamName.ShouldBe("values");
         }
     }
 
