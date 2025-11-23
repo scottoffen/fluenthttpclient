@@ -39,9 +39,8 @@ var client = new HttpClient
 };
 
 var post = await client
-    .UsingBase()
-    .WithRoute("posts/1")
-    .SendAsync()
+    .UsingRoute("posts/1")
+    .GetAsync()
     .ReadJsonAsync<Post>();
 
 Console.WriteLine(post?.Title);
@@ -51,9 +50,8 @@ Console.WriteLine(post?.Title);
 
 ```csharp
 var posts = await client
-    .UsingBase()
-    .WithRoute("posts")
-    .SendAsync()
+    .UsingRoute("posts")
+    .GetAsync()
     .ReadJsonAsync<List<Post>>();
 
 Console.WriteLine(posts?.Count);
@@ -72,8 +70,7 @@ var newPost = new Post
 };
 
 var created = await client
-    .UsingBase()
-    .WithRoute("posts")
+    .UsingRoute("posts")
     .WithJsonContent(newPost)
     .PostAsync()
     .ReadJsonAsync<Post>();
