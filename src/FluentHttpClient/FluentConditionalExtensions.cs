@@ -21,9 +21,10 @@ public static class FluentConditionalExtensions
     /// around the configuration logic, but keeps the control flow within the fluent
     /// pipeline.
     /// </remarks>
-    /// <param name="builder"></param>
-    /// <param name="condition"></param>
-    /// <param name="configure"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="condition">The boolean condition that determines whether to apply the configuration.</param>
+    /// <param name="configure">The action to invoke when the condition is true.</param>
+    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     public static HttpRequestBuilder When(
         this HttpRequestBuilder builder,
         bool condition,
@@ -50,9 +51,10 @@ public static class FluentConditionalExtensions
     /// for conditions that depend on late-bound state such as ambient context values,
     /// feature flags, or other runtime information only available at request creation time.
     /// </remarks>
-    /// <param name="builder"></param>
-    /// <param name="predicate"></param>
-    /// <param name="configure"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="predicate">A function that evaluates to determine whether to apply the configuration.</param>
+    /// <param name="configure">The action to invoke when the predicate returns true.</param>
+    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     public static HttpRequestBuilder When(
         this HttpRequestBuilder builder,
         Func<bool> predicate,

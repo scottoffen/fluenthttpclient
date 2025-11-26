@@ -22,8 +22,8 @@ public class HttpRequestBuilder
     /// Initializes a new instance of the <see cref="HttpRequestBuilder"/> class
     /// with the specified <see cref="HttpClient"/>.
     /// </summary>
-    /// <param name="client"></param>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <param name="client">The HTTP client to use for sending requests.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="client"/> is null.</exception>
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="client"/> has a <see cref="HttpClient.BaseAddress"/> that
     /// contains a query string or fragment.
@@ -46,8 +46,8 @@ public class HttpRequestBuilder
     /// Initializes a new instance of the <see cref="HttpRequestBuilder"/> class
     /// with the specified <see cref="HttpClient"/> and route.
     /// </summary>
-    /// <param name="client"></param>
-    /// <param name="route"></param>
+    /// <param name="client">The HTTP client to use for sending requests.</param>
+    /// <param name="route">The route string for the request.</param>
     internal HttpRequestBuilder(HttpClient client, string route)
         : this(client, CreateRouteUri(route))
     {
@@ -57,9 +57,9 @@ public class HttpRequestBuilder
     /// Initializes a new instance of the <see cref="HttpRequestBuilder"/> class
     /// with the specified <see cref="HttpClient"/> and route.
     /// </summary>
-    /// <param name="client"></param>
-    /// <param name="route"></param>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <param name="client">The HTTP client to use for sending requests.</param>
+    /// <param name="route">The route URI for the request.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="route"/> is null.</exception>
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="route"/> contains a query string or fragment.
     /// </exception>
@@ -174,7 +174,7 @@ public class HttpRequestBuilder
     /// <remarks>
     /// Uses <see cref="HttpCompletionOption.ResponseContentRead"/> and a default cancellation token.
     /// </remarks>
-    /// <param name="method"></param>
+    /// <param name="method">The HTTP method as a string (e.g., "GET", "POST").</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="method"/> is null.
@@ -192,7 +192,7 @@ public class HttpRequestBuilder
     /// <remarks>
     /// Uses <see cref="HttpCompletionOption.ResponseContentRead"/> and a default cancellation token.
     /// </remarks>
-    /// <param name="method"></param>
+    /// <param name="method">The HTTP method to use for the request.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="method"/> is null.
@@ -210,8 +210,8 @@ public class HttpRequestBuilder
     /// <remarks>
     /// Uses <see cref="HttpCompletionOption.ResponseContentRead"/>.
     /// </remarks>
-    /// <param name="method"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="method">The HTTP method as a string (e.g., "GET", "POST").</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="method"/> is null.
@@ -229,8 +229,8 @@ public class HttpRequestBuilder
     /// <remarks>
     /// Uses <see cref="HttpCompletionOption.ResponseContentRead"/>.
     /// </remarks>
-    /// <param name="method"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="method">The HTTP method to use for the request.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="method"/> is null.
@@ -248,8 +248,8 @@ public class HttpRequestBuilder
     /// <remarks>
     /// Uses the specified <see cref="HttpCompletionOption"/> and a default cancellation token.
     /// </remarks>
-    /// <param name="method"></param>
-    /// <param name="completionOption"></param>
+    /// <param name="method">The HTTP method as a string (e.g., "GET", "POST").</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="method"/> is null.
@@ -267,8 +267,8 @@ public class HttpRequestBuilder
     /// <remarks>
     /// Uses the specified <see cref="HttpCompletionOption"/> and a default cancellation token.
     /// </remarks>
-    /// <param name="method"></param>
-    /// <param name="completionOption"></param>
+    /// <param name="method">The HTTP method to use for the request.</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="method"/> is null.
@@ -283,9 +283,9 @@ public class HttpRequestBuilder
     /// <summary>
     /// Sends an HTTP request as an asynchronous operation using the configured builder state.
     /// </summary>
-    /// <param name="method"></param>
-    /// <param name="completionOption"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="method">The HTTP method as a string (e.g., "GET", "POST").</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="method"/> is null.
@@ -306,9 +306,9 @@ public class HttpRequestBuilder
     /// <summary>
     /// Sends an HTTP request as an asynchronous operation using the configured builder state.
     /// </summary>
-    /// <param name="method"></param>
-    /// <param name="completionOption"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="method">The HTTP method to use for the request.</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="method"/> is null.
@@ -333,8 +333,8 @@ public class HttpRequestBuilder
     /// Builds and configures the <see cref="HttpRequestMessage"/> for this builder instance.
     /// Intended for internal and testing use. Use <see cref="SendAsync(HttpMethod)"/> and its overloads to send requests.
     /// </summary>
-    /// <param name="method"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="method">The HTTP method to use for the request.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while building the request.</param>
     /// <returns>The configured <see cref="HttpRequestMessage"/>.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="method"/> is null.
@@ -412,7 +412,7 @@ public class HttpRequestBuilder
     /// <summary>
     /// Applies headers, cookies, and options from the builder to the request.
     /// </summary>
-    /// <param name="request"></param>
+    /// <param name="request">The HTTP request message to configure.</param>
     private void ApplyConfiguration(HttpRequestMessage request)
     {
         if (Content is MultipartContent)

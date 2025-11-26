@@ -12,10 +12,10 @@ public static class FluentQueryParameterExtensions
     /// <summary>
     /// Adds a query string parameter with the specified key and value.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="key"></param>
-    /// <param name="value"></param>
-    /// <returns></returns>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="key">The query parameter key.</param>
+    /// <param name="value">The query parameter value.</param>
+    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     public static HttpRequestBuilder WithQueryParameter(
         this HttpRequestBuilder builder,
         string key,
@@ -30,10 +30,10 @@ public static class FluentQueryParameterExtensions
     /// <summary>
     /// Adds a query string parameter with the specified key and a value converted using <see cref="object.ToString"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="key"></param>
-    /// <param name="value"></param>
-    /// <returns></returns>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="key">The query parameter key.</param>
+    /// <param name="value">The query parameter value that will be converted to a string.</param>
+    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     public static HttpRequestBuilder WithQueryParameter(
         this HttpRequestBuilder builder,
         string key,
@@ -48,10 +48,10 @@ public static class FluentQueryParameterExtensions
     /// <summary>
     /// Adds one or more query string parameter values for the specified key.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="key"></param>
-    /// <param name="values"></param>
-    /// <returns></returns>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="key">The query parameter key.</param>
+    /// <param name="values">The collection of values for the parameter.</param>
+    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     public static HttpRequestBuilder WithQueryParameter(
         this HttpRequestBuilder builder,
         string key,
@@ -67,10 +67,10 @@ public static class FluentQueryParameterExtensions
     /// <summary>
     /// Adds one or more query string parameter values for the specified key, converting each value using <see cref="object.ToString"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="key"></param>
-    /// <param name="values"></param>
-    /// <returns></returns>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="key">The query parameter key.</param>
+    /// <param name="values">The collection of values that will be converted to strings.</param>
+    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     public static HttpRequestBuilder WithQueryParameter(
         this HttpRequestBuilder builder,
         string key,
@@ -93,9 +93,9 @@ public static class FluentQueryParameterExtensions
     /// <summary>
     /// Adds multiple query string parameters from the specified sequence of key/value pairs.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="parameters"></param>
-    /// <returns></returns>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="parameters">The collection of query parameters as key-value pairs.</param>
+    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     public static HttpRequestBuilder WithQueryParameters(
         this HttpRequestBuilder builder,
         IEnumerable<KeyValuePair<string, string?>> parameters)
@@ -113,9 +113,9 @@ public static class FluentQueryParameterExtensions
     /// <summary>
     /// Adds multiple query string parameters from the specified sequence of key/value pairs, converting values using <see cref="object.ToString"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="parameters"></param>
-    /// <returns></returns>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="parameters">The collection of query parameters whose values will be converted to strings.</param>
+    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     public static HttpRequestBuilder WithQueryParameters(
         this HttpRequestBuilder builder,
         IEnumerable<KeyValuePair<string, object?>> parameters)
@@ -133,9 +133,9 @@ public static class FluentQueryParameterExtensions
     /// <summary>
     /// Adds multiple query string parameters from the specified sequence of keys and value sequences.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="parameters"></param>
-    /// <returns></returns>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="parameters">The collection of query parameters where each can have multiple values.</param>
+    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     public static HttpRequestBuilder WithQueryParameters(
         this HttpRequestBuilder builder,
         IEnumerable<KeyValuePair<string, IEnumerable<string?>>> parameters)
@@ -153,9 +153,9 @@ public static class FluentQueryParameterExtensions
     /// <summary>
     /// Adds multiple query string parameters from the specified sequence of keys and value sequences, converting values using <see cref="object.ToString"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="parameters"></param>
-    /// <returns></returns>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="parameters">The collection of query parameters where each can have multiple values that will be converted to strings.</param>
+    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     public static HttpRequestBuilder WithQueryParameters(
         this HttpRequestBuilder builder,
         IEnumerable<KeyValuePair<string, IEnumerable<object?>>> parameters)
@@ -182,10 +182,10 @@ public static class FluentQueryParameterExtensions
     /// <summary>
     /// Adds a query string parameter with the specified key and value when the value is not null.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="key"></param>
-    /// <param name="value"></param>
-    /// <returns></returns>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="key">The query parameter key.</param>
+    /// <param name="value">The query parameter value, which is only added if not null.</param>
+    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     public static HttpRequestBuilder WithQueryParameterIfNotNull(
         this HttpRequestBuilder builder,
         string key,
@@ -198,10 +198,10 @@ public static class FluentQueryParameterExtensions
     /// <summary>
     /// Adds a query string parameter with the specified key and a value converted using <see cref="object.ToString"/> when the value is not null.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="key"></param>
-    /// <param name="value"></param>
-    /// <returns></returns>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="key">The query parameter key.</param>
+    /// <param name="value">The query parameter value that will be converted to a string, only added if not null.</param>
+    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     public static HttpRequestBuilder WithQueryParameterIfNotNull(
         this HttpRequestBuilder builder,
         string key,

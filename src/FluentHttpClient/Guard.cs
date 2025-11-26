@@ -1,5 +1,8 @@
 namespace FluentHttpClient;
 
+/// <summary>
+/// Provides internal guard clauses for parameter validation.
+/// </summary>
 internal static class Guard
 {
     public static void AgainstNull(object? value, string? paramName = null)
