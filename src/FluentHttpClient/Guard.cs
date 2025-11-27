@@ -15,9 +15,14 @@ internal static class Guard
 
     public static void AgainstNullOrEmpty(string? value, string? paramName = null)
     {
-        if (string.IsNullOrEmpty(value))
+        if (value is null)
         {
             throw new ArgumentNullException(paramName);
+        }
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new ArgumentException("Value cannot be empty or consist only of whitespace.", paramName);
         }
     }
 }

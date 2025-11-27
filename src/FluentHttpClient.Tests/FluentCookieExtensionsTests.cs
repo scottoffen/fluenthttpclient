@@ -94,7 +94,7 @@ public class FluentCookieExtensionsTests
 
             var exception = Should.Throw<ArgumentException>(() => builder.WithCookies(cookies));
 
-            exception.ParamName.ShouldBe("cookies");
+            exception.ParamName.ShouldBe("name");
         }
 
         [Fact]
