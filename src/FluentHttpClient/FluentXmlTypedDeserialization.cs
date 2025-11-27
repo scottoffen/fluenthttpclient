@@ -158,7 +158,7 @@ public static class FluentXmlTypedDeserialization
         var content = await response.ReadContentAsStringAsync(token).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(content))
         {
-            return default;
+            return null;
         }
 
         return settings is not null

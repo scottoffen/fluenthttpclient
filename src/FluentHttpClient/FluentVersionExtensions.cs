@@ -14,10 +14,7 @@ public static class FluentVersionExtensions
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     public static HttpRequestBuilder UsingVersion(this HttpRequestBuilder builder, string version)
     {
-        if (string.IsNullOrWhiteSpace(version))
-        {
-            throw new ArgumentException("Version cannot be null or empty.", nameof(version));
-        }
+        Guard.AgainstNullOrEmpty(version, nameof(version));
 
         if (!Version.TryParse(version, out var parsed))
         {
@@ -51,7 +48,7 @@ public static class FluentVersionExtensions
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     public static HttpRequestBuilder UsingVersion(this HttpRequestBuilder builder, Version version)
     {
-        if (version is null) throw new ArgumentNullException(nameof(version));
+        Guard.AgainstNull(version, nameof(version));
 
         builder.Version = version;
         return builder;
@@ -85,7 +82,7 @@ public static class FluentVersionExtensions
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     public static HttpRequestBuilder UsingVersion(this HttpRequestBuilder builder, Version version, HttpVersionPolicy policy)
     {
-        if (version is null) throw new ArgumentNullException(nameof(version));
+        Guard.AgainstNull(version, nameof(version));
 
         builder.Version = version;
         builder.VersionPolicy = policy;

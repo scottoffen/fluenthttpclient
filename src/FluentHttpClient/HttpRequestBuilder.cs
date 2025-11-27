@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Text;
 
 namespace FluentHttpClient;
 
@@ -97,7 +98,7 @@ public class HttpRequestBuilder
     /// <remarks>
     /// These cookies are serialized into the Cookie header for this request only.
     /// Long-lived cookie management should be configured on the underlying handler used by <see cref="HttpClient"/>.
-    /// Values are not automatically encoded when sending; encoding should occur prior to adding the cookie.
+    /// Values are not automatically encoded when sending; encoding should occur prior to or when adding the cookie.
     /// </remarks>
     public IDictionary<string, string> Cookies { get; } =
         new Dictionary<string, string>(StringComparer.Ordinal);
@@ -117,8 +118,51 @@ public class HttpRequestBuilder
     public List<Action<HttpRequestBuilder>> DeferredConfigurators { get; } = [];
 
     /// <summary>
-    /// Returns the collection of actions used to configure HTTP request headers.
+    /// Gets the internal dictionary used to store headers that will be applied to the HTTP request.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This dictionary stores headers added via <c>WithHeader</c> and <c>WithHeaders</c> extension methods.
+    /// Headers are stored with their keys as case-insensitive strings and values as collections to support
+    /// HTTP headers with multiple values (e.g., <c>Accept</c>, <c>Cache-Control</c>).
+    /// </para>
+    /// <para>
+    /// The dictionary uses <see cref="StringComparer.OrdinalIgnoreCase"/> to ensure header name comparisons
+    /// are case-insensitive per HTTP specifications (RFC 7230).
+    /// </para>
+    /// <para>
+    /// Values are applied to the <see cref="HttpRequestMessage"/> during request construction in
+    /// <see cref="ApplyConfiguration(HttpRequestMessage)"/>.
+    /// </para>
+    /// </remarks>
+    internal Dictionary<string, IEnumerable<string>> InternalHeaders { get; } =
+        new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Returns the collection of actions used to configure strongly-typed HTTP request headers.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This collection is intended for headers that require strongly-typed values from the
+    /// <see cref="HttpRequestHeaders"/> API, such as <c>Authorization</c>, <c>CacheControl</c>,
+    /// <c>Accept</c>, <c>IfModifiedSince</c>, and other headers with complex types or specialized formatting.
+    /// </para>
+    /// <para>
+    /// For simple string-based headers, use <c>WithHeader</c> extension methods instead, which populate
+    /// the <see cref="InternalHeaders"/> dictionary for better performance.
+    /// </para>
+    /// <para>
+    /// Each action in this collection is executed during request construction in <see cref="ApplyConfiguration"/>,
+    /// allowing multiple configurators to accumulate and apply their header settings.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// Adding a strongly-typed header:
+    /// <code>
+    /// builder.HeaderConfigurators.Add(headers =>
+    ///     headers.Authorization = new AuthenticationHeaderValue("Bearer", token));
+    /// </code>
+    /// </example>
     public List<Action<HttpRequestHeaders>> HeaderConfigurators { get; } = [];
 
 #if NET5_0_OR_GREATER
@@ -347,7 +391,7 @@ public class HttpRequestBuilder
     {
         Guard.AgainstNull(method, nameof(method));
 
-        foreach (var configure in DeferredConfigurators)
+        foreach (var configure in DeferredConfigurators.ToArray())
         {
             configure(this);
         }
@@ -420,6 +464,14 @@ public class HttpRequestBuilder
             request.Headers.ExpectContinue = false;
         }
 
+        foreach (var header in InternalHeaders)
+        {
+            foreach (var value in header.Value)
+            {
+                request.Headers.TryAddWithoutValidation(header.Key, value);
+            }
+        }
+
         for (var i = 0; i < HeaderConfigurators.Count; i++)
         {
             HeaderConfigurators[i](request.Headers);
@@ -427,11 +479,24 @@ public class HttpRequestBuilder
 
         if (Cookies.Count > 0)
         {
-            var cookieHeader = string.Join(
-                "; ",
-                Cookies.Select(kvp => $"{kvp.Key}={kvp.Value}"));
+            var sb = new StringBuilder(capacity: Cookies.Count * 32); // Estimate ~32 chars per cookie
+            var first = true;
 
-            if (!string.IsNullOrEmpty(cookieHeader))
+            foreach (var kvp in Cookies)
+            {
+                if (!first)
+                {
+                    sb.Append("; ");
+                }
+
+                sb.Append(kvp.Key);
+                sb.Append('=');
+                sb.Append(kvp.Value);
+                first = false;
+            }
+
+            var cookieHeader = sb.ToString();
+            if (cookieHeader.Length > 0)
             {
                 request.Headers.Add(CookieHeaderName, cookieHeader);
             }

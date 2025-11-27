@@ -15,7 +15,7 @@ public static partial class FluentJsonTypedDeserialization
     /// <param name="response">The HTTP response whose content will be read.</param>
     /// <param name="jsonTypeInfo">The JSON type metadata for AOT-safe deserialization.</param>
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or the default value if the content is empty.</returns>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or null if the content is empty.</returns>
     public static async Task<T?> ReadJsonAsync<T>(
         this HttpResponseMessage response,
         JsonTypeInfo<T> jsonTypeInfo,
@@ -46,7 +46,7 @@ public static partial class FluentJsonTypedDeserialization
     /// <param name="response">The HTTP response whose content will be read.</param>
     /// <param name="context">The JSON serializer context containing type metadata for AOT-safe deserialization.</param>
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or the default value if the content is empty.</returns>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or null if the content is empty.</returns>
     public static Task<T?> ReadJsonAsync<T>(
         this HttpResponseMessage response,
         JsonSerializerContext context,
@@ -72,7 +72,7 @@ public static partial class FluentJsonTypedDeserialization
     /// <param name="responseTask">A task that produces the HTTP response whose content will be read.</param>
     /// <param name="jsonTypeInfo">The JSON type metadata for AOT-safe deserialization.</param>
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or the default value if the content is empty.</returns>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or null if the content is empty.</returns>
     public static async Task<T?> ReadJsonAsync<T>(
         this Task<HttpResponseMessage> responseTask,
         JsonTypeInfo<T> jsonTypeInfo,
@@ -96,7 +96,7 @@ public static partial class FluentJsonTypedDeserialization
     /// <param name="responseTask">A task that produces the HTTP response whose content will be read.</param>
     /// <param name="context">The JSON serializer context containing type metadata for AOT-safe deserialization.</param>
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or the default value if the content is empty.</returns>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or null if the content is empty.</returns>
     public static async Task<T?> ReadJsonAsync<T>(
         this Task<HttpResponseMessage> responseTask,
         JsonSerializerContext context,

@@ -214,7 +214,7 @@ public sealed class HttpQueryParameterCollection :
             return string.Empty;
         }
 
-        var builder = new StringBuilder();
+        var builder = new StringBuilder(capacity: _parameters.Count * 37);
         var first = true;
 
         void AppendPrefix()

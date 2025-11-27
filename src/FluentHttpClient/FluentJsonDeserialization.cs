@@ -21,6 +21,10 @@ public static class FluentJsonDeserialization
     /// </summary>
     /// <param name="response">The HTTP response whose content will be read.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the parsed JsonDocument, or null if the content is empty.</returns>
+    /// <remarks>
+    /// <see cref="JsonDocument"/> implements <see cref="IDisposable"/> and must be disposed to avoid memory leaks.
+    /// Use <c>using</c> statements or ensure proper disposal in asynchronous scenarios.
+    /// </remarks>
     public static Task<JsonDocument?> ReadJsonDocumentAsync(this HttpResponseMessage response)
     {
         return response.ReadJsonDocumentAsync(_jsonDocumentOptions, CancellationToken.None);
@@ -33,6 +37,10 @@ public static class FluentJsonDeserialization
     /// <param name="response">The HTTP response whose content will be read.</param>
     /// <param name="documentOptions">Options that control the parsing behavior.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the parsed JsonDocument, or null if the content is empty.</returns>
+    /// <remarks>
+    /// <see cref="JsonDocument"/> implements <see cref="IDisposable"/> and must be disposed to avoid memory leaks.
+    /// Use <c>using</c> statements or ensure proper disposal in asynchronous scenarios.
+    /// </remarks>
     public static Task<JsonDocument?> ReadJsonDocumentAsync(
         this HttpResponseMessage response,
         JsonDocumentOptions documentOptions)
@@ -47,6 +55,10 @@ public static class FluentJsonDeserialization
     /// <param name="response">The HTTP response whose content will be read.</param>
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the parsed JsonDocument, or null if the content is empty.</returns>
+    /// <remarks>
+    /// <see cref="JsonDocument"/> implements <see cref="IDisposable"/> and must be disposed to avoid memory leaks.
+    /// Use <c>using</c> statements or ensure proper disposal in asynchronous scenarios.
+    /// </remarks>
     public static Task<JsonDocument?> ReadJsonDocumentAsync(
         this HttpResponseMessage response,
         CancellationToken cancellationToken)
@@ -62,6 +74,10 @@ public static class FluentJsonDeserialization
     /// <param name="documentOptions">Options that control the parsing behavior.</param>
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the parsed JsonDocument, or null if the content is empty.</returns>
+    /// <remarks>
+    /// <see cref="JsonDocument"/> implements <see cref="IDisposable"/> and must be disposed to avoid memory leaks.
+    /// Use <c>using</c> statements or ensure proper disposal in asynchronous scenarios.
+    /// </remarks>
     public static async Task<JsonDocument?> ReadJsonDocumentAsync(
         this HttpResponseMessage response,
         JsonDocumentOptions documentOptions,
@@ -90,6 +106,10 @@ public static class FluentJsonDeserialization
     /// </summary>
     /// <param name="responseTask">A task that produces the HTTP response whose content will be read.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the parsed JsonDocument, or null if the content is empty.</returns>
+    /// <remarks>
+    /// <see cref="JsonDocument"/> implements <see cref="IDisposable"/> and must be disposed to avoid memory leaks.
+    /// Use <c>using</c> statements or ensure proper disposal in asynchronous scenarios.
+    /// </remarks>
     public static Task<JsonDocument?> ReadJsonDocumentAsync(this Task<HttpResponseMessage> responseTask)
     {
         return responseTask.ReadJsonDocumentAsync(_jsonDocumentOptions, CancellationToken.None);
@@ -102,6 +122,10 @@ public static class FluentJsonDeserialization
     /// <param name="responseTask">A task that produces the HTTP response whose content will be read.</param>
     /// <param name="documentOptions">Options that control the parsing behavior.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the parsed JsonDocument, or null if the content is empty.</returns>
+    /// <remarks>
+    /// <see cref="JsonDocument"/> implements <see cref="IDisposable"/> and must be disposed to avoid memory leaks.
+    /// Use <c>using</c> statements or ensure proper disposal in asynchronous scenarios.
+    /// </remarks>
     public static Task<JsonDocument?> ReadJsonDocumentAsync(
         this Task<HttpResponseMessage> responseTask,
         JsonDocumentOptions documentOptions)
@@ -116,6 +140,10 @@ public static class FluentJsonDeserialization
     /// <param name="responseTask">A task that produces the HTTP response whose content will be read.</param>
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the parsed JsonDocument, or null if the content is empty.</returns>
+    /// <remarks>
+    /// <see cref="JsonDocument"/> implements <see cref="IDisposable"/> and must be disposed to avoid memory leaks.
+    /// Use <c>using</c> statements or ensure proper disposal in asynchronous scenarios.
+    /// </remarks>
     public static Task<JsonDocument?> ReadJsonDocumentAsync(
         this Task<HttpResponseMessage> responseTask,
         CancellationToken cancellationToken)
@@ -131,6 +159,10 @@ public static class FluentJsonDeserialization
     /// <param name="documentOptions">Options that control the parsing behavior.</param>
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the parsed JsonDocument, or null if the content is empty.</returns>
+    /// <remarks>
+    /// <see cref="JsonDocument"/> implements <see cref="IDisposable"/> and must be disposed to avoid memory leaks.
+    /// Use <c>using</c> statements or ensure proper disposal in asynchronous scenarios.
+    /// </remarks>
     public static async Task<JsonDocument?> ReadJsonDocumentAsync(
         this Task<HttpResponseMessage> responseTask,
         JsonDocumentOptions documentOptions,

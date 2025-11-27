@@ -10,6 +10,19 @@ namespace FluentHttpClient;
 /// <summary>
 /// Provides internal XML serialization and deserialization functionality using XmlSerializer.
 /// </summary>
+/// <remarks>
+/// <para>
+/// XmlSerializer instances are cached per type to avoid repeated code generation overhead.
+/// On .NET Framework and .NET Core versions prior to .NET 5, XmlSerializer generates dynamic assemblies
+/// that cannot be unloaded, which may lead to memory accumulation in long-running applications
+/// that serialize many different types.
+/// </para>
+/// <para>
+/// For applications concerned about memory usage in scenarios with many types, or for Native AOT compatibility,
+/// consider using JSON serialization instead. Alternatively, pre-generate XML serializers using
+/// the XML Serializer Generator tool (sgen.exe) or source generators (.NET 6+).
+/// </para>
+/// </remarks>
 internal static class FluentXmlSerializer
 {
     private static readonly ConcurrentDictionary<Type, XmlSerializer> SerializerCache = new();
