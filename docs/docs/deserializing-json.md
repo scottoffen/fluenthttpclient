@@ -40,7 +40,7 @@ var model = await response.ReadJsonAsync<MyModel>();
 
 ```csharp
 // In the fluent chain
-var doc = await client
+using var doc = await client
     .UsingRoute("/api/data")
     .GetAsync()
     .ReadJsonDocumentAsync();
@@ -55,6 +55,32 @@ using var doc = await response.ReadJsonDocumentAsync();
 - `ReadJsonDocumentAsync(JsonDocumentOptions)`
 - `ReadJsonDocumentAsync(CancellationToken)`
 - `ReadJsonDocumentAsync(JsonDocumentOptions, CancellationToken)`
+
+:::danger Memory Management
+
+`JsonDocument` implements `IDisposable` and **must be disposed** to avoid memory leaks. The parsed JSON data is backed by pooled memory that must be returned to avoid accumulation.
+
+**Always use `using` statements:**
+
+```csharp
+// Correct - using statement
+using var doc = await response.ReadJsonDocumentAsync();
+var value = doc.RootElement.GetProperty("id").GetInt32();
+
+// Correct - using declaration
+using (var doc = await response.ReadJsonDocumentAsync())
+{
+    ProcessDocument(doc);
+}
+
+// WRONG - Memory leak!
+var doc = await response.ReadJsonDocumentAsync(); // No using!
+var value = doc.RootElement.GetProperty("id").GetInt32();
+```
+
+If you need to keep the data beyond the disposal scope, extract the values you need before disposing, or copy the `JsonElement` data into your own objects.
+
+:::
 
 ## JsonObject Parsing
 
@@ -93,6 +119,8 @@ var obj = await response.ReadJsonObjectAsync();
 * All deserialization is performed using `System.Text.Json`.
 * Stream reading honors `CancellationToken` on TFMs that support it.
 * `JsonObject` APIs are only available when targeting `.NET 6` or later.
+* **`JsonDocument` must be disposed** - it implements `IDisposable` and uses pooled memory that must be returned to avoid memory leaks. Always use `using` statements.
+* `JsonObject` does not require disposal - it allocates managed objects on the heap.
 
 ---
 

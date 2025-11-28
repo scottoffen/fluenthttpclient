@@ -52,8 +52,8 @@ In some cases, you may want to define a fallback behavior when deserialization f
 
 The delegate provided for handling exceptions has two possible signatures.
 
-- `Func<HttpResponseMessage, Exception, T>` — Handle errors using the response and exception.
-- `Func<Exception, T>` — Handle errors with only the exception.
+- `Func<HttpResponseMessage, Exception, T>` - Handle errors using the response and exception.
+- `Func<Exception, T>` - Handle errors with only the exception.
 - Async variants are also available (`Func<..., Task<T>>`).
 
 In each case, the delegate should return a valid instance of type `T`. This ensures your application can recover gracefully even if the response content isn't as expected.

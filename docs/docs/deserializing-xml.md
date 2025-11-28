@@ -35,6 +35,20 @@ var model = await response.ReadXmlAsync<MyModel>();
 
 Empty or whitespace content returns `null`. Malformed XML throws the underlying serializer or XML parsing exception.
 
+:::warning XmlSerializer Memory Implications
+
+FluentHttpClient uses `System.Xml.Serialization.XmlSerializer` for typed XML deserialization. `XmlSerializer` generates and caches code for each unique type at runtime. On .NET Framework and some older .NET Core versions, these generated assemblies **cannot be unloaded**, which may lead to memory accumulation in long-running applications that deserialize many different XML types.
+
+**Recommendations for long-running applications:**
+* Limit the number of distinct types you deserialize
+* Consider using `XElement` parsing (see below) for dynamic or varied XML schemas
+* For high-throughput scenarios with many types, consider JSON serialization instead
+* On .NET Framework, you can pre-generate serializers using [sgen.exe](https://learn.microsoft.com/en-us/dotnet/standard/serialization/xml-serializer-generator-tool-sgen-exe)
+
+For most applications with a small, fixed set of XML types, this is not a concern.
+
+:::
+
 ## XElement Parsing
 
 Use these methods when you want to parse the response body into an `XElement` for LINQ-to-XML processing.
@@ -65,6 +79,8 @@ Empty or whitespace input returns `null`. Malformed XML results in the underlyin
 * `CancellationToken` is honored in all methods that accept one.
 * [`LoadOptions`](https://learn.microsoft.com/en-us/dotnet/api/system.xml.linq.loadoptions) allow controlling whitespace, line information, and base URI preservation when parsing into `XElement`.
 * See the documentation for [`XElement.Parse`](https://learn.microsoft.com/en-us/dotnet/api/system.xml.linq.xelement.parse) for information on using `LoadOptions`.
+* `XmlSerializer` instances are cached per type to avoid repeated code generation overhead.
+* For Native AOT compatibility, use `XElement` parsing instead of typed deserialization.
 ---
 
 ## Quick Reference

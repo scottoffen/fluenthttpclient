@@ -75,7 +75,7 @@ var response = await builder.PostAsync()
 ### Asynchronous handler
 
 ```csharp
-aawait builder.PostAsync()
+await builder.PostAsync()
     .OnFailure(async r => await metrics.RecordFailureAsync(r));
 ```
 
