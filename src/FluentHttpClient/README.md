@@ -56,4 +56,4 @@ FluentHttpClient wraps `HttpClient` (you still manage the lifetime) and provides
 - **Response Handlers**: Attach success and failure callbacks directly in the request chain without breaking fluency
 - **Reduced Boilerplate**: Express the entire request lifecycle—configuration, sending, and deserialization—in a single expression
 
-FluentHttpClient can expresses the same logic in fewer lines, with better readability and no loss of functionality. All configuration, sending, error handling, and deserialization happen in a single fluent chain.
+Because a fluent API improves developer experience by turning tedious, repetitive setup into a readable, chainable flow that matches how you actually think about building and sending an HTTP request, FluentHttpClient can expresses the same logic in fewer lines, with better readability and no loss of functionality. All configuration, sending, error handling, and deserialization happen in a single fluent chain.
