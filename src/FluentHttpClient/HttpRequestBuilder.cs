@@ -198,6 +198,19 @@ public class HttpRequestBuilder
     public string? Route => _route?.OriginalString;
 
     /// <summary>
+    /// Returns the per-request timeout applied by <see cref="HttpRequestBuilder"/>.
+    /// </summary>
+    /// <remarks>
+    /// This timeout is enforced only for the current request and is implemented via
+    /// cancellation; it does not modify <see cref="HttpClient.Timeout"/> or apply to
+    /// other requests made with the same <see cref="HttpClient"/> instance.
+    /// When set, the request is canceled if it does not complete within the specified
+    /// time interval. This timeout composes with any caller-provided
+    /// <see cref="CancellationToken"/>; whichever triggers first will cancel the request.
+    /// </remarks>
+    public TimeSpan? Timeout { get; internal set; }
+
+    /// <summary>
     /// Gets or sets the HTTP message version.
     /// </summary>
     /// <remarks>Defaults to HTTP/1.1.</remarks>
@@ -368,9 +381,26 @@ public class HttpRequestBuilder
     {
         using var request = await BuildRequest(method, cancellationToken).ConfigureAwait(false);
 
-        return await _client
-            .SendAsync(request, completionOption, cancellationToken)
-            .ConfigureAwait(false);
+        var effectiveToken = cancellationToken;
+        var timeoutCts = (CancellationTokenSource?)null;
+
+        if (Timeout is TimeSpan timeout)
+        {
+            timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutCts.CancelAfter(timeout);
+            effectiveToken = timeoutCts.Token;
+        }
+
+        try
+        {
+            return await _client
+                .SendAsync(request, completionOption, effectiveToken)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            timeoutCts?.Dispose();
+        }
     }
 
     /// <summary>
