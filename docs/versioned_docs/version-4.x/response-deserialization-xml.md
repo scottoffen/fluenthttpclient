@@ -98,7 +98,7 @@ While XML deserialization offers the same core functionality, not all features a
 
 * XML deserialization does **not** include fallback delegates (e.g., `Func<HttpResponseMessage, Exception, T>`) for error handling.
 * JSON deserialization allows custom `JsonSerializerOptions`; XML deserialization uses `XmlSerializer` and standard `XmlReader`/`XElement` configuration instead.
-* Error handling is less granular—exceptions from `XmlSerializer` or malformed XML are thrown directly.
+* Error handling is less granular - exceptions from `XmlSerializer` or malformed XML are thrown directly.
 * Future releases will bring feature parity for fallback handling and enhanced serializer configuration.
 
 These differences are intentional for now to prioritize performance and simplicity. Full parity is planned for a future major version.

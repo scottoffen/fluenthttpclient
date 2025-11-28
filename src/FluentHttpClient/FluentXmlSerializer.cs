@@ -7,6 +7,22 @@ using System.Xml.Serialization;
 
 namespace FluentHttpClient;
 
+/// <summary>
+/// Provides internal XML serialization and deserialization functionality using XmlSerializer.
+/// </summary>
+/// <remarks>
+/// <para>
+/// XmlSerializer instances are cached per type to avoid repeated code generation overhead.
+/// On .NET Framework and .NET Core versions prior to .NET 5, XmlSerializer generates dynamic assemblies
+/// that cannot be unloaded, which may lead to memory accumulation in long-running applications
+/// that serialize many different types.
+/// </para>
+/// <para>
+/// For applications concerned about memory usage in scenarios with many types, or for Native AOT compatibility,
+/// consider using JSON serialization instead. Alternatively, pre-generate XML serializers using
+/// the XML Serializer Generator tool (sgen.exe) or source generators (.NET 6+).
+/// </para>
+/// </remarks>
 internal static class FluentXmlSerializer
 {
     private static readonly ConcurrentDictionary<Type, XmlSerializer> SerializerCache = new();
@@ -106,15 +122,26 @@ internal static class FluentXmlSerializer
     }
 }
 
+/// <summary>
+/// A specialized <see cref="StringWriter"/> that supports custom encoding for XML serialization.
+/// </summary>
 internal sealed class XmlStringWriter : StringWriter
 {
     private readonly Encoding _encoding;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="XmlStringWriter"/> class with the specified format provider and encoding.
+    /// </summary>
+    /// <param name="formatProvider">An object that controls formatting.</param>
+    /// <param name="encoding">The character encoding to use.</param>
     public XmlStringWriter(IFormatProvider formatProvider, Encoding encoding)
         : base(formatProvider)
     {
         _encoding = encoding;
     }
 
+    /// <summary>
+    /// Gets the encoding for this string writer.
+    /// </summary>
     public override Encoding Encoding => _encoding;
 }

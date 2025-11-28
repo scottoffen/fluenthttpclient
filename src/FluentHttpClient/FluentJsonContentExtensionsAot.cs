@@ -13,6 +13,11 @@ public static partial class FluentJsonContentExtensions
     /// Serializes <paramref name="value"/> using the supplied <see cref="JsonTypeInfo{T}"/> and
     /// sets the JSON payload as the request content using UTF-8 and the default media type.
     /// </summary>
+    /// <typeparam name="T">The type of the value to serialize.</typeparam>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="value">The value to serialize as JSON.</param>
+    /// <param name="jsonTypeInfo">The JSON type metadata for AOT-safe serialization.</param>
+    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     public static HttpRequestBuilder WithJsonContent<T>(
         this HttpRequestBuilder builder,
         T value,
@@ -31,6 +36,11 @@ public static partial class FluentJsonContentExtensions
     /// Serializes <paramref name="value"/> using metadata from the provided
     /// <see cref="JsonSerializerContext"/> and sets the JSON payload as the request content.
     /// </summary>
+    /// <typeparam name="T">The type of the value to serialize.</typeparam>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="value">The value to serialize as JSON.</param>
+    /// <param name="context">The JSON serializer context containing type metadata for AOT-safe serialization.</param>
+    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     public static HttpRequestBuilder WithJsonContent<T>(
         this HttpRequestBuilder builder,
         T value,
@@ -54,6 +64,12 @@ public static partial class FluentJsonContentExtensions
     /// Serializes <paramref name="value"/> using the supplied <see cref="JsonTypeInfo{T}"/> and
     /// sets the JSON payload as the request content using UTF-8 and the specified media type.
     /// </summary>
+    /// <typeparam name="T">The type of the value to serialize.</typeparam>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="value">The value to serialize as JSON.</param>
+    /// <param name="jsonTypeInfo">The JSON type metadata for AOT-safe serialization.</param>
+    /// <param name="contentType">The media type string for the content.</param>
+    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     public static HttpRequestBuilder WithJsonContent<T>(
         this HttpRequestBuilder builder,
         T value,
@@ -75,6 +91,12 @@ public static partial class FluentJsonContentExtensions
     /// <see cref="JsonSerializerContext"/> and sets the JSON payload as the request content
     /// using UTF-8 and the specified media type.
     /// </summary>
+    /// <typeparam name="T">The type of the value to serialize.</typeparam>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="value">The value to serialize as JSON.</param>
+    /// <param name="context">The JSON serializer context containing type metadata for AOT-safe serialization.</param>
+    /// <param name="contentType">The media type string for the content.</param>
+    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     public static HttpRequestBuilder WithJsonContent<T>(
         this HttpRequestBuilder builder,
         T value,
@@ -100,6 +122,12 @@ public static partial class FluentJsonContentExtensions
     /// Serializes <paramref name="value"/> using the supplied <see cref="JsonTypeInfo{T}"/> and
     /// sets the JSON payload as the request content using UTF-8 and the specified content type header.
     /// </summary>
+    /// <typeparam name="T">The type of the value to serialize.</typeparam>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="value">The value to serialize as JSON.</param>
+    /// <param name="jsonTypeInfo">The JSON type metadata for AOT-safe serialization.</param>
+    /// <param name="contentTypeHeaderValue">The media type header value to apply to the content.</param>
+    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     public static HttpRequestBuilder WithJsonContent<T>(
         this HttpRequestBuilder builder,
         T value,
@@ -124,6 +152,12 @@ public static partial class FluentJsonContentExtensions
     /// <see cref="JsonSerializerContext"/> and sets the JSON payload as the request content
     /// using UTF-8 and the specified content type header.
     /// </summary>
+    /// <typeparam name="T">The type of the value to serialize.</typeparam>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="value">The value to serialize as JSON.</param>
+    /// <param name="context">The JSON serializer context containing type metadata for AOT-safe serialization.</param>
+    /// <param name="contentTypeHeaderValue">The media type header value to apply to the content.</param>
+    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     public static HttpRequestBuilder WithJsonContent<T>(
         this HttpRequestBuilder builder,
         T value,

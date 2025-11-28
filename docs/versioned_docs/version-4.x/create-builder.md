@@ -27,7 +27,7 @@ Alternatively, you can create a builder directly:
 var request = new HttpRequestBuilder(client, "/users/12345");
 ```
 
-Both approaches are equivalent — the fluent API simply provides a more concise and expressive syntax.
+Both approaches are equivalent - the fluent API simply provides a more concise and expressive syntax.
 
 ### Create Request Without Route
 

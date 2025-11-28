@@ -29,7 +29,7 @@ public sealed class HttpQueryParameterCollection :
     /// <summary>
     /// Gets the values associated with the specified key.
     /// </summary>
-    /// <param name="key"></param>
+    /// <param name="key">The parameter name to retrieve values for.</param>
     /// <returns>
     /// A read-only list of values for the key.
     /// </returns>
@@ -214,7 +214,7 @@ public sealed class HttpQueryParameterCollection :
             return string.Empty;
         }
 
-        var builder = new StringBuilder();
+        var builder = new StringBuilder(capacity: _parameters.Count * 37);
         var first = true;
 
         void AppendPrefix()

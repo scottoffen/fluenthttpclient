@@ -11,7 +11,8 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP DELETE request using the configured <see cref="HttpRequestBuilder"/>.
     /// </summary>
-    /// <param name="builder"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> DeleteAsync(this HttpRequestBuilder builder)
     {
         return builder.SendAsync(HttpMethod.Delete);
@@ -20,8 +21,9 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP DELETE request using the specified <see cref="CancellationToken"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> DeleteAsync(
         this HttpRequestBuilder builder,
         CancellationToken cancellationToken)
@@ -32,8 +34,9 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP DELETE request using the specified <see cref="HttpCompletionOption"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="completionOption"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> DeleteAsync(
         this HttpRequestBuilder builder,
         HttpCompletionOption completionOption)
@@ -44,9 +47,10 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP DELETE request using the specified <see cref="HttpCompletionOption"/> and <see cref="CancellationToken"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="completionOption"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> DeleteAsync(
         this HttpRequestBuilder builder,
         HttpCompletionOption completionOption,
@@ -60,7 +64,8 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP GET request using the configured <see cref="HttpRequestBuilder"/>.
     /// </summary>
-    /// <param name="builder"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> GetAsync(this HttpRequestBuilder builder)
     {
         return builder.SendAsync(HttpMethod.Get);
@@ -69,8 +74,9 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP GET request using the specified <see cref="CancellationToken"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> GetAsync(
         this HttpRequestBuilder builder,
         CancellationToken cancellationToken)
@@ -81,8 +87,9 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP GET request using the specified <see cref="HttpCompletionOption"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="completionOption"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> GetAsync(
         this HttpRequestBuilder builder,
         HttpCompletionOption completionOption)
@@ -93,9 +100,10 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP GET request using the specified <see cref="HttpCompletionOption"/> and <see cref="CancellationToken"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="completionOption"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> GetAsync(
         this HttpRequestBuilder builder,
         HttpCompletionOption completionOption,
@@ -109,7 +117,8 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP HEAD request using the configured <see cref="HttpRequestBuilder"/>.
     /// </summary>
-    /// <param name="builder"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> HeadAsync(this HttpRequestBuilder builder)
     {
         return builder.SendAsync(HttpMethod.Head);
@@ -118,8 +127,9 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP HEAD request using the specified <see cref="CancellationToken"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> HeadAsync(
         this HttpRequestBuilder builder,
         CancellationToken cancellationToken)
@@ -130,8 +140,9 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP HEAD request using the specified <see cref="HttpCompletionOption"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="completionOption"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> HeadAsync(
         this HttpRequestBuilder builder,
         HttpCompletionOption completionOption)
@@ -142,9 +153,10 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP HEAD request using the specified <see cref="HttpCompletionOption"/> and <see cref="CancellationToken"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="completionOption"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> HeadAsync(
         this HttpRequestBuilder builder,
         HttpCompletionOption completionOption,
@@ -158,7 +170,8 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP OPTIONS request using the configured <see cref="HttpRequestBuilder"/>.
     /// </summary>
-    /// <param name="builder"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> OptionsAsync(this HttpRequestBuilder builder)
     {
         return builder.SendAsync(HttpMethod.Options);
@@ -167,8 +180,9 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP OPTIONS request using the specified <see cref="CancellationToken"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> OptionsAsync(
         this HttpRequestBuilder builder,
         CancellationToken cancellationToken)
@@ -179,8 +193,9 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP OPTIONS request using the specified <see cref="HttpCompletionOption"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="completionOption"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> OptionsAsync(
         this HttpRequestBuilder builder,
         HttpCompletionOption completionOption)
@@ -191,9 +206,10 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP OPTIONS request using the specified <see cref="HttpCompletionOption"/> and <see cref="CancellationToken"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="completionOption"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> OptionsAsync(
         this HttpRequestBuilder builder,
         HttpCompletionOption completionOption,
@@ -207,7 +223,8 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP PATCH request using the configured <see cref="HttpRequestBuilder"/>.
     /// </summary>
-    /// <param name="builder"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> PatchAsync(this HttpRequestBuilder builder)
     {
 #if NETSTANDARD2_0
@@ -220,8 +237,9 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP PATCH request using the specified <see cref="CancellationToken"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> PatchAsync(
         this HttpRequestBuilder builder,
         CancellationToken cancellationToken)
@@ -236,8 +254,9 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP PATCH request using the specified <see cref="HttpCompletionOption"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="completionOption"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> PatchAsync(
         this HttpRequestBuilder builder,
         HttpCompletionOption completionOption)
@@ -252,9 +271,10 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP PATCH request using the specified <see cref="HttpCompletionOption"/> and <see cref="CancellationToken"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="completionOption"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> PatchAsync(
         this HttpRequestBuilder builder,
         HttpCompletionOption completionOption,
@@ -272,7 +292,8 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP POST request using the configured <see cref="HttpRequestBuilder"/>.
     /// </summary>
-    /// <param name="builder"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> PostAsync(this HttpRequestBuilder builder)
     {
         return builder.SendAsync(HttpMethod.Post);
@@ -281,8 +302,9 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP POST request using the specified <see cref="CancellationToken"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> PostAsync(
         this HttpRequestBuilder builder,
         CancellationToken cancellationToken)
@@ -293,8 +315,9 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP POST request using the specified <see cref="HttpCompletionOption"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="completionOption"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> PostAsync(
         this HttpRequestBuilder builder,
         HttpCompletionOption completionOption)
@@ -305,9 +328,10 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP POST request using the specified <see cref="HttpCompletionOption"/> and <see cref="CancellationToken"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="completionOption"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> PostAsync(
         this HttpRequestBuilder builder,
         HttpCompletionOption completionOption,
@@ -321,7 +345,8 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP PUT request using the configured <see cref="HttpRequestBuilder"/>.
     /// </summary>
-    /// <param name="builder"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> PutAsync(this HttpRequestBuilder builder)
     {
         return builder.SendAsync(HttpMethod.Put);
@@ -330,8 +355,9 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP PUT request using the specified <see cref="CancellationToken"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> PutAsync(
         this HttpRequestBuilder builder,
         CancellationToken cancellationToken)
@@ -342,8 +368,9 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP PUT request using the specified <see cref="HttpCompletionOption"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="completionOption"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> PutAsync(
         this HttpRequestBuilder builder,
         HttpCompletionOption completionOption)
@@ -354,9 +381,10 @@ public static class FluentSendExtensions
     /// <summary>
     /// Sends an HTTP PUT request using the specified <see cref="HttpCompletionOption"/> and <see cref="CancellationToken"/>.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="completionOption"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
     public static Task<HttpResponseMessage> PutAsync(
         this HttpRequestBuilder builder,
         HttpCompletionOption completionOption,

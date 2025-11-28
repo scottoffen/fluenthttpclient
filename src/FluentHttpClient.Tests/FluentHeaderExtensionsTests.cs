@@ -12,7 +12,7 @@ public class FluentHeaderExtensionsTests
             var result = builder.WithHeader("X-Test", "value");
 
             result.ShouldBeSameAs(builder);
-            builder.HeaderConfigurators.Count.ShouldBe(1);
+            builder.InternalHeaders.Count.ShouldBe(1);
         }
 
         [Fact]
@@ -21,13 +21,9 @@ public class FluentHeaderExtensionsTests
             var builder = CreateBuilder();
 
             builder.WithHeader("X-Test", "value");
-            var configurator = builder.HeaderConfigurators.Single();
 
-            var message = new HttpRequestMessage(HttpMethod.Get, "https://example.com/resource");
-            configurator(message.Headers);
-
-            message.Headers.Contains("X-Test").ShouldBeTrue();
-            message.Headers.GetValues("X-Test").Single().ShouldBe("value");
+            builder.InternalHeaders.ShouldContainKey("X-Test");
+            builder.InternalHeaders["X-Test"].ShouldBe(new[] { "value" });
         }
 
         [Fact]
@@ -78,7 +74,7 @@ public class FluentHeaderExtensionsTests
             var result = builder.WithHeader("X-Multi", values);
 
             result.ShouldBeSameAs(builder);
-            builder.HeaderConfigurators.Count.ShouldBe(1);
+            builder.InternalHeaders.Count.ShouldBe(1);
         }
 
         [Fact]
@@ -88,13 +84,9 @@ public class FluentHeaderExtensionsTests
             var values = new[] { "one", "two" };
 
             builder.WithHeader("X-Multi", values);
-            var configurator = builder.HeaderConfigurators.Single();
 
-            var message = new HttpRequestMessage(HttpMethod.Get, "https://example.com/resource");
-            configurator(message.Headers);
-
-            message.Headers.Contains("X-Multi").ShouldBeTrue();
-            message.Headers.GetValues("X-Multi").ShouldBe(values);
+            builder.InternalHeaders.ShouldContainKey("X-Multi");
+            builder.InternalHeaders["X-Multi"].ShouldBe(values);
         }
 
         [Fact]
@@ -151,7 +143,7 @@ public class FluentHeaderExtensionsTests
             var result = builder.WithHeaders(headers);
 
             result.ShouldBeSameAs(builder);
-            builder.HeaderConfigurators.Count.ShouldBe(1);
+            builder.InternalHeaders.Count.ShouldBe(2);
         }
 
         [Fact]
@@ -165,16 +157,12 @@ public class FluentHeaderExtensionsTests
             };
 
             builder.WithHeaders(headers);
-            var configurator = builder.HeaderConfigurators.Single();
 
-            var message = new HttpRequestMessage(HttpMethod.Get, "https://example.com/resource");
-            configurator(message.Headers);
+            builder.InternalHeaders.ShouldContainKey("X-One");
+            builder.InternalHeaders["X-One"].ShouldBe(new[] { "1" });
 
-            message.Headers.Contains("X-One").ShouldBeTrue();
-            message.Headers.GetValues("X-One").Single().ShouldBe("1");
-
-            message.Headers.Contains("X-Two").ShouldBeTrue();
-            message.Headers.GetValues("X-Two").Single().ShouldBe("2");
+            builder.InternalHeaders.ShouldContainKey("X-Two");
+            builder.InternalHeaders["X-Two"].ShouldBe(new[] { "2" });
         }
 
         [Fact]
@@ -197,12 +185,8 @@ public class FluentHeaderExtensionsTests
                 new KeyValuePair<string, string>(null!, "1")
             };
 
-            builder.WithHeaders(headers);
-            var configurator = builder.HeaderConfigurators.Single();
-
-            var message = new HttpRequestMessage(HttpMethod.Get, "https://example.com/resource");
             var ex = Should.Throw<ArgumentException>(() =>
-                configurator(message.Headers));
+                builder.WithHeaders(headers));
 
             ex.ParamName.ShouldBe("key");
         }
@@ -211,7 +195,7 @@ public class FluentHeaderExtensionsTests
         [InlineData("Host")]
         [InlineData("Content-Length")]
         [InlineData("Transfer-Encoding")]
-        public async Task WithHeader_ThrowsArgumentException_WhenKeyIsReserved(string key)
+        public void WithHeader_ThrowsArgumentException_WhenKeyIsReserved(string key)
         {
             var builder = CreateBuilder();
             var headers = new[]
@@ -219,10 +203,8 @@ public class FluentHeaderExtensionsTests
                 new KeyValuePair<string, string>(key, "1")
             };
 
-            builder.WithHeaders(headers);
-
-            var ex = await Should.ThrowAsync<ArgumentException>(async () =>
-                await builder.BuildRequest(HttpMethod.Get, CancellationToken.None));
+            var ex = Should.Throw<ArgumentException>(() =>
+                builder.WithHeaders(headers));
 
             ex.ParamName.ShouldBe("key");
         }
@@ -236,12 +218,8 @@ public class FluentHeaderExtensionsTests
                 new KeyValuePair<string, string>("X-One", null!)
             };
 
-            builder.WithHeaders(headers);
-            var configurator = builder.HeaderConfigurators.Single();
-
-            var message = new HttpRequestMessage(HttpMethod.Get, "https://example.com/resource");
             var ex = Should.Throw<ArgumentException>(() =>
-                configurator(message.Headers));
+                builder.WithHeaders(headers));
 
             ex.ParamName.ShouldBe("value");
         }
@@ -262,7 +240,7 @@ public class FluentHeaderExtensionsTests
             var result = builder.WithHeaders(headers);
 
             result.ShouldBeSameAs(builder);
-            builder.HeaderConfigurators.Count.ShouldBe(1);
+            builder.InternalHeaders.Count.ShouldBe(2);
         }
 
         [Fact]
@@ -276,16 +254,12 @@ public class FluentHeaderExtensionsTests
             };
 
             builder.WithHeaders(headers);
-            var configurator = builder.HeaderConfigurators.Single();
 
-            var message = new HttpRequestMessage(HttpMethod.Get, "https://example.com/resource");
-            configurator(message.Headers);
+            builder.InternalHeaders.ShouldContainKey("X-One");
+            builder.InternalHeaders["X-One"].ShouldBe(new[] { "1", "1b" });
 
-            message.Headers.Contains("X-One").ShouldBeTrue();
-            message.Headers.GetValues("X-One").ShouldBe(new[] { "1", "1b" });
-
-            message.Headers.Contains("X-Two").ShouldBeTrue();
-            message.Headers.GetValues("X-Two").Single().ShouldBe("2");
+            builder.InternalHeaders.ShouldContainKey("X-Two");
+            builder.InternalHeaders["X-Two"].ShouldBe(new[] { "2" });
         }
 
         [Fact]
@@ -303,7 +277,7 @@ public class FluentHeaderExtensionsTests
         [InlineData("Host")]
         [InlineData("Content-Length")]
         [InlineData("Transfer-Encoding")]
-        public async Task WithHeader_ThrowsArgumentException_WhenKeyIsReserved(string key)
+        public void WithHeader_ThrowsArgumentException_WhenKeyIsReserved(string key)
         {
             var builder = CreateBuilder();
             var headers = new[]
@@ -311,10 +285,8 @@ public class FluentHeaderExtensionsTests
                 new KeyValuePair<string, IEnumerable<string>>(key, new[] { "1" })
             };
 
-            builder.WithHeaders(headers);
-
-            var ex = await Should.ThrowAsync<ArgumentException>(async () =>
-                await builder.BuildRequest(HttpMethod.Get, CancellationToken.None));
+            var ex = Should.Throw<ArgumentException>(() =>
+                builder.WithHeaders(headers));
 
             ex.ParamName.ShouldBe("key");
         }
@@ -328,12 +300,8 @@ public class FluentHeaderExtensionsTests
                 new KeyValuePair<string, IEnumerable<string>>(null!, new[] { "1" })
             };
 
-            builder.WithHeaders(headers);
-            var configurator = builder.HeaderConfigurators.Single();
-
-            var message = new HttpRequestMessage(HttpMethod.Get, "https://example.com/resource");
             var ex = Should.Throw<ArgumentException>(() =>
-                configurator(message.Headers));
+                builder.WithHeaders(headers));
 
             ex.ParamName.ShouldBe("key");
         }
@@ -347,14 +315,162 @@ public class FluentHeaderExtensionsTests
                 new KeyValuePair<string, IEnumerable<string>>("X-One", null!)
             };
 
-            builder.WithHeaders(headers);
-            var configurator = builder.HeaderConfigurators.Single();
-
-            var message = new HttpRequestMessage(HttpMethod.Get, "https://example.com/resource");
             var ex = Should.Throw<ArgumentException>(() =>
-                configurator(message.Headers));
+                builder.WithHeaders(headers));
 
             ex.ParamName.ShouldBe("values");
+        }
+    }
+
+    public class ConfigureHeadersTests
+    {
+        [Fact]
+        public void ConfigureHeaders_AddsConfiguratorToList_WhenCalled()
+        {
+            var builder = CreateBuilder();
+
+            var result = builder.ConfigureHeaders(headers =>
+                headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "token"));
+
+            result.ShouldBeSameAs(builder);
+            builder.HeaderConfigurators.Count.ShouldBe(1);
+        }
+
+        [Fact]
+        public async Task ConfigureHeaders_AppliesTypedHeaderCorrectly_WhenRequestIsBuilt()
+        {
+            var builder = CreateBuilder();
+
+            builder.ConfigureHeaders(headers =>
+                headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "test-token"));
+
+            var request = await builder.BuildRequest(HttpMethod.Get, CancellationToken.None);
+
+            request.Headers.Authorization.ShouldNotBeNull();
+            request.Headers.Authorization!.Scheme.ShouldBe("Bearer");
+            request.Headers.Authorization.Parameter.ShouldBe("test-token");
+        }
+
+        [Fact]
+        public async Task ConfigureHeaders_AppliesCacheControlHeader_WhenRequestIsBuilt()
+        {
+            var builder = CreateBuilder();
+
+            builder.ConfigureHeaders(headers =>
+            {
+                headers.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue
+                {
+                    NoCache = true,
+                    NoStore = true,
+                    MaxAge = TimeSpan.FromSeconds(30)
+                };
+            });
+
+            var request = await builder.BuildRequest(HttpMethod.Get, CancellationToken.None);
+
+            request.Headers.CacheControl.ShouldNotBeNull();
+            request.Headers.CacheControl!.NoCache.ShouldBeTrue();
+            request.Headers.CacheControl.NoStore.ShouldBeTrue();
+            request.Headers.CacheControl.MaxAge.ShouldBe(TimeSpan.FromSeconds(30));
+        }
+
+        [Fact]
+        public async Task ConfigureHeaders_AppliesMultipleAcceptHeaders_WhenRequestIsBuilt()
+        {
+            var builder = CreateBuilder();
+
+            builder.ConfigureHeaders(headers =>
+            {
+                headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/xml", 0.9));
+            });
+
+            var request = await builder.BuildRequest(HttpMethod.Get, CancellationToken.None);
+
+            request.Headers.Accept.Count.ShouldBe(2);
+            request.Headers.Accept.First().MediaType.ShouldBe("application/json");
+            request.Headers.Accept.First().Quality.ShouldBeNull();
+            request.Headers.Accept.Last().MediaType.ShouldBe("application/xml");
+            request.Headers.Accept.Last().Quality.ShouldBe(0.9);
+        }
+
+        [Fact]
+        public async Task ConfigureHeaders_AccumulatesMultipleConfigurators_WhenCalledMultipleTimes()
+        {
+            var builder = CreateBuilder();
+
+            builder.ConfigureHeaders(headers =>
+                    headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "token"))
+                .ConfigureHeaders(headers =>
+                    headers.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue { NoCache = true });
+
+            var request = await builder.BuildRequest(HttpMethod.Get, CancellationToken.None);
+
+            builder.HeaderConfigurators.Count.ShouldBe(2);
+            request.Headers.Authorization.ShouldNotBeNull();
+            request.Headers.Authorization!.Scheme.ShouldBe("Bearer");
+            request.Headers.CacheControl.ShouldNotBeNull();
+            request.Headers.CacheControl!.NoCache.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task ConfigureHeaders_AppliesIfModifiedSinceHeader_WhenRequestIsBuilt()
+        {
+            var builder = CreateBuilder();
+            var testDate = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+            builder.ConfigureHeaders(headers =>
+                headers.IfModifiedSince = testDate);
+
+            var request = await builder.BuildRequest(HttpMethod.Get, CancellationToken.None);
+
+            request.Headers.IfModifiedSince.ShouldBe(testDate);
+        }
+
+        [Fact]
+        public async Task ConfigureHeaders_AppliesIfNoneMatchHeader_WhenRequestIsBuilt()
+        {
+            var builder = CreateBuilder();
+
+            builder.ConfigureHeaders(headers =>
+                headers.IfNoneMatch.Add(new System.Net.Http.Headers.EntityTagHeaderValue("\"12345\"")));
+
+            var request = await builder.BuildRequest(HttpMethod.Get, CancellationToken.None);
+
+            request.Headers.IfNoneMatch.Count.ShouldBe(1);
+            request.Headers.IfNoneMatch.First().Tag.ShouldBe("\"12345\"");
+        }
+
+        [Fact]
+        public void ConfigureHeaders_ThrowsArgumentNullException_WhenConfigureIsNull()
+        {
+            var builder = CreateBuilder();
+
+            var ex = Should.Throw<ArgumentNullException>(() =>
+                builder.ConfigureHeaders(null!));
+
+            ex.ParamName.ShouldBe("configure");
+        }
+
+        [Fact]
+        public async Task ConfigureHeaders_WorksWithOtherFluentMethods_WhenChained()
+        {
+            var builder = CreateBuilder();
+
+            builder.WithHeader("X-Custom", "value")
+                .ConfigureHeaders(headers =>
+                    headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "token"))
+                .WithHeader("X-Another", "value2");
+
+            var request = await builder.BuildRequest(HttpMethod.Get, CancellationToken.None);
+
+            // Verify InternalHeaders were applied
+            builder.InternalHeaders.ShouldContainKey("X-Custom");
+            builder.InternalHeaders.ShouldContainKey("X-Another");
+
+            // Verify typed header was applied
+            request.Headers.Authorization.ShouldNotBeNull();
+            request.Headers.Authorization!.Scheme.ShouldBe("Bearer");
         }
     }
 

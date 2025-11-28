@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Text;
 
 namespace FluentHttpClient;
 
@@ -22,8 +23,8 @@ public class HttpRequestBuilder
     /// Initializes a new instance of the <see cref="HttpRequestBuilder"/> class
     /// with the specified <see cref="HttpClient"/>.
     /// </summary>
-    /// <param name="client"></param>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <param name="client">The HTTP client to use for sending requests.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="client"/> is null.</exception>
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="client"/> has a <see cref="HttpClient.BaseAddress"/> that
     /// contains a query string or fragment.
@@ -46,8 +47,8 @@ public class HttpRequestBuilder
     /// Initializes a new instance of the <see cref="HttpRequestBuilder"/> class
     /// with the specified <see cref="HttpClient"/> and route.
     /// </summary>
-    /// <param name="client"></param>
-    /// <param name="route"></param>
+    /// <param name="client">The HTTP client to use for sending requests.</param>
+    /// <param name="route">The route string for the request.</param>
     internal HttpRequestBuilder(HttpClient client, string route)
         : this(client, CreateRouteUri(route))
     {
@@ -57,9 +58,9 @@ public class HttpRequestBuilder
     /// Initializes a new instance of the <see cref="HttpRequestBuilder"/> class
     /// with the specified <see cref="HttpClient"/> and route.
     /// </summary>
-    /// <param name="client"></param>
-    /// <param name="route"></param>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <param name="client">The HTTP client to use for sending requests.</param>
+    /// <param name="route">The route URI for the request.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="route"/> is null.</exception>
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="route"/> contains a query string or fragment.
     /// </exception>
@@ -97,7 +98,7 @@ public class HttpRequestBuilder
     /// <remarks>
     /// These cookies are serialized into the Cookie header for this request only.
     /// Long-lived cookie management should be configured on the underlying handler used by <see cref="HttpClient"/>.
-    /// Values are not automatically encoded when sending; encoding should occur prior to adding the cookie.
+    /// Values are not automatically encoded when sending; encoding should occur prior to or when adding the cookie.
     /// </remarks>
     public IDictionary<string, string> Cookies { get; } =
         new Dictionary<string, string>(StringComparer.Ordinal);
@@ -117,8 +118,51 @@ public class HttpRequestBuilder
     public List<Action<HttpRequestBuilder>> DeferredConfigurators { get; } = [];
 
     /// <summary>
-    /// Returns the collection of actions used to configure HTTP request headers.
+    /// Gets the internal dictionary used to store headers that will be applied to the HTTP request.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This dictionary stores headers added via <c>WithHeader</c> and <c>WithHeaders</c> extension methods.
+    /// Headers are stored with their keys as case-insensitive strings and values as collections to support
+    /// HTTP headers with multiple values (e.g., <c>Accept</c>, <c>Cache-Control</c>).
+    /// </para>
+    /// <para>
+    /// The dictionary uses <see cref="StringComparer.OrdinalIgnoreCase"/> to ensure header name comparisons
+    /// are case-insensitive per HTTP specifications (RFC 7230).
+    /// </para>
+    /// <para>
+    /// Values are applied to the <see cref="HttpRequestMessage"/> during request construction in
+    /// <see cref="ApplyConfiguration(HttpRequestMessage)"/>.
+    /// </para>
+    /// </remarks>
+    internal Dictionary<string, IEnumerable<string>> InternalHeaders { get; } =
+        new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Returns the collection of actions used to configure strongly-typed HTTP request headers.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This collection is intended for headers that require strongly-typed values from the
+    /// <see cref="HttpRequestHeaders"/> API, such as <c>Authorization</c>, <c>CacheControl</c>,
+    /// <c>Accept</c>, <c>IfModifiedSince</c>, and other headers with complex types or specialized formatting.
+    /// </para>
+    /// <para>
+    /// For simple string-based headers, use <c>WithHeader</c> extension methods instead, which populate
+    /// the <see cref="InternalHeaders"/> dictionary for better performance.
+    /// </para>
+    /// <para>
+    /// Each action in this collection is executed during request construction in <see cref="ApplyConfiguration"/>,
+    /// allowing multiple configurators to accumulate and apply their header settings.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// Adding a strongly-typed header:
+    /// <code>
+    /// builder.HeaderConfigurators.Add(headers =>
+    ///     headers.Authorization = new AuthenticationHeaderValue("Bearer", token));
+    /// </code>
+    /// </example>
     public List<Action<HttpRequestHeaders>> HeaderConfigurators { get; } = [];
 
 #if NET5_0_OR_GREATER
@@ -174,7 +218,7 @@ public class HttpRequestBuilder
     /// <remarks>
     /// Uses <see cref="HttpCompletionOption.ResponseContentRead"/> and a default cancellation token.
     /// </remarks>
-    /// <param name="method"></param>
+    /// <param name="method">The HTTP method as a string (e.g., "GET", "POST").</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="method"/> is null.
@@ -192,7 +236,7 @@ public class HttpRequestBuilder
     /// <remarks>
     /// Uses <see cref="HttpCompletionOption.ResponseContentRead"/> and a default cancellation token.
     /// </remarks>
-    /// <param name="method"></param>
+    /// <param name="method">The HTTP method to use for the request.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="method"/> is null.
@@ -210,8 +254,8 @@ public class HttpRequestBuilder
     /// <remarks>
     /// Uses <see cref="HttpCompletionOption.ResponseContentRead"/>.
     /// </remarks>
-    /// <param name="method"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="method">The HTTP method as a string (e.g., "GET", "POST").</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="method"/> is null.
@@ -229,8 +273,8 @@ public class HttpRequestBuilder
     /// <remarks>
     /// Uses <see cref="HttpCompletionOption.ResponseContentRead"/>.
     /// </remarks>
-    /// <param name="method"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="method">The HTTP method to use for the request.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="method"/> is null.
@@ -248,8 +292,8 @@ public class HttpRequestBuilder
     /// <remarks>
     /// Uses the specified <see cref="HttpCompletionOption"/> and a default cancellation token.
     /// </remarks>
-    /// <param name="method"></param>
-    /// <param name="completionOption"></param>
+    /// <param name="method">The HTTP method as a string (e.g., "GET", "POST").</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="method"/> is null.
@@ -267,8 +311,8 @@ public class HttpRequestBuilder
     /// <remarks>
     /// Uses the specified <see cref="HttpCompletionOption"/> and a default cancellation token.
     /// </remarks>
-    /// <param name="method"></param>
-    /// <param name="completionOption"></param>
+    /// <param name="method">The HTTP method to use for the request.</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="method"/> is null.
@@ -283,9 +327,9 @@ public class HttpRequestBuilder
     /// <summary>
     /// Sends an HTTP request as an asynchronous operation using the configured builder state.
     /// </summary>
-    /// <param name="method"></param>
-    /// <param name="completionOption"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="method">The HTTP method as a string (e.g., "GET", "POST").</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="method"/> is null.
@@ -306,9 +350,9 @@ public class HttpRequestBuilder
     /// <summary>
     /// Sends an HTTP request as an asynchronous operation using the configured builder state.
     /// </summary>
-    /// <param name="method"></param>
-    /// <param name="completionOption"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="method">The HTTP method to use for the request.</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="method"/> is null.
@@ -333,8 +377,8 @@ public class HttpRequestBuilder
     /// Builds and configures the <see cref="HttpRequestMessage"/> for this builder instance.
     /// Intended for internal and testing use. Use <see cref="SendAsync(HttpMethod)"/> and its overloads to send requests.
     /// </summary>
-    /// <param name="method"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="method">The HTTP method to use for the request.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while building the request.</param>
     /// <returns>The configured <see cref="HttpRequestMessage"/>.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="method"/> is null.
@@ -347,7 +391,7 @@ public class HttpRequestBuilder
     {
         Guard.AgainstNull(method, nameof(method));
 
-        foreach (var configure in DeferredConfigurators)
+        foreach (var configure in DeferredConfigurators.ToArray())
         {
             configure(this);
         }
@@ -412,12 +456,20 @@ public class HttpRequestBuilder
     /// <summary>
     /// Applies headers, cookies, and options from the builder to the request.
     /// </summary>
-    /// <param name="request"></param>
+    /// <param name="request">The HTTP request message to configure.</param>
     private void ApplyConfiguration(HttpRequestMessage request)
     {
         if (Content is MultipartContent)
         {
             request.Headers.ExpectContinue = false;
+        }
+
+        foreach (var header in InternalHeaders)
+        {
+            foreach (var value in header.Value)
+            {
+                request.Headers.TryAddWithoutValidation(header.Key, value);
+            }
         }
 
         for (var i = 0; i < HeaderConfigurators.Count; i++)
@@ -427,11 +479,24 @@ public class HttpRequestBuilder
 
         if (Cookies.Count > 0)
         {
-            var cookieHeader = string.Join(
-                "; ",
-                Cookies.Select(kvp => $"{kvp.Key}={kvp.Value}"));
+            var sb = new StringBuilder(capacity: Cookies.Count * 32); // Estimate ~32 chars per cookie
+            var first = true;
 
-            if (!string.IsNullOrEmpty(cookieHeader))
+            foreach (var kvp in Cookies)
+            {
+                if (!first)
+                {
+                    sb.Append("; ");
+                }
+
+                sb.Append(kvp.Key);
+                sb.Append('=');
+                sb.Append(kvp.Value);
+                first = false;
+            }
+
+            var cookieHeader = sb.ToString();
+            if (cookieHeader.Length > 0)
             {
                 request.Headers.Add(CookieHeaderName, cookieHeader);
             }

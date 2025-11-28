@@ -17,9 +17,17 @@ public static partial class FluentJsonTypedDeserialization
     /// <summary>
     /// Reads the JSON content of the response and deserializes it to <typeparamref name="T"/>.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="response"></param>
-    /// <returns></returns>
+    /// <remarks>
+    /// <para>
+    /// Returns <c>default(T?)</c> when the response content is null or empty. For reference types, this is <c>null</c>.
+    /// For nullable value types (e.g., <c>int?</c>), this is also <c>null</c>. This behavior differs from
+    /// <see cref="FluentJsonDeserialization.ReadJsonDocumentAsync(HttpResponseMessage)"/> which explicitly
+    /// returns <c>null</c> for empty content.
+    /// </para>
+    /// </remarks>
+    /// <typeparam name="T">The type to deserialize the JSON content into.</typeparam>
+    /// <param name="response">The HTTP response whose content will be read.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or default(T?) if the content is empty.</returns>
     public static Task<T?> ReadJsonAsync<T>(this HttpResponseMessage response)
     {
         return response.ReadJsonAsync<T>(
@@ -31,10 +39,10 @@ public static partial class FluentJsonTypedDeserialization
     /// Reads the JSON content of the response and deserializes it to <typeparamref name="T"/>,
     /// using the specified serializer options.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="response"></param>
-    /// <param name="options"></param>
-    /// <returns></returns>
+    /// <typeparam name="T">The type to deserialize the JSON content into.</typeparam>
+    /// <param name="response">The HTTP response whose content will be read.</param>
+    /// <param name="options">Options to control the deserialization behavior.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or default(T?) if the content is empty.</returns>
     public static Task<T?> ReadJsonAsync<T>(
         this HttpResponseMessage response,
         JsonSerializerOptions? options)
@@ -46,10 +54,10 @@ public static partial class FluentJsonTypedDeserialization
     /// Reads the JSON content of the response and deserializes it to <typeparamref name="T"/>,
     /// observing the provided cancellation token.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="response"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <typeparam name="T">The type to deserialize the JSON content into.</typeparam>
+    /// <param name="response">The HTTP response whose content will be read.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or default(T?) if the content is empty.</returns>
     public static Task<T?> ReadJsonAsync<T>(
         this HttpResponseMessage response,
         CancellationToken cancellationToken)
@@ -63,11 +71,11 @@ public static partial class FluentJsonTypedDeserialization
     /// Reads the JSON content of the response and deserializes it to <typeparamref name="T"/>,
     /// using the specified serializer options and cancellation token.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="response"></param>
-    /// <param name="options"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <typeparam name="T">The type to deserialize the JSON content into.</typeparam>
+    /// <param name="response">The HTTP response whose content will be read.</param>
+    /// <param name="options">Options to control the deserialization behavior.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or default(T?) if the content is empty.</returns>
     public static async Task<T?> ReadJsonAsync<T>(
         this HttpResponseMessage response,
         JsonSerializerOptions? options,
@@ -100,9 +108,9 @@ public static partial class FluentJsonTypedDeserialization
     /// <summary>
     /// Awaits the HTTP response task, then reads and deserializes the JSON content to <typeparamref name="T"/>.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseTask"></param>
-    /// <returns></returns>
+    /// <typeparam name="T">The type to deserialize the JSON content into.</typeparam>
+    /// <param name="responseTask">A task that produces the HTTP response whose content will be read.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or default(T?) if the content is empty.</returns>
     public static Task<T?> ReadJsonAsync<T>(this Task<HttpResponseMessage> responseTask)
     {
         return responseTask.ReadJsonAsync<T>(
@@ -114,10 +122,10 @@ public static partial class FluentJsonTypedDeserialization
     /// Awaits the HTTP response task, then reads and deserializes the JSON content to <typeparamref name="T"/>,
     /// using the specified serializer options.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseTask"></param>
-    /// <param name="options"></param>
-    /// <returns></returns>
+    /// <typeparam name="T">The type to deserialize the JSON content into.</typeparam>
+    /// <param name="responseTask">A task that produces the HTTP response whose content will be read.</param>
+    /// <param name="options">Options to control the deserialization behavior.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or default(T?) if the content is empty.</returns>
     public static Task<T?> ReadJsonAsync<T>(
         this Task<HttpResponseMessage> responseTask,
         JsonSerializerOptions? options)
@@ -129,10 +137,10 @@ public static partial class FluentJsonTypedDeserialization
     /// Awaits the HTTP response task, then reads and deserializes the JSON content to <typeparamref name="T"/>,
     /// observing the provided cancellation token.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseTask"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <typeparam name="T">The type to deserialize the JSON content into.</typeparam>
+    /// <param name="responseTask">A task that produces the HTTP response whose content will be read.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or default(T?) if the content is empty.</returns>
     public static Task<T?> ReadJsonAsync<T>(
         this Task<HttpResponseMessage> responseTask,
         CancellationToken cancellationToken)
@@ -146,11 +154,11 @@ public static partial class FluentJsonTypedDeserialization
     /// Awaits the HTTP response task, then reads and deserializes the JSON content to <typeparamref name="T"/>,
     /// using the specified serializer options and cancellation token.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseTask"></param>
-    /// <param name="options"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <typeparam name="T">The type to deserialize the JSON content into.</typeparam>
+    /// <param name="responseTask">A task that produces the HTTP response whose content will be read.</param>
+    /// <param name="options">Options to control the deserialization behavior.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or default(T?) if the content is empty.</returns>
     public static async Task<T?> ReadJsonAsync<T>(
         this Task<HttpResponseMessage> responseTask,
         JsonSerializerOptions? options,

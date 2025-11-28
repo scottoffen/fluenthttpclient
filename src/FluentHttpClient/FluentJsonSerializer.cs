@@ -4,6 +4,9 @@ using System.Text.Json.Serialization;
 
 namespace FluentHttpClient;
 
+/// <summary>
+/// Provides default JSON serialization settings and constants for the FluentHttpClient library.
+/// </summary>
 [ExcludeFromCodeCoverage]
 internal static class FluentJsonSerializer
 {

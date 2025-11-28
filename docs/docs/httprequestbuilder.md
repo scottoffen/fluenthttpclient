@@ -20,7 +20,7 @@ FluentHttpClient is built around a simple pattern:
 
 ```csharp
 var response = await client
-    .UsingRoute("/api/widgets")   // produces a HttpRequestBuilder
+    .UsingRoute("/api/widgets")   // returns HttpRequestBuilder
     .WithHeader("X-Tenant", tenantId)
     .WithQueryParameter("state", "active")
     .WithJsonContent(payload)
@@ -45,7 +45,7 @@ Starting in FluentHttpClient 5.0, `HttpRequestBuilder` is no longer able to be c
 
 :::warning Query Strings and Fragments
 
-`BaseAddress` and `Route` must remain clean—free of query strings and fragments—so that FluentHttpClient has a single, predictable source of truth for all query-related behavior. Allowing query components in multiple places leads to ambiguous URI construction, duplicated encoding, and inconsistent request signatures. By enforcing that all query values flow through `QueryParameters`, the builder can reliably compose the final URI, ensure consistent encoding rules, and prevent subtle bugs caused by mixing inline query strings with fluent configuration.
+`BaseAddress` and `Route` must remain clean - free of query strings and fragments - so that FluentHttpClient has a single, predictable source of truth for all query-related behavior. Allowing query components in multiple places leads to ambiguous URI construction, duplicated encoding, and inconsistent request signatures. By enforcing that all query values flow through `QueryParameters`, the builder can reliably compose the final URI, ensure consistent encoding rules, and prevent subtle bugs caused by mixing inline query strings with fluent configuration.
 
 :::
 
@@ -94,18 +94,18 @@ As with the string-based overload, the provided `Uri` must not contain query or 
 
 The table below lists the key properties on `HttpRequestBuilder` and how they are used.
 
-| Property                                                 | Description                                                                                                                                                              |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `HttpContent? Content`                                   | The request body to send. Set by content-related extensions such as JSON, XML, or form encoded data.                                                                          |
-| `IDictionary<string,string> Cookies`                     | Per-request cookies serialized into a single `Cookie` header. Values are not encoded automatically; long-lived cookie storage should come from the `HttpClient` handler. |
-| `List<Action<HttpRequestBuilder>> DeferredConfigurators` | Actions executed immediately before building the request, enabling late-bound or conditional configuration (used by `.When(...)` extensions).                               |
-| `List<Action<HttpRequestHeaders>> HeaderConfigurators`   | Actions that mutate `HttpRequestMessage.Headers` during request construction. Populated by header-related extensions.                                                    |
-| `List<Action<HttpRequestOptions>> OptionConfigurators`*  | Actions that set values in `HttpRequestMessage.Options`. Useful for per-request flags, tracing, or contextual data.                                                      |
-| `bool BufferRequestContent`                              | Forces the request content to be fully buffered in memory before sending. Intended only for compatibility edge cases where buffering is required.                        |
-| `HttpQueryParameterCollection QueryParameters`           | Represents all query string values for the request. The route and base address must not contain query components; this collection is the single source of truth.         |
-| `string? Route`                                          | The relative or absolute request route originally provided to the builder; validated so it contains no query or fragment.                                                |
-| `Version Version`                                        | The HTTP protocol version applied to the outgoing request. Defaults to HTTP/1.1.                                                                                         |
-| `HttpVersionPolicy VersionPolicy`*                       | Controls how the requested HTTP version is interpreted and negotiated (e.g., upgrade, downgrade, or strict). Defaults to `RequestVersionOrLower`.                        |
+| Property                                                 | Description                                                                                                                                                                                                                         |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `HttpContent? Content`                                   | The request body to send. Set by content-related extensions such as JSON, XML, or form encoded data. See [Configure Content](./configure-content.md).                                                                               |
+| `IDictionary<string,string> Cookies`                     | Per-request cookies serialized into a single `Cookie` header. Values are URL-encoded by default using RFC 6265 encoding; encoding can be disabled per-cookie if needed. See [Configure Cookies](./configure-cookies.md).            |
+| `List<Action<HttpRequestBuilder>> DeferredConfigurators` | Actions executed immediately before building the request, enabling late-bound or conditional configuration. See [Conditional Configuration](./conditional-configuration.md).                                                        |
+| `List<Action<HttpRequestHeaders>> HeaderConfigurators`   | Actions that configure strongly-typed headers on `HttpRequestMessage.Headers` during request construction. Simple string headers are stored separately for better performance. See [Configure Headers](./configure-headers.md).     |
+| `List<Action<HttpRequestOptions>> OptionConfigurators`*  | Actions that set values in `HttpRequestMessage.Options`. Useful for per-request flags, tracing, or contextual data. See [Configure Options](./configure-options.md).                                                                |
+| `bool BufferRequestContent`                              | Forces the request content to be fully buffered in memory before sending. Intended only for compatibility edge cases where buffering is required. See [Configure Content](./configure-content.md).                                  |
+| `HttpQueryParameterCollection QueryParameters`           | Represents all query string values for the request. The route and base address must not contain query components; this collection is the single source of truth. See [Configure Query Parameters](./configure-query-parameters.md). |
+| `string? Route`                                          | The relative or absolute request route originally provided to the builder; validated so it contains no query or fragment. This value can be read, but cannot be changed.                                                            |
+| `Version Version`                                        | The HTTP protocol version applied to the outgoing request. Defaults to HTTP/1.1. See [Configure Version](./configure-version.md).                                                                                                   |
+| `HttpVersionPolicy VersionPolicy`*                       | Controls how the requested HTTP version is interpreted and negotiated (e.g., upgrade, downgrade, or strict). Defaults to `RequestVersionOrLower`. See [Configure Version](./configure-version.md).                                  |
 
 \* *Available only on target frameworks that support `HttpRequestOptions` / `HttpVersionPolicy` (e.g., .NET 5+).*
 
@@ -119,7 +119,7 @@ The table below lists the key properties on `HttpRequestBuilder` and how they ar
 
 :::important Use Recommended Overloads
 
-While `SendAsync` is the core sending primitive, most consumers should prefer the convenience extensions such as `GetAsync`, `PostAsync`, `PutAsync`, `DeleteAsync`, `HeadAsync`, `OptionsAsync`, and `PatchAsync` (where available). These extensions select the correct `HttpMethod`, keep your call sites clean, and make intent immediately obvious. Use `SendAsync` directly only when you are using a non-standard `HttpMethod`.
+While `SendAsync` is the core sending primitive, most consumers should prefer the convenience extensions found in the [**Sending Requests**](./sending-requests.md) documentation. These extensions select the correct `HttpMethod`, keep your call sites clean, and make intent immediately obvious. Use `SendAsync` directly only when you are using a non-standard `HttpMethod`.
 
 :::
 
@@ -138,9 +138,9 @@ All overloads delegate to the most complete overload. That method:
     - `Version` and (when available) `VersionPolicy`
 5. Applies deferred configurations such as:
     - Disable `ExpectContinue` for multipart content.
-    - Apply each `HeaderConfigurator`.
+    - Apply each header, then each `HeaderConfigurator`.
     - Serialize Cookies into the Cookie header.
-    - Apply each `OptionConfigurator` (when available).
+    - Apply each `OptionConfigurator` (where available).
 6. Sends the request via `_client.SendAsync`.
 
 :::danger Experimental Method

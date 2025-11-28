@@ -17,8 +17,9 @@ public static class FluentXmlTypedDeserialization
     /// <summary>
     /// Reads the response content as XML and deserializes it into the specified type.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="response"></param>
+    /// <typeparam name="T">The type to deserialize the XML content into.</typeparam>
+    /// <param name="response">The HTTP response whose content will be read.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or null if the content is empty.</returns>
     public static Task<T?> ReadXmlAsync<T>(
         this HttpResponseMessage response)
         where T : class
@@ -30,9 +31,10 @@ public static class FluentXmlTypedDeserialization
     /// Reads the response content as XML and deserializes it into the specified type
     /// using the provided <see cref="XmlReaderSettings"/>.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="response"></param>
-    /// <param name="settings"></param>
+    /// <typeparam name="T">The type to deserialize the XML content into.</typeparam>
+    /// <param name="response">The HTTP response whose content will be read.</param>
+    /// <param name="settings">The XML reader settings to use during deserialization.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or null if the content is empty.</returns>
     public static Task<T?> ReadXmlAsync<T>(
         this HttpResponseMessage response,
         XmlReaderSettings settings)
@@ -46,9 +48,10 @@ public static class FluentXmlTypedDeserialization
     /// Reads the response content as XML and deserializes it into the specified type,
     /// honoring the provided <see cref="CancellationToken"/>.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="response"></param>
-    /// <param name="token"></param>
+    /// <typeparam name="T">The type to deserialize the XML content into.</typeparam>
+    /// <param name="response">The HTTP response whose content will be read.</param>
+    /// <param name="token">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or null if the content is empty.</returns>
     public static Task<T?> ReadXmlAsync<T>(
         this HttpResponseMessage response,
         CancellationToken token)
@@ -61,10 +64,11 @@ public static class FluentXmlTypedDeserialization
     /// Reads the response content as XML and deserializes it into the specified type
     /// using the provided <see cref="XmlReaderSettings"/> and <see cref="CancellationToken"/>.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="response"></param>
-    /// <param name="settings"></param>
-    /// <param name="token"></param>
+    /// <typeparam name="T">The type to deserialize the XML content into.</typeparam>
+    /// <param name="response">The HTTP response whose content will be read.</param>
+    /// <param name="settings">The XML reader settings to use during deserialization.</param>
+    /// <param name="token">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or null if the content is empty.</returns>
     public static Task<T?> ReadXmlAsync<T>(
         this HttpResponseMessage response,
         XmlReaderSettings settings,
@@ -78,8 +82,9 @@ public static class FluentXmlTypedDeserialization
     /// <summary>
     /// Awaits the response task, then reads and deserializes the XML content into the specified type.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessage"></param>
+    /// <typeparam name="T">The type to deserialize the XML content into.</typeparam>
+    /// <param name="responseMessage">A task that produces the HTTP response whose content will be read.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or null if the content is empty.</returns>
     public static Task<T?> ReadXmlAsync<T>(
         this Task<HttpResponseMessage> responseMessage)
         where T : class
@@ -92,9 +97,10 @@ public static class FluentXmlTypedDeserialization
     /// Awaits the response task, then reads and deserializes the XML content into the specified type
     /// using the provided <see cref="XmlReaderSettings"/>.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessage"></param>
-    /// <param name="settings"></param>
+    /// <typeparam name="T">The type to deserialize the XML content into.</typeparam>
+    /// <param name="responseMessage">A task that produces the HTTP response whose content will be read.</param>
+    /// <param name="settings">The XML reader settings to use during deserialization.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or null if the content is empty.</returns>
     public static Task<T?> ReadXmlAsync<T>(
         this Task<HttpResponseMessage> responseMessage,
         XmlReaderSettings settings)
@@ -109,9 +115,10 @@ public static class FluentXmlTypedDeserialization
     /// Awaits the response task, then reads and deserializes the XML content into the specified type,
     /// honoring the provided <see cref="CancellationToken"/>.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessage"></param>
-    /// <param name="token"></param>
+    /// <typeparam name="T">The type to deserialize the XML content into.</typeparam>
+    /// <param name="responseMessage">A task that produces the HTTP response whose content will be read.</param>
+    /// <param name="token">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or null if the content is empty.</returns>
     public static Task<T?> ReadXmlAsync<T>(
         this Task<HttpResponseMessage> responseMessage,
         CancellationToken token)
@@ -125,10 +132,11 @@ public static class FluentXmlTypedDeserialization
     /// Awaits the response task, then reads and deserializes the XML content into the specified type
     /// using the provided <see cref="XmlReaderSettings"/> and <see cref="CancellationToken"/>.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="responseMessage"></param>
-    /// <param name="settings"></param>
-    /// <param name="token"></param>
+    /// <typeparam name="T">The type to deserialize the XML content into.</typeparam>
+    /// <param name="responseMessage">A task that produces the HTTP response whose content will be read.</param>
+    /// <param name="settings">The XML reader settings to use during deserialization.</param>
+    /// <param name="token">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized object, or null if the content is empty.</returns>
     public static Task<T?> ReadXmlAsync<T>(
         this Task<HttpResponseMessage> responseMessage,
         XmlReaderSettings settings,
@@ -150,7 +158,7 @@ public static class FluentXmlTypedDeserialization
         var content = await response.ReadContentAsStringAsync(token).ConfigureAwait(false);
         if (string.IsNullOrWhiteSpace(content))
         {
-            return default;
+            return null;
         }
 
         return settings is not null
