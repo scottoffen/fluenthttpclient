@@ -156,6 +156,40 @@ public class HttpRequestBuilderTests
             builder.HeaderConfigurators.ShouldNotBeNull();
             builder.OptionConfigurators.ShouldNotBeNull();
         }
+
+        [Fact]
+        public void Timeout_IsNull_ByDefault()
+        {
+            using var client = CreateClient();
+
+            var builder = new HttpRequestBuilder(client);
+
+            builder.Timeout.ShouldBeNull();
+        }
+
+        [Fact]
+        public void Timeout_CanBeSet_WithValidTimeSpan()
+        {
+            using var client = CreateClient();
+            var builder = new HttpRequestBuilder(client);
+            var timeout = TimeSpan.FromSeconds(30);
+
+            builder.Timeout = timeout;
+
+            builder.Timeout.ShouldBe(timeout);
+        }
+
+        [Fact]
+        public void Timeout_CanBeCleared_BySettingToNull()
+        {
+            using var client = CreateClient();
+            var builder = new HttpRequestBuilder(client);
+            builder.Timeout = TimeSpan.FromSeconds(30);
+
+            builder.Timeout = null;
+
+            builder.Timeout.ShouldBeNull();
+        }
     }
 
     public class DeferredConfiguratorTests
@@ -842,6 +876,185 @@ public class HttpRequestBuilderTests
 
                 exception.ParamName.ShouldBe("method");
             }
+        }
+    }
+
+    public class SendAsyncTimeoutTests
+    {
+        private sealed class DelayedHttpMessageHandler : HttpMessageHandler
+        {
+            private readonly TimeSpan _delay;
+            private readonly HttpStatusCode _statusCode;
+
+            public DelayedHttpMessageHandler(TimeSpan delay, HttpStatusCode statusCode = HttpStatusCode.OK)
+            {
+                _delay = delay;
+                _statusCode = statusCode;
+            }
+
+            public int CallCount { get; private set; }
+
+            public CancellationToken LastCancellationToken { get; private set; }
+
+            protected override async Task<HttpResponseMessage> SendAsync(
+                HttpRequestMessage request,
+                CancellationToken cancellationToken)
+            {
+                CallCount++;
+                LastCancellationToken = cancellationToken;
+
+                await Task.Delay(_delay, cancellationToken);
+
+                return new HttpResponseMessage(_statusCode);
+            }
+        }
+
+        [Fact]
+        public async Task SendAsync_DoesNotTimeout_WhenTimeoutIsNotSet()
+        {
+            var handler = new DelayedHttpMessageHandler(TimeSpan.FromMilliseconds(50));
+            using var client = new HttpClient(handler) { BaseAddress = new Uri("https://api.example.com/") };
+
+            var builder = new HttpRequestBuilder(client, "items");
+
+            var response = await builder.SendAsync(HttpMethod.Get);
+
+            response.ShouldNotBeNull();
+            handler.CallCount.ShouldBe(1);
+        }
+
+        [Fact]
+        public async Task SendAsync_CompletesSuccessfully_WhenRequestCompletesBeforeTimeout()
+        {
+            var handler = new DelayedHttpMessageHandler(TimeSpan.FromMilliseconds(50));
+            using var client = new HttpClient(handler) { BaseAddress = new Uri("https://api.example.com/") };
+
+            var builder = new HttpRequestBuilder(client, "items");
+            builder.Timeout = TimeSpan.FromSeconds(5);
+
+            var response = await builder.SendAsync(HttpMethod.Get);
+
+            response.ShouldNotBeNull();
+            response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            handler.CallCount.ShouldBe(1);
+        }
+
+        [Fact]
+        public async Task SendAsync_ThrowsTaskCanceledException_WhenRequestExceedsTimeout()
+        {
+            var handler = new DelayedHttpMessageHandler(TimeSpan.FromSeconds(10));
+            using var client = new HttpClient(handler) { BaseAddress = new Uri("https://api.example.com/") };
+
+            var builder = new HttpRequestBuilder(client, "items");
+            builder.Timeout = TimeSpan.FromMilliseconds(100);
+
+            await Should.ThrowAsync<TaskCanceledException>(
+                async () => await builder.SendAsync(HttpMethod.Get));
+
+            handler.CallCount.ShouldBe(1);
+        }
+
+        [Fact]
+        public async Task SendAsync_UsesLinkedCancellationToken_WhenTimeoutIsSet()
+        {
+            var handler = new DelayedHttpMessageHandler(TimeSpan.FromMilliseconds(50));
+            using var client = new HttpClient(handler) { BaseAddress = new Uri("https://api.example.com/") };
+
+            var builder = new HttpRequestBuilder(client, "items");
+            builder.Timeout = TimeSpan.FromSeconds(5);
+
+            using var cts = new CancellationTokenSource();
+
+            var response = await builder.SendAsync(HttpMethod.Get, cts.Token);
+
+            response.ShouldNotBeNull();
+            handler.CallCount.ShouldBe(1);
+            handler.LastCancellationToken.ShouldNotBe(cts.Token);
+        }
+
+        [Fact]
+        public async Task SendAsync_CancelsImmediately_WhenCallerTokenIsAlreadyCanceled()
+        {
+            var handler = new DelayedHttpMessageHandler(TimeSpan.FromSeconds(10));
+            using var client = new HttpClient(handler) { BaseAddress = new Uri("https://api.example.com/") };
+
+            var builder = new HttpRequestBuilder(client, "items");
+            builder.Timeout = TimeSpan.FromSeconds(5);
+
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            await Should.ThrowAsync<TaskCanceledException>(
+                async () => await builder.SendAsync(HttpMethod.Get, cts.Token));
+        }
+
+        [Fact]
+        public async Task SendAsync_CompletesSuccessfully_WhenTimeoutIsNull()
+        {
+            var handler = new DelayedHttpMessageHandler(TimeSpan.FromMilliseconds(50));
+            using var client = new HttpClient(handler) { BaseAddress = new Uri("https://api.example.com/") };
+
+            var builder = new HttpRequestBuilder(client, "items");
+            builder.Timeout = null;
+
+            using var cts = new CancellationTokenSource();
+
+            var response = await builder.SendAsync(HttpMethod.Get, cts.Token);
+
+            response.ShouldNotBeNull();
+            response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            handler.CallCount.ShouldBe(1);
+        }
+
+        [Fact]
+        public async Task SendAsync_RespectsTimeoutAcrossMultipleRequests()
+        {
+            var handler = new DelayedHttpMessageHandler(TimeSpan.FromMilliseconds(50));
+            using var client = new HttpClient(handler) { BaseAddress = new Uri("https://api.example.com/") };
+
+            var builder = new HttpRequestBuilder(client, "items");
+            builder.Timeout = TimeSpan.FromSeconds(5);
+
+            var response1 = await builder.SendAsync(HttpMethod.Get);
+            var response2 = await builder.SendAsync(HttpMethod.Get);
+
+            response1.ShouldNotBeNull();
+            response2.ShouldNotBeNull();
+            handler.CallCount.ShouldBe(2);
+        }
+
+        [Fact]
+        public async Task SendAsync_CanCancelViaTimeout_EvenWithLongerCallerTimeout()
+        {
+            var handler = new DelayedHttpMessageHandler(TimeSpan.FromSeconds(10));
+            using var client = new HttpClient(handler) { BaseAddress = new Uri("https://api.example.com/") };
+
+            var builder = new HttpRequestBuilder(client, "items");
+            builder.Timeout = TimeSpan.FromMilliseconds(100);
+
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+            await Should.ThrowAsync<TaskCanceledException>(
+                async () => await builder.SendAsync(HttpMethod.Get, cts.Token));
+
+            handler.CallCount.ShouldBe(1);
+        }
+
+        [Fact]
+        public async Task SendAsync_CanCancelViaCallerToken_EvenWithLongerBuilderTimeout()
+        {
+            var handler = new DelayedHttpMessageHandler(TimeSpan.FromSeconds(10));
+            using var client = new HttpClient(handler) { BaseAddress = new Uri("https://api.example.com/") };
+
+            var builder = new HttpRequestBuilder(client, "items");
+            builder.Timeout = TimeSpan.FromSeconds(30);
+
+            using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
+
+            await Should.ThrowAsync<TaskCanceledException>(
+                async () => await builder.SendAsync(HttpMethod.Get, cts.Token));
+
+            handler.CallCount.ShouldBe(1);
         }
     }
 
