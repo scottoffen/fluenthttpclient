@@ -21,7 +21,7 @@ Eager conditions are evaluated immediately, at the time the fluent method is cal
 
 Use this when the condition is already known and will *not* change by the time the request is sent.
 
-### Example
+**Example**
 
 ```csharp
 builder
@@ -48,7 +48,7 @@ Deferred conditions are evaluated **later**, when the `HttpRequestMessage` is bu
 
 This is ideal for logic that depends on late-bound state that isn’t available when constructing the fluent pipeline.
 
-### Example
+**Example**
 
 ```csharp
 builder.When(

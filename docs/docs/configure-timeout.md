@@ -7,7 +7,7 @@ title: Configure Timeout
 
 FluentHttpClient provides a set of extensions for applying **per-request** timeouts. These timeouts define how long the client will wait for the current request to complete before canceling it. Timeouts are implemented through cancellation, do not alter `HttpClient.Timeout`, and have no effect on other requests made with the same `HttpClient` instance.
 
-## Usage
+## Add Timeout
 
 A timeout may be applied using either a number of seconds or a `TimeSpan`. The timeout must be a positive value. When set, the request will be canceled if the configured interval elapses before the response is received.
 
@@ -29,7 +29,7 @@ var response = await client
 
 Timeouts link with any caller-provided `CancellationToken`; whichever triggers first will cancel the request.
 
-### Clear Timeouts
+## Clear Timeout
 
 Any timeouts that have been set can be clearing using `ClearTimeout`. This is most useful when the `HttpRequestBuilder` is being reused.
 
