@@ -8,6 +8,17 @@ public static class FluentTimeoutExtensions
     internal static readonly string MessageInvalidTimeout = "Timeout must be a positive value.";
 
     /// <summary>
+    /// Clears any per-request timeout that has been set.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <returns></returns>
+    public static HttpRequestBuilder ClearTimeout(this HttpRequestBuilder builder)
+    {
+        builder.Timeout = null;
+        return builder;
+    }
+
+    /// <summary>
     /// Sets a per-request timeout using the specified number of seconds. Must be positive.
     /// </summary>
     /// <remarks>
