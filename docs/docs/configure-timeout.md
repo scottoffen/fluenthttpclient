@@ -29,6 +29,19 @@ var response = await client
 
 Timeouts link with any caller-provided `CancellationToken`; whichever triggers first will cancel the request.
 
+### Clear Timeouts
+
+Any timeouts that have been set can be clearing using `ClearTimeout`. This is most useful when the `HttpRequestBuilder` is being reused.
+
+```csharp
+var builder = client
+    .UsingBase()
+    .WithRoute("/todos/1")
+    .WithTimeout(TimeSpan.FromMilliseconds(750));
+
+builder.ClearTimeout();
+```
+
 ## Behavior Notes
 
 * The timeout applies only to the current request and does not affect any other requests sent using the same `HttpClient` instance.
@@ -40,5 +53,6 @@ Timeouts link with any caller-provided `CancellationToken`; whichever triggers f
 
 | Method                  | Purpose                                           |
 | ----------------------- | ------------------------------------------------- |
+| `ClearTimeout()`        | Removes any per-request timeout.                  |
 | `WithTimeout(int)`      | Applies a per-request timeout using seconds.      |
 | `WithTimeout(TimeSpan)` | Applies a per-request timeout using a `TimeSpan`. |
