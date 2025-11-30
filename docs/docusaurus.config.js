@@ -137,4 +137,13 @@ export default {
     titleDelimiter: '|',
     titleTemplate: 'FluentHttpClient | %s'
   },
+
+  scripts: [
+    {
+      src: 'https://umami-f0it.onrender.com/script.js',
+      async: true,
+      defer: true,
+      'data-website-id': 'f53d857b-b0e1-44c0-9eea-7ab0bd4a195b',
+    },
+  ],
 };
