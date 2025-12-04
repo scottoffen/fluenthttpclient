@@ -15,7 +15,9 @@ internal static class FluentJsonSerializer
     public static readonly JsonSerializerOptions DefaultJsonSerializerOptions = new JsonSerializerOptions
     {
         PropertyNameCaseInsensitive = true,
+#if NETSTANDARD2_1_OR_GREATER
         NumberHandling = JsonNumberHandling.AllowReadingFromString,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+#endif
     };
 }

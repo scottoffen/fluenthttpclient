@@ -26,11 +26,7 @@ FluentHttpClient is optimized for .NET 10 and the newest .NET releases, while al
 
 Projects targeting **.NETStandard 2.0** or **.NETStandard 2.1** do not include `System.Text.Json` in the framework. FluentHttpClient uses `System.Text.Json` internally for its JSON extensions, but the package is not referenced transitively.
 
-If you are building against **netstandard2.0** or **netstandard2.1**, or any TFM that does **not** ship `System.Text.Json`, you will need to add an explicit package reference with a minimum version of 6.0.10 (a higher version is always recommended):
-
-```xml
-<PackageReference Include="System.Text.Json" Version="6.0.10" />
-```
+If you are building against **netstandard2.0** or **netstandard2.1**, or any TFM that does **not** ship `System.Text.Json`, you will need to add an explicit package reference, with a minimum version of 4.6.0 or 6.0.10, respectively. A higher version is always recommended.
 
 Apps targeting modern TFMs (such as .NET 5 and later) already include `System.Text.Json` and do not require this step.
 
