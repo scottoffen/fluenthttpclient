@@ -6,7 +6,11 @@ export default {
   url: 'https://scottoffen.github.io',
   baseUrl: '/fluenthttpclient/',
   onBrokenLinks: 'warn',
-  onBrokenMarkdownLinks: 'warn',
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'warn',
+    },
+  },
   favicon: 'img/favicon.ico',
   trailingSlash: false,
 
