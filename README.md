@@ -3,71 +3,36 @@
 [![docs](https://img.shields.io/badge/docs-github.io-blue)](https://scottoffen.github.io/fluenthttpclient)
 [![NuGet](https://img.shields.io/nuget/v/fluenthttpclient)](https://www.nuget.org/packages/FluentHttpClient/)
 [![MIT](https://img.shields.io/github/license/scottoffen/fluenthttpclient?color=blue)](./LICENSE)
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-blue.svg)](code_of_conduct.md)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-blue.svg)](CODE_OF_CONDUCT.md)
 [![FluentHttpClient](https://img.shields.io/badge/FluentHttpClient-strong%20named-ff8038.svg)](https://learn.microsoft.com/dotnet/standard/assembly/strong-named)
-[![Multi-targeted](https://img.shields.io/badge/TFMs-multi--targeted-652f94)](#compatibility-matrix)
+[![Multi-targeted](https://img.shields.io/badge/TFMs-multi--targeted-652f94)](#target-frameworks)
 
-FluentHttpClient brings a modern, chainable API to [`HttpClient`](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient), turning verbose request setup into clean, expressive fluency. It handles headers, options, cookies, query parameters, conditional configurators, buffering, and *both* JSON/XML serialization and deserialization, along with success and failure handlers, all with minimal ceremony. It multitargets from **.NET Standard 2.0** all the way up through **.NET 10**, giving you broad compatibility across older runtimes and the latest platforms, with full Native AOT compatibility and strong-named assemblies.
+FluentHttpClient adds a chainable API on top of [`HttpClient`](https://learn.microsoft.com/en-us/dotnet/api/system.net.http.httpclient). You configure a request, send it, and read the response in one expression, instead of building an `HttpRequestMessage`, checking the status code, and deserializing by hand every time.
 
-## Compatibility Matrix
+It works with the `HttpClient` you already have rather than replacing it. Each request is built on its own without changing the client or its shared configuration, so your existing setup, including `IHttpClientFactory` and typed clients, is unaffected.
 
-FluentHttpClient is optimized for .NET 10 and the newest .NET releases, while also supporting older platforms through .NET Standard 2.1 and 2.0 for teams maintaining long-lived or legacy applications. It includes full Native AOT compatibility and provides strong-named assemblies for environments that require them.
+## What You Get
 
-| Target                    | Supported | Notes                         |
-| ------------------------- | --------- | ----------------------------- |
-| **.NET Standard 2.0**     | ✔️        | Broadest compatibility target |
-| **.NET Standard 2.1**     | ✔️        | Improved modern API surface   |
-| **.NET Framework 4.6.1+** | ✔️        | Via `netstandard2.0`          |
-| **.NET 6**                | ✔️        | LTS                           |
-| **.NET 7**                | ✔️        |                               |
-| **.NET 8**                | ✔️        | LTS                           |
-| **.NET 9**                | ✔️        |                               |
-| **.NET 10**               | ✔️        | LTS                           |
+- **Fluent configuration** of headers, query parameters, cookies, authentication, options, content, and content buffering, all in one readable chain.
+- **JSON and XML** serialization and deserialization, with `JsonTypeInfo<T>` overloads for trim-safe and Native AOT scenarios.
+- **Conditional configuration** that applies immediately or defers until the request is built, so you can branch without breaking the chain.
+- **Response handlers** that attach success and failure callbacks inline, without interrupting the chain.
+- **Extensible by subclassing**: derive from `HttpRequestBuilder` for a thin client that keeps the full fluent API, then add your own methods or override behavior on top. Your additions chain alongside the built-in methods, and an override of `SendAsync` applies shared behavior such as authentication or logging to every request the client sends.
 
-### .NETStandard Consumers
+## Side-by-Side
 
-Projects targeting **.NETStandard 2.0** or **.NETStandard 2.1** do not include `System.Text.Json` in the framework. FluentHttpClient uses `System.Text.Json` internally for its JSON extensions, but the package is not referenced transitively.
+The same request, written with raw `HttpClient` and with FluentHttpClient. Both deserialize the response into the same model:
 
-If you are building against **netstandard2.0** or **netstandard2.1**, or any TFM that does **not** ship `System.Text.Json`, you will need to add an explicit package reference, with a minimum version of 4.6.0 or 6.0.10, respectively. A higher version is always recommended.
+```csharp
+public class Post
+{
+    public int Id { get; set; }
+    public string? Title { get; set; }
+    public string? Body { get; set; }
+}
+```
 
-Apps targeting modern TFMs (such as .NET 5 and later) already include `System.Text.Json` and do not require this step.
-
-## Installation
-
-FluentHttpClient is available on [NuGet.org](https://www.nuget.org/packages/FluentHttpClient/) and can be installed using a NuGet package manager or the .NET CLI.
-
-## When to Use FluentHttpClient
-
-While `HttpClient` is a powerful and flexible tool, building HTTP requests with it often involves repetitive boilerplate, manual serialization, and scattered configuration logic. FluentHttpClient addresses these pain points by providing a fluent, chainable API that reduces cognitive load and improves code readability.
-
-### Common HttpClient Challenges
-
-**Repetitive Configuration**  
-Every request requires manually setting headers, query parameters, and content, often scattered across multiple lines. This makes it easy to miss required headers or forget encoding rules.
-
-**Manual Serialization**  
-Converting objects to JSON, setting the correct `Content-Type`, and deserializing responses requires multiple steps and imports. Error-prone encoding and parsing logic often needs to be duplicated across your codebase.
-
-**Inconsistent Error Handling**  
-Without a unified approach to handling success and failure responses, status code checks and logging logic tend to be duplicated or omitted entirely.
-
-**Lifetime and Reuse Concerns**  
-Properly managing `HttpClient` lifetime, avoiding socket exhaustion, and reusing instances while still configuring per-request state requires careful planning and often leads to awkward patterns.
-
-### How FluentHttpClient Helps
-
-FluentHttpClient wraps `HttpClient` (you still manage the lifetime) and provides extension methods that let you configure requests in a single, readable chain:
-
-- **Fluent Configuration**: Add headers, query parameters, cookies, and authentication in a natural, discoverable flow
-- **Automatic Serialization**: Built-in JSON and XML serialization/deserialization with support for `System.Text.Json`, Native AOT, and custom options
-- **Response Handlers**: Attach success and failure callbacks directly in the request chain without breaking fluency
-- **Reduced Boilerplate**: Express the entire request lifecycle—configuration, sending, and deserialization—in a single expression
-
-### Side-by-Side Comparison
-
-Here's the same request implemented with raw `HttpClient` and FluentHttpClient:
-
-#### Raw HttpClient
+### Raw HttpClient
 
 ```csharp
 using System.Net.Http.Json;
@@ -92,16 +57,9 @@ else
 {
     Console.WriteLine($"Failed: {response.StatusCode}");
 }
-
-public class Post
-{
-    public int Id { get; set; }
-    public string? Title { get; set; }
-    public string? Body { get; set; }
-}
 ```
 
-#### FluentHttpClient
+### FluentHttpClient
 
 ```csharp
 using FluentHttpClient;
@@ -118,20 +76,23 @@ var post = await client
     .OnSuccess(r => Console.WriteLine($"Success: {r.StatusCode}"))
     .OnFailure(r => Console.WriteLine($"Failed: {r.StatusCode}"))
     .ReadJsonAsync<Post>();
-
-public class Post
-{
-    public int Id { get; set; }
-    public string? Title { get; set; }
-    public string? Body { get; set; }
-}
 ```
 
-Because a fluent API improves developer experience by turning tedious, repetitive setup into a readable, chainable flow that matches how you actually think about building and sending an HTTP request, The FluentHttpClient version expresses the same logic in fewer lines, with better readability and no loss of functionality. All configuration, sending, error handling, and deserialization happen in a single fluent chain.
+The FluentHttpClient version expresses the same logic in fewer lines, and keeps configuration, sending, error handling, and deserialization together in one chain.
 
-## Usage and Support
+## Target Frameworks
 
-- Check out the project documentation https://scottoffen.github.io/fluenthttpclient.
+FluentHttpClient multitargets .NET Standard 2.0 and 2.1, and .NET 6, 7, 8, 9, and 10. Through .NET Standard 2.0 it also runs on .NET Framework 4.6.1 and later. The assemblies are strong-named, and the package is Native AOT compatible when you use the `JsonTypeInfo<T>` JSON overloads.
+
+### .NET Standard Consumers
+
+.NET Standard 2.0 and 2.1 do not ship `System.Text.Json`, and FluentHttpClient does not bring it in transitively. If you target either one, or any other framework that does not include `System.Text.Json`, add an explicit package reference: at least `4.6.0` for `netstandard2.0` or `6.0.10` for `netstandard2.1`. A newer version is always preferable. Apps on .NET 5 and later already include it and need no extra step.
+
+## Documentation
+
+Full documentation, including how to build your own client types, is at https://scottoffen.github.io/fluenthttpclient.
+
+## Community and Support
 
 - Engage in our [community discussions](https://github.com/scottoffen/fluenthttpclient/discussions) for Q&A, ideas, and show and tell!
 
@@ -162,4 +123,4 @@ FluentHttpClient is licensed under the [MIT](./LICENSE) license.
 
 ## Using FluentHttpClient? We'd Love To Hear About It!
 
-Few thing are as satisfying as hearing that your open source project is being used and appreciated by others. Jump over to the discussion boards and [share the love](https://github.com/scottoffen/fluenthttpclient/discussions)!
+Few things are as satisfying as hearing that your open source project is being used and appreciated by others. Jump over to the discussion boards and [share the love](https://github.com/scottoffen/fluenthttpclient/discussions)!

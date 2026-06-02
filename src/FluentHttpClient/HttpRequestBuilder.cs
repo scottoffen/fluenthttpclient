@@ -43,7 +43,7 @@ public class HttpRequestBuilder
     /// <summary>
     /// The route URI for the request, if specified. This is combined with <see cref="HttpClient.BaseAddress"/>
     /// </summary>
-    protected readonly Uri? _route;
+    protected Uri? _route;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpRequestBuilder"/> class
@@ -92,24 +92,35 @@ public class HttpRequestBuilder
     /// </exception>
     protected internal HttpRequestBuilder(HttpClient client, Uri route) : this(client)
     {
-        Guard.AgainstNull(route, nameof(route));
+        ValidateRoute(route);
+        _route = route;
+    }
 
-        if (route.IsAbsoluteUri)
-        {
-            if (!string.IsNullOrEmpty(route.Query) || !string.IsNullOrEmpty(route.Fragment))
-            {
-                throw new ArgumentException(MessageInvalidRoute, nameof(route));
-            }
-        }
-        else
-        {
-            var text = route.OriginalString;
-            if (text.IndexOfAny(['?', '#']) >= 0)
-            {
-                throw new ArgumentException(MessageInvalidRoute, nameof(route));
-            }
-        }
+    /// <summary>
+    /// Sets the route for the request, replacing any route supplied at construction
+    /// or by an earlier call. Intended for use by derived types, so that a factory
+    /// can construct a client without knowing the route in advance.
+    /// </summary>
+    /// <param name="route">The route string for the request.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="route"/> is null.</exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="route"/> is empty or contains a query string or fragment.
+    /// </exception>
+    protected void SetRoute(string route) => SetRoute(CreateRouteUri(route));
 
+    /// <summary>
+    /// Sets the route for the request, replacing any route supplied at construction
+    /// or by an earlier call. Intended for use by derived types, so that a factory
+    /// can construct a client without knowing the route in advance.
+    /// </summary>
+    /// <param name="route">The route URI for the request.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="route"/> is null.</exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="route"/> contains a query string or fragment.
+    /// </exception>
+    protected void SetRoute(Uri route)
+    {
+        ValidateRoute(route);
         _route = route;
     }
 
@@ -567,11 +578,40 @@ public class HttpRequestBuilder
     }
 
     /// <summary>
+    /// Validates that a route URI does not contain a query string or fragment.
+    /// </summary>
+    /// <param name="route">The route URI to validate.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="route"/> is null.</exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="route"/> contains a query string or fragment.
+    /// </exception>
+    protected internal static void ValidateRoute(Uri route)
+    {
+        Guard.AgainstNull(route, nameof(route));
+
+        if (route.IsAbsoluteUri)
+        {
+            if (!string.IsNullOrEmpty(route.Query) || !string.IsNullOrEmpty(route.Fragment))
+            {
+                throw new ArgumentException(MessageInvalidRoute, nameof(route));
+            }
+        }
+        else
+        {
+            var text = route.OriginalString;
+            if (text.IndexOfAny(['?', '#']) >= 0)
+            {
+                throw new ArgumentException(MessageInvalidRoute, nameof(route));
+            }
+        }
+    }
+
+    /// <summary>
     /// Creates a <see cref="Uri"/> instance from the specified route string,
     /// trimming whitespace and validating that the value is not null or empty.
     /// </summary>
     /// <remarks>
-    /// This method should only be used by the <see cref="HttpRequestBuilder"/> constructors.
+    /// Used internally to normalize a route string into a <see cref="Uri"/>.
     /// </remarks>
     protected internal static Uri CreateRouteUri(string route)
     {
