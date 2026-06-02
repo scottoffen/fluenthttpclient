@@ -25,10 +25,6 @@
     <IsAotCompatible>true</IsAotCompatible>
     <PublishAot>false</PublishAot>
     <TrimMode>link</TrimMode>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)FluentHttpClient.snk</AssemblyOriginatorKeyFile>
-    <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
-    <FluentHttpClientPublicKey>00240000048000009400000006020000002400005253413100040000010001003529f6562b04e45eb2f0c5df9d537dc24bff64b0c93050d27ae557ef88f83e55f7857455ba6aa2cc2a9c2cd72d57e5bcbe96d3658c81de7d4d904eff0846eec0ba7973b88fdbc1b934faecdb6e69d56be4c0d0c7919a8b0c1a80107aa567c97106f84cc6e0ca7838799c57ec6e21e6a41dc5b413035c53499b1c53b1728f81a2</FluentHttpClientPublicKey>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>fluenthttpclient.png</PackageIcon>
