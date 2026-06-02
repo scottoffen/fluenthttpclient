@@ -4,18 +4,20 @@ using System.Text;
 namespace FluentHttpClient;
 
 /// <summary>
-/// Fluent extension methods for configuring authentication headers on an <see cref="HttpRequestBuilder"/> instance.
+/// Fluent extension methods for configuring authentication headers on an TBuilder instance.
 /// </summary>
 public static class FluentAuthenticationExtensions
 {
     /// <summary>
     /// Sets the <see cref="AuthenticationHeaderValue"/> for the request using the specified scheme and token.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <typeparam name="TBuilder">The type of the builder, which must inherit from <see cref="HttpRequestBuilder"/>.</typeparam>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="scheme">The authentication scheme (e.g., "Bearer", "Basic").</param>
     /// <param name="token">The authentication token or credentials.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithAuthentication(this HttpRequestBuilder builder, string scheme, string token)
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithAuthentication<TBuilder>(this TBuilder builder, string scheme, string token)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(scheme, nameof(scheme));
         Guard.AgainstNull(token, nameof(token));
@@ -31,10 +33,12 @@ public static class FluentAuthenticationExtensions
     /// <summary>
     /// Sets the authentication header to Basic using the specified token value.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <typeparam name="TBuilder">The type of the builder, which must inherit from <see cref="HttpRequestBuilder"/>.</typeparam>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="token">The Base64-encoded Basic authentication token.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithBasicAuthentication(this HttpRequestBuilder builder, string token)
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithBasicAuthentication<TBuilder>(this TBuilder builder, string token)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(token, nameof(token));
 
@@ -47,11 +51,12 @@ public static class FluentAuthenticationExtensions
     /// <remarks>
     /// The username and password will be properly concatenated and Base64 encoded.
     /// </remarks>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="username">The username for Basic authentication.</param>
     /// <param name="password">The password for Basic authentication.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithBasicAuthentication(this HttpRequestBuilder builder, string username, string password)
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithBasicAuthentication<TBuilder>(this TBuilder builder, string username, string password)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(username, nameof(username));
         Guard.AgainstNull(password, nameof(password));
@@ -63,10 +68,12 @@ public static class FluentAuthenticationExtensions
     /// <summary>
     /// Sets the authentication header to Bearer using the specified OAuth token.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <typeparam name="TBuilder">The type of the builder, which must inherit from <see cref="HttpRequestBuilder"/>.</typeparam>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="token">The OAuth Bearer token.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithOAuthBearerToken(this HttpRequestBuilder builder, string token)
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithOAuthBearerToken<TBuilder>(this TBuilder builder, string token)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(token, nameof(token));
 

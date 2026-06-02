@@ -35,7 +35,7 @@ public static class FluentHeaderExtensions
     /// headers with complex types or specialized formatting.
     /// </para>
     /// <para>
-    /// For simple string-based headers, use <see cref="WithHeader(HttpRequestBuilder, string, string)"/>
+    /// For simple string-based headers, use <see cref="WithHeader{TBuilder}(TBuilder, string, string)"/>
     /// instead, which provides better performance through direct dictionary storage.
     /// </para>
     /// <para>
@@ -79,7 +79,8 @@ public static class FluentHeaderExtensions
     /// </code>
     /// </example>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="configure"/> is null.</exception>
-    public static HttpRequestBuilder ConfigureHeaders(this HttpRequestBuilder builder, Action<HttpRequestHeaders> configure)
+    public static TBuilder ConfigureHeaders<TBuilder>(this TBuilder builder, Action<HttpRequestHeaders> configure)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(configure, nameof(configure));
 
@@ -109,7 +110,8 @@ public static class FluentHeaderExtensions
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="key"/> or <paramref name="value"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is a reserved header.</exception>
-    public static HttpRequestBuilder WithHeader(this HttpRequestBuilder builder, string key, string value)
+    public static TBuilder WithHeader<TBuilder>(this TBuilder builder, string key, string value)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(key, nameof(key));
         Guard.AgainstNull(value, nameof(value));
@@ -146,7 +148,7 @@ public static class FluentHeaderExtensions
     /// accept multiple values, such as <c>Accept</c> or <c>Cache-Control</c>.
     /// </para>
     /// <para>
-    /// This is equivalent to calling <see cref="WithHeader(HttpRequestBuilder, string, string)"/>
+    /// This is equivalent to calling <see cref="WithHeader{TBuilder}(TBuilder, string, string)"/>
     /// multiple times with the same key but different values.
     /// </para>
     /// <para>
@@ -163,7 +165,8 @@ public static class FluentHeaderExtensions
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="key"/> or <paramref name="values"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is a reserved header.</exception>
-    public static HttpRequestBuilder WithHeader(this HttpRequestBuilder builder, string key, IEnumerable<string> values)
+    public static TBuilder WithHeader<TBuilder>(this TBuilder builder, string key, IEnumerable<string> values)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(values, nameof(values));
 
@@ -199,7 +202,8 @@ public static class FluentHeaderExtensions
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="headers"/> is null, or when any header key or value is null.</exception>
     /// <exception cref="ArgumentException">Thrown when any header key is a reserved header.</exception>
-    public static HttpRequestBuilder WithHeaders(this HttpRequestBuilder builder, IEnumerable<KeyValuePair<string, string>> headers)
+    public static TBuilder WithHeaders<TBuilder>(this TBuilder builder, IEnumerable<KeyValuePair<string, string>> headers)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(headers, nameof(headers));
 
@@ -236,9 +240,10 @@ public static class FluentHeaderExtensions
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="headers"/> is null, or when any header key or value collection is null.</exception>
     /// <exception cref="ArgumentException">Thrown when any header key is a reserved header.</exception>
-    public static HttpRequestBuilder WithHeaders(
-        this HttpRequestBuilder builder,
+    public static TBuilder WithHeaders<TBuilder>(
+        this TBuilder builder,
         IEnumerable<KeyValuePair<string, IEnumerable<string>>> headers)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(headers, nameof(headers));
 

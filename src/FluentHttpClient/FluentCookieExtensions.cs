@@ -28,11 +28,12 @@ public static class FluentCookieExtensions
     /// <param name="encode">If <c>true</c> (default), the value will be URL-encoded per RFC 6265. 
     /// Set to <c>false</c> to use the value as-is.</param>
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithCookie(
-        this HttpRequestBuilder builder,
+    public static TBuilder WithCookie<TBuilder>(
+        this TBuilder builder,
         string name,
         string value,
         bool encode = true)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNullOrEmpty(name, nameof(name));
 
@@ -66,10 +67,11 @@ public static class FluentCookieExtensions
     /// <param name="encode">If <c>true</c> (default), the value will be URL-encoded per RFC 6265. 
     /// Set to <c>false</c> to use the value as-is.</param>
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithCookies(
-        this HttpRequestBuilder builder,
+    public static TBuilder WithCookies<TBuilder>(
+        this TBuilder builder,
         IEnumerable<KeyValuePair<string, string>> cookies,
         bool encode = true)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(cookies, nameof(cookies));
 

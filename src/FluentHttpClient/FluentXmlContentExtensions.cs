@@ -6,7 +6,7 @@ using System.Xml;
 namespace FluentHttpClient;
 
 /// <summary>
-/// Fluent extension methods for adding XML content to the <see cref="HttpRequestBuilder"/>.
+/// Fluent extension methods for adding XML content to the TBuilder.
 /// </summary>
 #if NET7_0_OR_GREATER
 [RequiresDynamicCode("XmlSerializer uses dynamic code generation which is not supported with Native AOT.")]
@@ -20,13 +20,15 @@ public static class FluentXmlContentExtensions
     /// Serializes the specified value as XML using the default settings and sets it as the request content
     /// with UTF-8 encoding and the default XML media type.
     /// </summary>
+    /// <typeparam name="TBuilder">The type of the builder, which must inherit from <see cref="HttpRequestBuilder"/>.</typeparam>
     /// <typeparam name="T">The type of the value to serialize.</typeparam>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="obj">The value to serialize as XML.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithXmlContent<T>(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithXmlContent<TBuilder, T>(
+        this TBuilder builder,
         T obj)
+        where TBuilder : HttpRequestBuilder
         where T : class
     {
         var xml = FluentXmlSerializer.Serialize<T>(obj);
@@ -38,15 +40,17 @@ public static class FluentXmlContentExtensions
     /// Serializes the specified value as XML using the provided settings and sets it as the request content
     /// with the encoding derived from the provided <see cref="XmlWriterSettings"/> and the default XML media type.
     /// </summary>
+    /// <typeparam name="TBuilder">The type of the builder, which must inherit from <see cref="HttpRequestBuilder"/>.</typeparam>
     /// <typeparam name="T">The type of the value to serialize.</typeparam>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="obj">The value to serialize as XML.</param>
     /// <param name="settings">The XML writer settings to use during serialization.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithXmlContent<T>(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithXmlContent<TBuilder, T>(
+        this TBuilder builder,
         T obj,
         XmlWriterSettings settings)
+        where TBuilder : HttpRequestBuilder
         where T : class
     {
         var xml = FluentXmlSerializer.Serialize<T>(obj, settings);
@@ -59,15 +63,17 @@ public static class FluentXmlContentExtensions
     /// Serializes the specified value as XML using the default settings and sets it as the request content
     /// with UTF-8 encoding and the specified media type.
     /// </summary>
+    /// <typeparam name="TBuilder">The type of the builder, which must inherit from <see cref="HttpRequestBuilder"/>.</typeparam>
     /// <typeparam name="T">The type of the value to serialize.</typeparam>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="obj">The value to serialize as XML.</param>
     /// <param name="contentType">The media type string for the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithXmlContent<T>(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithXmlContent<TBuilder, T>(
+        this TBuilder builder,
         T obj,
         string contentType)
+        where TBuilder : HttpRequestBuilder
         where T : class
     {
         var xml = FluentXmlSerializer.Serialize<T>(obj);
@@ -79,17 +85,19 @@ public static class FluentXmlContentExtensions
     /// Serializes the specified value as XML using the provided settings and sets it as the request content
     /// with the encoding derived from the provided <see cref="XmlWriterSettings"/> and the specified media type.
     /// </summary>
+    /// <typeparam name="TBuilder">The type of the builder, which must inherit from <see cref="HttpRequestBuilder"/>.</typeparam>
     /// <typeparam name="T">The type of the value to serialize.</typeparam>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="obj">The value to serialize as XML.</param>
     /// <param name="settings">The XML writer settings to use during serialization.</param>
     /// <param name="contentType">The media type string for the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithXmlContent<T>(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithXmlContent<TBuilder, T>(
+        this TBuilder builder,
         T obj,
         XmlWriterSettings settings,
         string contentType)
+        where TBuilder : HttpRequestBuilder
         where T : class
     {
         var xml = FluentXmlSerializer.Serialize<T>(obj, settings);
@@ -102,15 +110,17 @@ public static class FluentXmlContentExtensions
     /// Serializes the specified value as XML using the default settings and sets it as the request content
     /// with UTF-8 encoding and applies the specified <see cref="MediaTypeHeaderValue"/>.
     /// </summary>
+    /// <typeparam name="TBuilder">The type of the builder, which must inherit from <see cref="HttpRequestBuilder"/>.</typeparam>
     /// <typeparam name="T">The type of the value to serialize.</typeparam>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="obj">The value to serialize as XML.</param>
     /// <param name="contentTypeHeaderValue">The media type header value to apply to the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithXmlContent<T>(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithXmlContent<TBuilder, T>(
+        this TBuilder builder,
         T obj,
         MediaTypeHeaderValue contentTypeHeaderValue)
+        where TBuilder : HttpRequestBuilder
         where T : class
     {
         var xml = FluentXmlSerializer.Serialize<T>(obj);
@@ -125,17 +135,19 @@ public static class FluentXmlContentExtensions
     /// with the encoding derived from the provided <see cref="XmlWriterSettings"/> and applies the given
     /// <see cref="MediaTypeHeaderValue"/>.
     /// </summary>
+    /// <typeparam name="TBuilder">The type of the builder, which must inherit from <see cref="HttpRequestBuilder"/>.</typeparam>
     /// <typeparam name="T">The type of the value to serialize.</typeparam>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="obj">The value to serialize as XML.</param>
     /// <param name="settings">The XML writer settings to use during serialization.</param>
     /// <param name="contentTypeHeaderValue">The media type header value to apply to the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithXmlContent<T>(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithXmlContent<TBuilder, T>(
+        this TBuilder builder,
         T obj,
         XmlWriterSettings settings,
         MediaTypeHeaderValue contentTypeHeaderValue)
+        where TBuilder : HttpRequestBuilder
         where T : class
     {
         var xml = FluentXmlSerializer.Serialize<T>(obj, settings);

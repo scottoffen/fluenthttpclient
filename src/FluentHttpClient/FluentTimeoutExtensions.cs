@@ -12,7 +12,8 @@ public static class FluentTimeoutExtensions
     /// </summary>
     /// <param name="builder"></param>
     /// <returns></returns>
-    public static HttpRequestBuilder ClearTimeout(this HttpRequestBuilder builder)
+    public static TBuilder ClearTimeout<TBuilder>(this TBuilder builder)
+        where TBuilder : HttpRequestBuilder
     {
         builder.Timeout = null;
         return builder;
@@ -31,7 +32,8 @@ public static class FluentTimeoutExtensions
     /// <param name="seconds"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public static HttpRequestBuilder WithTimeout(this HttpRequestBuilder builder, int seconds)
+    public static TBuilder WithTimeout<TBuilder>(this TBuilder builder, int seconds)
+        where TBuilder : HttpRequestBuilder
     {
         if (seconds <= 0)
         {
@@ -54,7 +56,8 @@ public static class FluentTimeoutExtensions
     /// <param name="timeout"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public static HttpRequestBuilder WithTimeout(this HttpRequestBuilder builder, TimeSpan timeout)
+    public static TBuilder WithTimeout<TBuilder>(this TBuilder builder, TimeSpan timeout)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(timeout, nameof(timeout));
 
