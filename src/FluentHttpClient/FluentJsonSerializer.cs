@@ -1,6 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+#if NETSTANDARD2_1_OR_GREATER
 using System.Text.Json.Serialization;
+#endif
 
 namespace FluentHttpClient;
 
