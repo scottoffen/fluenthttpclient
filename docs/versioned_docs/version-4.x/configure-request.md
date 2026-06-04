@@ -156,7 +156,7 @@ var order = new Order { Id = 1001, Amount = 49.99M };
 request.WithXmlContent(order);
 ```
 
-:::important XML Serialization
+:::important[XML Serialization]
 
 If the object serialization does not serialize to your satisfaction, serialize the object yourself, then pass the raw XML as a string instead of the object.
 

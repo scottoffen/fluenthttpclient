@@ -203,7 +203,7 @@ This restriction only applies to the `WithHeader` and `Withheaders` fluent exten
 
 In short, the fluent API keeps the simple path safe, while still leaving the door open for expert customization or tom-foolery when needed.
 
-:::tip Indirect Control
+:::tip[Indirect Control]
 
 When you need indirect control over `Content-Length` or chunked transfer behavior, your lever is [`WithBufferedContent`](./configure-content.md#buffering-request-content). Buffered content *usually* produces a `Content-Length` header, while unbuffered or unknown-length content lets the runtime fall back to chunked transfer for HTTP/1.1. Nevertheless, FluentHttpClient itself **never sets these headers explicitly**.
 
@@ -249,7 +249,7 @@ var builder = client
 * Encodes with UTF-8 and Base64.
 * Sets `Authorization: Basic {encoded}`.
 
-:::danger Security Notification
+:::danger[Security Notification]
 
 Basic auth is only Base64 encoding, not encryption. Avoid sending it over insecure connections and avoid logging the header or the raw password.
 

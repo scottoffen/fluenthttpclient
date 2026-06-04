@@ -42,7 +42,7 @@ var builder = client
     .WithCookie("session", preEncodedValue, encode: false);
 ```
 
-:::caution When to disable encoding
+:::caution[When to disable encoding]
 
 Set `encode` to `false` only if:
 * The value is already properly encoded

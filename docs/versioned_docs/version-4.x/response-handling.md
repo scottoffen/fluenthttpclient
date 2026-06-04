@@ -58,7 +58,7 @@ Streaming is ideal for large downloads or scenarios where you want to process da
 
 These methods make it simple to define behavior for successful or failed HTTP responses without complex conditionals.
 
-:::danger Avoid Reading The Response Stream
+:::danger[Avoid Reading The Response Stream]
 
 Avoid reading or consuming the response content (e.g., `GetResponseStringAsync()`, `GetResponseBytesAsync()`, etc.) inside these handlers unless you are certain the response will not be processed elsewhere. Once the response body is read, the underlying stream is consumed, which means later attempts to access the content will return empty results or throw exceptions.
 
