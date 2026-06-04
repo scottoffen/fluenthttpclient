@@ -27,15 +27,15 @@ public static class HttpClientExtensions
     /// <param name="client">The <see cref="HttpClient"/> instance to use for sending requests.</param>
     /// <returns>A new instance of <typeparamref name="TBuilder"/> initialized with the client's base address.</returns>
 #if NET7_0_OR_GREATER
-    [RequiresUnreferencedCode("Constructs TBuilder with Activator.CreateInstance, which is not trimming-safe. For trimmed or AOT apps, use the UsingRoute overload that takes a factory delegate.")]
+    [RequiresDynamicCode("Constructs TBuilder with Activator.CreateInstance, which can require runtime code generation. For Native AOT, use the UsingRoute overload that takes a factory delegate.")]    
 #endif
 #if NET6_0_OR_GREATER
-    [RequiresDynamicCode("Constructs TBuilder with Activator.CreateInstance, which can require runtime code generation. For Native AOT, use the UsingRoute overload that takes a factory delegate.")]
+    [RequiresUnreferencedCode("Constructs TBuilder with Activator.CreateInstance, which is not trimming-safe. For trimmed or AOT apps, use the UsingRoute overload that takes a factory delegate.")]
 #endif
     public static TBuilder UsingBase<TBuilder>(this HttpClient client)
         where TBuilder : HttpRequestBuilder
     {
-        return (TBuilder)Activator.CreateInstance(typeof(TBuilder), client)!;
+        return BuilderFactory<TBuilder>.Create(client);
     }
 
     /// <summary>
@@ -59,15 +59,15 @@ public static class HttpClientExtensions
     /// <param name="route">The route string for the request URI, which can be absolute or relative.</param>
     /// <returns>A new instance of <typeparamref name="TBuilder"/> initialized with the specified route.</returns>
 #if NET7_0_OR_GREATER
-    [RequiresUnreferencedCode("Constructs TBuilder with Activator.CreateInstance, which is not trimming-safe. For trimmed or AOT apps, use the UsingRoute overload that takes a factory delegate.")]
+    [RequiresDynamicCode("Constructs TBuilder with Activator.CreateInstance, which can require runtime code generation. For Native AOT, use the UsingRoute overload that takes a factory delegate.")]    
 #endif
 #if NET6_0_OR_GREATER
-    [RequiresDynamicCode("Constructs TBuilder with Activator.CreateInstance, which can require runtime code generation. For Native AOT, use the UsingRoute overload that takes a factory delegate.")]
+    [RequiresUnreferencedCode("Constructs TBuilder with Activator.CreateInstance, which is not trimming-safe. For trimmed or AOT apps, use the UsingRoute overload that takes a factory delegate.")]
 #endif
     public static TBuilder UsingRoute<TBuilder>(this HttpClient client, string route)
         where TBuilder : HttpRequestBuilder
     {
-        return (TBuilder)Activator.CreateInstance(typeof(TBuilder), client, route)!;
+        return BuilderFactory<TBuilder>.Create(client, route);
     }
 
     /// <summary>
@@ -90,14 +90,14 @@ public static class HttpClientExtensions
     /// <param name="uri">The URI for the request.</param>
     /// <returns>A new instance of <typeparamref name="TBuilder"/> initialized with the specified URI.</returns>
 #if NET7_0_OR_GREATER
-    [RequiresUnreferencedCode("Constructs TBuilder with Activator.CreateInstance, which is not trimming-safe. For trimmed or AOT apps, use the UsingRoute overload that takes a factory delegate.")]
+    [RequiresDynamicCode("Constructs TBuilder with Activator.CreateInstance, which can require runtime code generation. For Native AOT, use the UsingRoute overload that takes a factory delegate.")]    
 #endif
 #if NET6_0_OR_GREATER
-    [RequiresDynamicCode("Constructs TBuilder with Activator.CreateInstance, which can require runtime code generation. For Native AOT, use the UsingRoute overload that takes a factory delegate.")]
+    [RequiresUnreferencedCode("Constructs TBuilder with Activator.CreateInstance, which is not trimming-safe. For trimmed or AOT apps, use the UsingRoute overload that takes a factory delegate.")]
 #endif
     public static TBuilder UsingRoute<TBuilder>(this HttpClient client, Uri uri)
         where TBuilder : HttpRequestBuilder
     {
-        return (TBuilder)Activator.CreateInstance(typeof(TBuilder), client, uri)!;
+        return BuilderFactory<TBuilder>.Create(client, uri);
     }
 }

@@ -10,7 +10,7 @@ It works with the `HttpClient` you already have rather than replacing it. Each r
 - **JSON and XML** serialization and deserialization, with `JsonTypeInfo<T>` overloads for trim-safe and Native AOT scenarios.
 - **Conditional configuration** that applies immediately or defers until the request is built, so you can branch without breaking the chain.
 - **Response handlers** that attach success and failure callbacks inline, without interrupting the chain.
-- **Extensible by subclassing**: derive from `HttpRequestBuilder` for a thin client that keeps the full fluent API, then add your own methods or override behavior on top. Your additions chain alongside the built-in methods, and an override of `SendAsync` applies shared behavior such as authentication or logging to every request the client sends.
+- **Extensible by subclassing**: derive from `HttpRequestBuilder` to create a custom builder shaped for a specific API or concern. Your methods chain alongside the built-in ones, and an override of `SendAsync` applies your logic to every request, since every other member on the class feeds into it.
 
 ## Side-by-Side
 
@@ -83,4 +83,4 @@ FluentHttpClient multitargets .NET Standard 2.0 and 2.1, and .NET 6, 7, 8, 9, an
 
 ## Documentation
 
-Full documentation, including how to build your own client types, is at https://scottoffen.github.io/fluenthttpclient.
+Full documentation, including how to create custom builders, is at https://scottoffen.github.io/fluenthttpclient.
