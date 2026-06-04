@@ -12,7 +12,8 @@ public static class FluentVersionExtensions
     /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
     /// <param name="version">The HTTP version as a string (e.g., "1.1", "2.0").</param>
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder UsingVersion(this HttpRequestBuilder builder, string version)
+    public static TBuilder UsingVersion<TBuilder>(this TBuilder builder, string version)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNullOrEmpty(version, nameof(version));
 
@@ -34,7 +35,8 @@ public static class FluentVersionExtensions
     /// <param name="major">The major version number.</param>
     /// <param name="minor">The minor version number.</param>
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder UsingVersion(this HttpRequestBuilder builder, int major, int minor)
+    public static TBuilder UsingVersion<TBuilder>(this TBuilder builder, int major, int minor)
+        where TBuilder : HttpRequestBuilder
     {
         builder.Version = new Version(major, minor);
         return builder;
@@ -46,7 +48,8 @@ public static class FluentVersionExtensions
     /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
     /// <param name="version">The HTTP version to use.</param>
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder UsingVersion(this HttpRequestBuilder builder, Version version)
+    public static TBuilder UsingVersion<TBuilder>(this TBuilder builder, Version version)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(version, nameof(version));
 
@@ -64,7 +67,8 @@ public static class FluentVersionExtensions
     /// <param name="version">The HTTP version as a string (e.g., "1.1", "2.0").</param>
     /// <param name="policy">The version policy to use for negotiation.</param>
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder UsingVersion(this HttpRequestBuilder builder, string version, HttpVersionPolicy policy)
+    public static TBuilder UsingVersion<TBuilder>(this TBuilder builder, string version, HttpVersionPolicy policy)
+        where TBuilder : HttpRequestBuilder
     {
         builder.UsingVersion(version);
         builder.VersionPolicy = policy;
@@ -80,7 +84,8 @@ public static class FluentVersionExtensions
     /// <param name="version">The HTTP version to use.</param>
     /// <param name="policy">The version policy to use for negotiation.</param>
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder UsingVersion(this HttpRequestBuilder builder, Version version, HttpVersionPolicy policy)
+    public static TBuilder UsingVersion<TBuilder>(this TBuilder builder, Version version, HttpVersionPolicy policy)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(version, nameof(version));
 
@@ -97,7 +102,8 @@ public static class FluentVersionExtensions
     /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
     /// <param name="policy">The version policy to use for negotiation.</param>
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder UsingVersionPolicy(this HttpRequestBuilder builder, HttpVersionPolicy policy)
+    public static TBuilder UsingVersionPolicy<TBuilder>(this TBuilder builder, HttpVersionPolicy policy)
+        where TBuilder : HttpRequestBuilder
     {
         builder.VersionPolicy = policy;
         return builder;

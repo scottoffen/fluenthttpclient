@@ -6,7 +6,7 @@ using System.Text.Json;
 namespace FluentHttpClient;
 
 /// <summary>
-/// Fluent extension methods for adding JSON content to the <see cref="HttpRequestBuilder"/>.
+/// Fluent extension methods for adding JSON content to the TBuilder.
 /// </summary>
 #if NET7_0_OR_GREATER
 [RequiresDynamicCode("Uses reflection-based JSON deserialization. For Native AOT, use the overloads that accept JsonTypeInfo<T>.")]
@@ -20,13 +20,15 @@ public static partial class FluentJsonContentExtensions
     /// Serializes the specified value as JSON using the default serializer options and sets it as the request content
     /// with UTF-8 encoding and the default JSON media type.
     /// </summary>
+    /// <typeparam name="TBuilder">The type of the builder, which must inherit from <see cref="HttpRequestBuilder"/>.</typeparam>
     /// <typeparam name="T">The type of the value to serialize.</typeparam>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="value">The value to serialize as JSON.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithJsonContent<T>(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithJsonContent<TBuilder, T>(
+        this TBuilder builder,
         T value)
+        where TBuilder : HttpRequestBuilder
         where T : class
     {
         var json = JsonSerializer.Serialize(value, FluentJsonSerializer.DefaultJsonSerializerOptions);
@@ -38,15 +40,17 @@ public static partial class FluentJsonContentExtensions
     /// Serializes the specified value as JSON using the provided serializer options and sets it as the request content
     /// with UTF-8 encoding and the default JSON media type.
     /// </summary>
+    /// <typeparam name="TBuilder">The type of the builder, which must inherit from <see cref="HttpRequestBuilder"/>.</typeparam>
     /// <typeparam name="T">The type of the value to serialize.</typeparam>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="value">The value to serialize as JSON.</param>
     /// <param name="options">The JSON serializer options to use.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithJsonContent<T>(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithJsonContent<TBuilder, T>(
+        this TBuilder builder,
         T value,
         JsonSerializerOptions options)
+        where TBuilder : HttpRequestBuilder
         where T : class
     {
         var json = JsonSerializer.Serialize(value, options);
@@ -58,15 +62,17 @@ public static partial class FluentJsonContentExtensions
     /// Serializes the specified value as JSON using the default serializer options and sets it as the request content
     /// with UTF-8 encoding and the specified media type.
     /// </summary>
+    /// <typeparam name="TBuilder">The type of the builder, which must inherit from <see cref="HttpRequestBuilder"/>.</typeparam>
     /// <typeparam name="T">The type of the value to serialize.</typeparam>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="value">The value to serialize as JSON.</param>
     /// <param name="contentType">The media type string for the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithJsonContent<T>(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithJsonContent<TBuilder, T>(
+        this TBuilder builder,
         T value,
         string contentType)
+        where TBuilder : HttpRequestBuilder
         where T : class
     {
         var json = JsonSerializer.Serialize(value, FluentJsonSerializer.DefaultJsonSerializerOptions);
@@ -78,17 +84,19 @@ public static partial class FluentJsonContentExtensions
     /// Serializes the specified value as JSON using the provided serializer options and sets it as the request content
     /// with UTF-8 encoding and the specified media type.
     /// </summary>
+    /// <typeparam name="TBuilder">The type of the builder, which must inherit from <see cref="HttpRequestBuilder"/>.</typeparam>
     /// <typeparam name="T">The type of the value to serialize.</typeparam>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="value">The value to serialize as JSON.</param>
     /// <param name="options">The JSON serializer options to use.</param>
     /// <param name="contentType">The media type string for the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithJsonContent<T>(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithJsonContent<TBuilder, T>(
+        this TBuilder builder,
         T value,
         JsonSerializerOptions options,
         string contentType)
+        where TBuilder : HttpRequestBuilder
         where T : class
     {
         var json = JsonSerializer.Serialize(value, options);
@@ -100,15 +108,17 @@ public static partial class FluentJsonContentExtensions
     /// Serializes the specified value as JSON using the default serializer options and sets it as the request content
     /// with UTF-8 encoding and applies the specified content type header value.
     /// </summary>
+    /// <typeparam name="TBuilder">The type of the builder, which must inherit from <see cref="HttpRequestBuilder"/>.</typeparam>
     /// <typeparam name="T">The type of the value to serialize.</typeparam>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="value">The value to serialize as JSON.</param>
     /// <param name="contentTypeHeaderValue">The media type header value to apply to the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithJsonContent<T>(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithJsonContent<TBuilder, T>(
+        this TBuilder builder,
         T value,
         MediaTypeHeaderValue contentTypeHeaderValue)
+        where TBuilder : HttpRequestBuilder
         where T : class
     {
         var json = JsonSerializer.Serialize(value, FluentJsonSerializer.DefaultJsonSerializerOptions);
@@ -122,17 +132,19 @@ public static partial class FluentJsonContentExtensions
     /// Serializes the specified value as JSON using the provided serializer options and sets it as the request content
     /// with UTF-8 encoding and applies the given content type header value.
     /// </summary>
+    /// <typeparam name="TBuilder">The type of the builder, which must inherit from <see cref="HttpRequestBuilder"/>.</typeparam>
     /// <typeparam name="T">The type of the value to serialize.</typeparam>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="value">The value to serialize as JSON.</param>
     /// <param name="options">The JSON serializer options to use.</param>
     /// <param name="contentTypeHeaderValue">The media type header value to apply to the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithJsonContent<T>(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithJsonContent<TBuilder, T>(
+        this TBuilder builder,
         T value,
         JsonSerializerOptions options,
         MediaTypeHeaderValue contentTypeHeaderValue)
+        where TBuilder : HttpRequestBuilder
         where T : class
     {
         var json = JsonSerializer.Serialize(value, options);

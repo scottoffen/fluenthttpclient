@@ -5,7 +5,7 @@ title: FluentHttpClient
 
 FluentHttpClient exposes a set of extensions methods to make sending REST requests with `HttpClient` both readable and chainable.
 
-:::info Legacy versions
+:::info[Legacy versions]
 
 These docs describe FluentHttpClient 3.x and largely apply to 2.x as well.
 Where there are differences, they are called out explicitly.

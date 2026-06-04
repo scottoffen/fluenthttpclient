@@ -4,7 +4,7 @@ using System.Text;
 namespace FluentHttpClient;
 
 /// <summary>
-/// Fluent extension methods for adding content to the <see cref="HttpRequestBuilder"/>.
+/// Fluent extension methods for adding content to the TBuilder.
 /// </summary>
 public static class FluentContentExtensions
 {
@@ -19,9 +19,10 @@ public static class FluentContentExtensions
     /// protocol or middleware issues.</para>
     /// <para>Buffering can have a significant memory impact for large payloads.</para>
     /// </remarks>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithBufferedContent(this HttpRequestBuilder builder)
+    /// <param name="builder">The TBuilder instance.</param>
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithBufferedContent<TBuilder>(this TBuilder builder)
+        where TBuilder : HttpRequestBuilder
     {
         builder.BufferRequestContent = true;
         return builder;
@@ -33,12 +34,13 @@ public static class FluentContentExtensions
     /// <remarks>
     /// Use this for adding any pre-built content that inherits from <see cref="HttpContent"/> (e.g. <see cref="MultipartContent"/>).
     /// </remarks>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="content">The HTTP content to send with the request.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithContent(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithContent<TBuilder>(
+        this TBuilder builder,
         HttpContent content)
+        where TBuilder : HttpRequestBuilder
     {
         builder.Content = content;
         return builder;
@@ -47,12 +49,13 @@ public static class FluentContentExtensions
     /// <summary>
     /// Sets the request content using form URL encoded data represented by a dictionary.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="data">The dictionary containing form data as key-value pairs.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithFormContent(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithFormContent<TBuilder>(
+        this TBuilder builder,
         Dictionary<string, string> data)
+        where TBuilder : HttpRequestBuilder
     {
 #if NET5_0
         var pairs = data.Select(static kvp =>
@@ -69,12 +72,13 @@ public static class FluentContentExtensions
     /// Sets the request content using form URL encoded data represented by a sequence
     /// of key/value pairs. Allows multiple values for the same key.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="data">The sequence of key-value pairs containing form data.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithFormContent(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithFormContent<TBuilder>(
+        this TBuilder builder,
         IEnumerable<KeyValuePair<string, string>> data)
+        where TBuilder : HttpRequestBuilder
     {
 #if NET5_0
         var pairs = data.Select(static kvp =>
@@ -92,12 +96,13 @@ public static class FluentContentExtensions
     /// <summary>
     /// Sets the request content using a <see cref="StringContent"/> with default encoding.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="content">The string content to send with the request.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithContent(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithContent<TBuilder>(
+        this TBuilder builder,
         string content)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(content, nameof(content));
         return builder.WithContent(content, null, null, null);
@@ -106,14 +111,15 @@ public static class FluentContentExtensions
     /// <summary>
     /// Sets the request content using a <see cref="StringContent"/> created with the specified encoding.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="content">The string content to send with the request.</param>
     /// <param name="encoding">The encoding to use for the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithContent(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithContent<TBuilder>(
+        this TBuilder builder,
         string content,
         Encoding encoding)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(content, nameof(content));
         Guard.AgainstNull(encoding, nameof(encoding));
@@ -123,14 +129,15 @@ public static class FluentContentExtensions
     /// <summary>
     /// Sets the request content using a <see cref="StringContent"/> with UTF-8 encoding and the specified media type.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="content">The string content to send with the request.</param>
     /// <param name="mediaType">The media type string (e.g., "application/json").</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithContent(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithContent<TBuilder>(
+        this TBuilder builder,
         string content,
         string mediaType)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(content, nameof(content));
         Guard.AgainstNull(mediaType, nameof(mediaType));
@@ -140,16 +147,17 @@ public static class FluentContentExtensions
     /// <summary>
     /// Sets the request content using a <see cref="StringContent"/> with the specified encoding and media type.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="content">The string content to send with the request.</param>
     /// <param name="encoding">The encoding to use for the content.</param>
     /// <param name="mediaType">The media type string (e.g., "application/json").</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithContent(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithContent<TBuilder>(
+        this TBuilder builder,
         string content,
         Encoding encoding,
         string mediaType)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(content, nameof(content));
         Guard.AgainstNull(encoding, nameof(encoding));
@@ -160,14 +168,15 @@ public static class FluentContentExtensions
     /// <summary>
     /// Sets the request content using a <see cref="StringContent"/> and applies the specified <see cref="MediaTypeHeaderValue"/>.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="content">The string content to send with the request.</param>
     /// <param name="mediaTypeHeaderValue">The media type header value to apply to the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithContent(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithContent<TBuilder>(
+        this TBuilder builder,
         string content,
         MediaTypeHeaderValue mediaTypeHeaderValue)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(content, nameof(content));
         Guard.AgainstNull(mediaTypeHeaderValue, nameof(mediaTypeHeaderValue));
@@ -177,16 +186,17 @@ public static class FluentContentExtensions
     /// <summary>
     /// Sets the request content using a <see cref="StringContent"/> with the specified encoding and applies the given <see cref="MediaTypeHeaderValue"/>.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="content">The string content to send with the request.</param>
     /// <param name="encoding">The encoding to use for the content.</param>
     /// <param name="mediaTypeHeaderValue">The media type header value to apply to the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithContent(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithContent<TBuilder>(
+        this TBuilder builder,
         string content,
         Encoding encoding,
         MediaTypeHeaderValue mediaTypeHeaderValue)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(content, nameof(content));
         Guard.AgainstNull(encoding, nameof(encoding));
@@ -194,13 +204,14 @@ public static class FluentContentExtensions
         return builder.WithContent(content, encoding, null, mediaTypeHeaderValue);
     }
 
-    private static HttpRequestBuilder WithContent(
-        this HttpRequestBuilder builder,
+    private static TBuilder WithContent<TBuilder>(
+        this TBuilder builder,
         string content,
         Encoding? encoding,
         string? mediaType,
         MediaTypeHeaderValue? mediaTypeHeaderValue
     )
+        where TBuilder : HttpRequestBuilder
     {
         if (mediaType is not null)
         {
@@ -227,12 +238,13 @@ public static class FluentContentExtensions
     /// <summary>
     /// Sets the request content to the provided XML string using UTF-8 encoding and the default XML media type.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="xml">The XML string content to send with the request.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithXmlContent(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithXmlContent<TBuilder>(
+        this TBuilder builder,
         string xml)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(xml, nameof(xml));
         return builder.WithContent(xml, Encoding.UTF8, FluentXmlSerializer.DefaultContentType);
@@ -241,14 +253,15 @@ public static class FluentContentExtensions
     /// <summary>
     /// Sets the request content to the provided XML string using the specified encoding and the default XML media type.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="xml">The XML string content to send with the request.</param>
     /// <param name="encoding">The encoding to use for the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithXmlContent(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithXmlContent<TBuilder>(
+        this TBuilder builder,
         string xml,
         Encoding encoding)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(xml, nameof(xml));
         return builder.WithContent(xml, encoding, FluentXmlSerializer.DefaultContentType);
@@ -257,14 +270,15 @@ public static class FluentContentExtensions
     /// <summary>
     /// Sets the request content to the provided XML string using UTF-8 encoding and the specified media type.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="xml">The XML string content to send with the request.</param>
     /// <param name="contentType">The media type string for the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithXmlContent(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithXmlContent<TBuilder>(
+        this TBuilder builder,
         string xml,
         string contentType)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(xml, nameof(xml));
         return builder.WithContent(xml, Encoding.UTF8, contentType);
@@ -273,14 +287,15 @@ public static class FluentContentExtensions
     /// <summary>
     /// Sets the request content to the provided XML string using UTF-8 encoding and applies the specified <see cref="MediaTypeHeaderValue"/>.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="xml">The XML string content to send with the request.</param>
     /// <param name="contentTypeHeaderValue">The media type header value to apply to the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithXmlContent(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithXmlContent<TBuilder>(
+        this TBuilder builder,
         string xml,
         MediaTypeHeaderValue contentTypeHeaderValue)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(xml, nameof(xml));
         return builder.WithContent(xml, Encoding.UTF8, contentTypeHeaderValue);
@@ -289,16 +304,17 @@ public static class FluentContentExtensions
     /// <summary>
     /// Sets the request content to the provided XML string using the specified encoding and media type string.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="xml">The XML string content to send with the request.</param>
     /// <param name="encoding">The encoding to use for the content.</param>
     /// <param name="contentType">The media type string for the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithXmlContent(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithXmlContent<TBuilder>(
+        this TBuilder builder,
         string xml,
         Encoding encoding,
         string contentType)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(xml, nameof(xml));
         return builder.WithContent(xml, encoding, contentType);
@@ -307,16 +323,17 @@ public static class FluentContentExtensions
     /// <summary>
     /// Sets the request content to the provided XML string using the specified encoding and applies the given <see cref="MediaTypeHeaderValue"/>.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="xml">The XML string content to send with the request.</param>
     /// <param name="encoding">The encoding to use for the content.</param>
     /// <param name="contentTypeHeaderValue">The media type header value to apply to the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithXmlContent(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithXmlContent<TBuilder>(
+        this TBuilder builder,
         string xml,
         Encoding encoding,
         MediaTypeHeaderValue contentTypeHeaderValue)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(xml, nameof(xml));
         return builder.WithContent(xml, encoding, contentTypeHeaderValue);
@@ -329,12 +346,13 @@ public static class FluentContentExtensions
     /// <summary>
     /// Sets the request content to the provided JSON string using UTF-8 encoding and the default JSON media type.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="json">The JSON string content to send with the request.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithJsonContent(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithJsonContent<TBuilder>(
+        this TBuilder builder,
         string json)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(json, nameof(json));
         return builder.WithContent(json, Encoding.UTF8, FluentJsonSerializer.DefaultContentType);
@@ -343,14 +361,15 @@ public static class FluentContentExtensions
     /// <summary>
     /// Sets the request content to the provided JSON string using the specified encoding and the default JSON media type.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="json">The JSON string content to send with the request.</param>
     /// <param name="encoding">The encoding to use for the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithJsonContent(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithJsonContent<TBuilder>(
+        this TBuilder builder,
         string json,
         Encoding encoding)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(json, nameof(json));
         return builder.WithContent(json, encoding, FluentJsonSerializer.DefaultContentType);
@@ -359,14 +378,15 @@ public static class FluentContentExtensions
     /// <summary>
     /// Sets the request content to the provided JSON string using UTF-8 encoding and the specified media type.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="json">The JSON string content to send with the request.</param>
     /// <param name="contentType">The media type string for the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithJsonContent(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithJsonContent<TBuilder>(
+        this TBuilder builder,
         string json,
         string contentType)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(json, nameof(json));
         return builder.WithContent(json, Encoding.UTF8, contentType);
@@ -375,16 +395,17 @@ public static class FluentContentExtensions
     /// <summary>
     /// Sets the request content to the provided JSON string using the specified encoding and media type.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="json">The JSON string content to send with the request.</param>
     /// <param name="encoding">The encoding to use for the content.</param>
     /// <param name="contentType">The media type string for the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithJsonContent(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithJsonContent<TBuilder>(
+        this TBuilder builder,
         string json,
         Encoding encoding,
         string contentType)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(json, nameof(json));
         return builder.WithContent(json, encoding, contentType);
@@ -393,14 +414,15 @@ public static class FluentContentExtensions
     /// <summary>
     /// Sets the request content to the provided JSON string using UTF-8 encoding and applies the specified content type header value.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="json">The JSON string content to send with the request.</param>
     /// <param name="contentTypeHeaderValue">The media type header value to apply to the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithJsonContent(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithJsonContent<TBuilder>(
+        this TBuilder builder,
         string json,
         MediaTypeHeaderValue contentTypeHeaderValue)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(json, nameof(json));
         return builder.WithContent(json, Encoding.UTF8, contentTypeHeaderValue);
@@ -409,16 +431,17 @@ public static class FluentContentExtensions
     /// <summary>
     /// Sets the request content to the provided JSON string using the specified encoding and applies the given content type header value.
     /// </summary>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="json">The JSON string content to send with the request.</param>
     /// <param name="encoding">The encoding to use for the content.</param>
     /// <param name="contentTypeHeaderValue">The media type header value to apply to the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithJsonContent(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithJsonContent<TBuilder>(
+        this TBuilder builder,
         string json,
         Encoding encoding,
         MediaTypeHeaderValue contentTypeHeaderValue)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(json, nameof(json));
         return builder.WithContent(json, encoding, contentTypeHeaderValue);

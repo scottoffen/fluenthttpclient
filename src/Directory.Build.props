@@ -1,9 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup>
-    <PackageReference Include="Nerdbank.GitVersioning" Condition="!Exists('packages.config')">
-      <PrivateAssets>all</PrivateAssets>
-      <Version>3.6.143</Version>
-    </PackageReference>
-  </ItemGroup>
+<Project>
+
+  <PropertyGroup Label="StrongNaming">
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)FluentHttpClient.snk</AssemblyOriginatorKeyFile>
+    <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
+    <FluentHttpClientPublicKey>0024000004800000940000000602000000240000525341310004000001000100e1adf9793254ed4e9a9068dbcbb2d9f062ca131bca90fedd7b1f0b5aecb4a6561d32f674c3c459b3aa910a43bede8e8ac5953e03ac29209aec1f3b8d5a112382ad517e3dacc2872cb8444552bd70a41420e93ddfd75b208ab2af3a11bddf5ecdf1e26f0a8f9d0e58d45ec359e3debedb55fa62e66f190e21995be769ba67aeae</FluentHttpClientPublicKey>
+  </PropertyGroup>
+
 </Project>

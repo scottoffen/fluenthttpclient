@@ -129,7 +129,7 @@ FluentHttpClientOptions.DefaultJsonSerializerOptions = new JsonSerializerOptions
 };
 ```
 
-:::danger Global Impact
+:::danger[Global Impact]
 
 This is a static setting. Changing it affects every call that relies on the defaults across your process. Prefer passing explicit options to a single call when you need per-request behavior.
 

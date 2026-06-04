@@ -5,7 +5,7 @@ title: Deserializing JSON
 
 FluentHttpClient provides a set of extensions for reading and deserializing JSON from `HttpResponseMessage` instances and from tasks that produce them. These extensions support strongly typed models, `JsonDocument`, and - on .NET 6 and later - `JsonObject` from `System.Text.Json.Nodes`.
 
-:::warning AOT and JSON
+:::warning[AOT and JSON]
 
 For Native AOT builds, only the sections for `JsonDocument` and `JsonObject` apply. For typed JSON deserialization, see the [JSON AOT Support](./aot-support.md) documentation for overloads are AOT-friendly.
 
@@ -56,7 +56,7 @@ using var doc = await response.ReadJsonDocumentAsync();
 - `ReadJsonDocumentAsync(CancellationToken)`
 - `ReadJsonDocumentAsync(JsonDocumentOptions, CancellationToken)`
 
-:::danger Memory Management
+:::danger[Memory Management]
 
 `JsonDocument` implements `IDisposable` and **must be disposed** to avoid memory leaks. The parsed JSON data is backed by pooled memory that must be returned to avoid accumulation.
 
@@ -86,7 +86,7 @@ If you need to keep the data beyond the disposal scope, extract the values you n
 
 `JsonObject` is mutable and ideal for lightweight manipulation of dynamic or semi-structured JSON. Use these methods when you want to deserialize JSON into a `JsonObject` object from `Task<HttpResponseMessage>` or `HttpResponseMessage`.
 
-:::important JsonObject Support
+:::important[JsonObject Support]
 
 These methods are only available on .NET 6 and later, as they rely on `JsonObject`, which is only available in .NET 6.0 and higher as part of the `System.Text.Json.Nodes` API.
 

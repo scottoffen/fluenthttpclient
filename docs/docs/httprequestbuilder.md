@@ -43,7 +43,7 @@ In this example:
 
 Starting in FluentHttpClient 5.0, `HttpRequestBuilder` is no longer able to be constructed directly. Its constructors are now internal to ensure consistent validation and to guide users toward the supported creation patterns. To begin building a request, use one of the `HttpClient` extension methods described below. Each one returns a fresh builder instance scoped to a single request.
 
-:::warning Query Strings and Fragments
+:::warning[Query Strings and Fragments]
 
 `BaseAddress` and `Route` must remain clean - free of query strings and fragments - so that FluentHttpClient has a single, predictable source of truth for all query-related behavior. Allowing query components in multiple places leads to ambiguous URI construction, duplicated encoding, and inconsistent request signatures. By enforcing that all query values flow through `QueryParameters`, the builder can reliably compose the final URI, ensure consistent encoding rules, and prevent subtle bugs caused by mixing inline query strings with fluent configuration.
 
@@ -118,7 +118,7 @@ The table below lists the key properties on `HttpRequestBuilder` and how they ar
 - `Task<HttpResponseMessage> SendAsync(HttpMethod method, HttpCompletionOption completionOption)`
 - `Task<HttpResponseMessage> SendAsync(HttpMethod method, HttpCompletionOption completionOption, CancellationToken cancellationToken)`
 
-:::important Use Recommended Overloads
+:::important[Use Recommended Overloads]
 
 While `SendAsync` is the core sending primitive, most consumers should prefer the convenience extensions found in the [**Sending Requests**](./sending-requests.md) documentation. These extensions select the correct `HttpMethod`, keep your call sites clean, and make intent immediately obvious. Use `SendAsync` directly only when you are using a non-standard `HttpMethod`.
 
@@ -144,7 +144,7 @@ All overloads delegate to the most complete overload. That method:
     - Apply each `OptionConfigurator` (where available).
 6. Sends the request via `_client.SendAsync`.
 
-:::danger Experimental Method
+:::danger[Experimental Method]
 
 For testing and advanced scenarios, there is an experimental `BuildRequest` method that constructs and returns the `HttpRequestMessage` without sending it. This is primarily intended for unit tests and internal usage. **Do not depend on this method being available in future versions.**
 

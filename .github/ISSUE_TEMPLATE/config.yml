@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📘 FluentHttpClient Documentation
+    url: https://scottoffen.github.io/fluenthttpclient
+    about: Start here. Many questions are answered in the official docs.
+  - name: 💬 Community Discussions
+    url: https://github.com/scottoffen/fluenthttpclient/discussions
+    about: Propose ideas, ask how-to questions, and get community help.
+  - name: "🙋 StackOverflow #fluenthttpclient"
+    url: https://stackoverflow.com/questions/tagged/fluenthttpclient?sort=newest
+    about: Ask/answer usage questions with the fluenthttpclient tag.
+  - name: 🔒 Report a security vulnerability
+    url: https://github.com/scottoffen/fluenthttpclient/security/advisories/new
+    about: Please report vulnerabilities privately rather than as a public issue.

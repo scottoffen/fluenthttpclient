@@ -16,10 +16,11 @@ public static class FluentQueryParameterExtensions
     /// <param name="key">The query parameter key.</param>
     /// <param name="value">The query parameter value.</param>
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithQueryParameter(
-        this HttpRequestBuilder builder,
+    public static TBuilder WithQueryParameter<TBuilder>(
+        this TBuilder builder,
         string key,
         string? value)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(key, nameof(key));
 
@@ -34,10 +35,11 @@ public static class FluentQueryParameterExtensions
     /// <param name="key">The query parameter key.</param>
     /// <param name="value">The query parameter value that will be converted to a string.</param>
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithQueryParameter(
-        this HttpRequestBuilder builder,
+    public static TBuilder WithQueryParameter<TBuilder>(
+        this TBuilder builder,
         string key,
         object? value)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(key, nameof(key));
 
@@ -52,10 +54,11 @@ public static class FluentQueryParameterExtensions
     /// <param name="key">The query parameter key.</param>
     /// <param name="values">The collection of values for the parameter.</param>
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithQueryParameter(
-        this HttpRequestBuilder builder,
+    public static TBuilder WithQueryParameter<TBuilder>(
+        this TBuilder builder,
         string key,
         IEnumerable<string?> values)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(key, nameof(key));
         Guard.AgainstNull(values, nameof(values));
@@ -71,10 +74,11 @@ public static class FluentQueryParameterExtensions
     /// <param name="key">The query parameter key.</param>
     /// <param name="values">The collection of values that will be converted to strings.</param>
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithQueryParameter(
-        this HttpRequestBuilder builder,
+    public static TBuilder WithQueryParameter<TBuilder>(
+        this TBuilder builder,
         string key,
         IEnumerable<object?> values)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(key, nameof(key));
         Guard.AgainstNull(values, nameof(values));
@@ -96,9 +100,10 @@ public static class FluentQueryParameterExtensions
     /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
     /// <param name="parameters">The collection of query parameters as key-value pairs.</param>
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithQueryParameters(
-        this HttpRequestBuilder builder,
+    public static TBuilder WithQueryParameters<TBuilder>(
+        this TBuilder builder,
         IEnumerable<KeyValuePair<string, string?>> parameters)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(parameters, nameof(parameters));
 
@@ -116,9 +121,10 @@ public static class FluentQueryParameterExtensions
     /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
     /// <param name="parameters">The collection of query parameters whose values will be converted to strings.</param>
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithQueryParameters(
-        this HttpRequestBuilder builder,
+    public static TBuilder WithQueryParameters<TBuilder>(
+        this TBuilder builder,
         IEnumerable<KeyValuePair<string, object?>> parameters)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(parameters, nameof(parameters));
 
@@ -136,9 +142,10 @@ public static class FluentQueryParameterExtensions
     /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
     /// <param name="parameters">The collection of query parameters where each can have multiple values.</param>
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithQueryParameters(
-        this HttpRequestBuilder builder,
+    public static TBuilder WithQueryParameters<TBuilder>(
+        this TBuilder builder,
         IEnumerable<KeyValuePair<string, IEnumerable<string?>>> parameters)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(parameters, nameof(parameters));
 
@@ -156,9 +163,10 @@ public static class FluentQueryParameterExtensions
     /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
     /// <param name="parameters">The collection of query parameters where each can have multiple values that will be converted to strings.</param>
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithQueryParameters(
-        this HttpRequestBuilder builder,
+    public static TBuilder WithQueryParameters<TBuilder>(
+        this TBuilder builder,
         IEnumerable<KeyValuePair<string, IEnumerable<object?>>> parameters)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(parameters, nameof(parameters));
 
@@ -186,10 +194,11 @@ public static class FluentQueryParameterExtensions
     /// <param name="key">The query parameter key.</param>
     /// <param name="value">The query parameter value, which is only added if not null.</param>
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithQueryParameterIfNotNull(
-        this HttpRequestBuilder builder,
+    public static TBuilder WithQueryParameterIfNotNull<TBuilder>(
+        this TBuilder builder,
         string key,
         string? value)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(key, nameof(key));
         return builder.When(value is not null, b => b.WithQueryParameter(key, value));
@@ -202,10 +211,11 @@ public static class FluentQueryParameterExtensions
     /// <param name="key">The query parameter key.</param>
     /// <param name="value">The query parameter value that will be converted to a string, only added if not null.</param>
     /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithQueryParameterIfNotNull(
-        this HttpRequestBuilder builder,
+    public static TBuilder WithQueryParameterIfNotNull<TBuilder>(
+        this TBuilder builder,
         string key,
         object? value)
+        where TBuilder : HttpRequestBuilder
     {
         Guard.AgainstNull(key, nameof(key));
         return builder.When(value is not null, b => b.WithQueryParameter(key, value));

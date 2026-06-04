@@ -5,7 +5,7 @@ title: Deserializing XML
 
 FluentHttpClient provides a set of extensions for reading and deserializing XML from `HttpResponseMessage` instances and from tasks that produce them. These extensions support deserializing XML into concrete .NET types or parsing XML into `XElement` for flexible document-style access.
 
-:::danger AOT and XML
+:::danger[AOT and XML]
 
 For Native AOT builds, only the sections for `XElement` apply. FluentHttpClient does not have typed XML deserialization overloads that are AOT-friendly.
 
@@ -35,7 +35,7 @@ var model = await response.ReadXmlAsync<MyModel>();
 
 Empty or whitespace content returns `null`. Malformed XML throws the underlying serializer or XML parsing exception.
 
-:::warning XmlSerializer Memory Implications
+:::warning[XmlSerializer Memory Implications]
 
 FluentHttpClient uses `System.Xml.Serialization.XmlSerializer` for typed XML deserialization. `XmlSerializer` generates and caches code for each unique type at runtime. On .NET Framework and some older .NET Core versions, these generated assemblies **cannot be unloaded**, which may lead to memory accumulation in long-running applications that deserialize many different XML types.
 

@@ -13,15 +13,17 @@ public static partial class FluentJsonContentExtensions
     /// Serializes <paramref name="value"/> using the supplied <see cref="JsonTypeInfo{T}"/> and
     /// sets the JSON payload as the request content using UTF-8 and the default media type.
     /// </summary>
+    /// <typeparam name="TBuilder">The type of the builder, which must inherit from <see cref="HttpRequestBuilder"/>.</typeparam>
     /// <typeparam name="T">The type of the value to serialize.</typeparam>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="value">The value to serialize as JSON.</param>
     /// <param name="jsonTypeInfo">The JSON type metadata for AOT-safe serialization.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithJsonContent<T>(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithJsonContent<TBuilder, T>(
+        this TBuilder builder,
         T value,
         JsonTypeInfo<T> jsonTypeInfo)
+        where TBuilder : HttpRequestBuilder
         where T : class
     {
         Guard.AgainstNull(builder, nameof(builder));
@@ -36,15 +38,17 @@ public static partial class FluentJsonContentExtensions
     /// Serializes <paramref name="value"/> using metadata from the provided
     /// <see cref="JsonSerializerContext"/> and sets the JSON payload as the request content.
     /// </summary>
+    /// <typeparam name="TBuilder">The type of the builder, which must inherit from <see cref="HttpRequestBuilder"/>.</typeparam>
     /// <typeparam name="T">The type of the value to serialize.</typeparam>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="value">The value to serialize as JSON.</param>
     /// <param name="context">The JSON serializer context containing type metadata for AOT-safe serialization.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithJsonContent<T>(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithJsonContent<TBuilder, T>(
+        this TBuilder builder,
         T value,
         JsonSerializerContext context)
+        where TBuilder : HttpRequestBuilder
         where T : class
     {
         Guard.AgainstNull(builder, nameof(builder));
@@ -64,17 +68,19 @@ public static partial class FluentJsonContentExtensions
     /// Serializes <paramref name="value"/> using the supplied <see cref="JsonTypeInfo{T}"/> and
     /// sets the JSON payload as the request content using UTF-8 and the specified media type.
     /// </summary>
+    /// <typeparam name="TBuilder">The type of the builder, which must inherit from <see cref="HttpRequestBuilder"/>.</typeparam>
     /// <typeparam name="T">The type of the value to serialize.</typeparam>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="value">The value to serialize as JSON.</param>
     /// <param name="jsonTypeInfo">The JSON type metadata for AOT-safe serialization.</param>
     /// <param name="contentType">The media type string for the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithJsonContent<T>(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithJsonContent<TBuilder, T>(
+        this TBuilder builder,
         T value,
         JsonTypeInfo<T> jsonTypeInfo,
         string contentType)
+        where TBuilder : HttpRequestBuilder
         where T : class
     {
         Guard.AgainstNull(builder, nameof(builder));
@@ -91,17 +97,19 @@ public static partial class FluentJsonContentExtensions
     /// <see cref="JsonSerializerContext"/> and sets the JSON payload as the request content
     /// using UTF-8 and the specified media type.
     /// </summary>
+    /// <typeparam name="TBuilder">The type of the builder, which must inherit from <see cref="HttpRequestBuilder"/>.</typeparam>
     /// <typeparam name="T">The type of the value to serialize.</typeparam>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="value">The value to serialize as JSON.</param>
     /// <param name="context">The JSON serializer context containing type metadata for AOT-safe serialization.</param>
     /// <param name="contentType">The media type string for the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithJsonContent<T>(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithJsonContent<TBuilder, T>(
+        this TBuilder builder,
         T value,
         JsonSerializerContext context,
         string contentType)
+        where TBuilder : HttpRequestBuilder
         where T : class
     {
         Guard.AgainstNull(builder, nameof(builder));
@@ -122,17 +130,19 @@ public static partial class FluentJsonContentExtensions
     /// Serializes <paramref name="value"/> using the supplied <see cref="JsonTypeInfo{T}"/> and
     /// sets the JSON payload as the request content using UTF-8 and the specified content type header.
     /// </summary>
+    /// <typeparam name="TBuilder">The type of the builder, which must inherit from <see cref="HttpRequestBuilder"/>.</typeparam>
     /// <typeparam name="T">The type of the value to serialize.</typeparam>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="value">The value to serialize as JSON.</param>
     /// <param name="jsonTypeInfo">The JSON type metadata for AOT-safe serialization.</param>
     /// <param name="contentTypeHeaderValue">The media type header value to apply to the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithJsonContent<T>(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithJsonContent<TBuilder, T>(
+        this TBuilder builder,
         T value,
         JsonTypeInfo<T> jsonTypeInfo,
         MediaTypeHeaderValue contentTypeHeaderValue)
+        where TBuilder : HttpRequestBuilder
         where T : class
     {
         Guard.AgainstNull(builder, nameof(builder));
@@ -152,17 +162,19 @@ public static partial class FluentJsonContentExtensions
     /// <see cref="JsonSerializerContext"/> and sets the JSON payload as the request content
     /// using UTF-8 and the specified content type header.
     /// </summary>
+    /// <typeparam name="TBuilder">The type of the builder, which must inherit from <see cref="HttpRequestBuilder"/>.</typeparam>
     /// <typeparam name="T">The type of the value to serialize.</typeparam>
-    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="builder">The TBuilder instance.</param>
     /// <param name="value">The value to serialize as JSON.</param>
     /// <param name="context">The JSON serializer context containing type metadata for AOT-safe serialization.</param>
     /// <param name="contentTypeHeaderValue">The media type header value to apply to the content.</param>
-    /// <returns>The <see cref="HttpRequestBuilder"/> for method chaining.</returns>
-    public static HttpRequestBuilder WithJsonContent<T>(
-        this HttpRequestBuilder builder,
+    /// <returns>The TBuilder for method chaining.</returns>
+    public static TBuilder WithJsonContent<TBuilder, T>(
+        this TBuilder builder,
         T value,
         JsonSerializerContext context,
         MediaTypeHeaderValue contentTypeHeaderValue)
+        where TBuilder : HttpRequestBuilder
         where T : class
     {
         Guard.AgainstNull(builder, nameof(builder));

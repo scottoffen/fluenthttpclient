@@ -7,7 +7,7 @@ The `HttpRequestBuilder` class provides a fluent, flexible way to construct and 
 
 None of the properties is required as long as the provided `HttpClient` instance knows where to send the request.
 
-:::important Recommendation
+:::important[Recommendation]
 Wherever possible, prefer configuring properties and calling methods through the **FluentHttpClient** extension methods, rather than modifying `HttpRequestBuilder` directly.
 :::
 

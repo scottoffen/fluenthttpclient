@@ -5,7 +5,7 @@ title: Native AOT Support
 
 FluentHttpClient provides a set of AOT-friendly JSON extensions that work with `System.Text.Json` source generation. These overloads avoid reflection-based serialization and deserialization so you can safely trim and compile your applications ahead of time. The `JsonTypeInfo<T>` overloads are slightly faster and more explicit, while the `JsonSerializerContext` overloads allow passing a shared context instance.
 
-:::danger XML AOT Support
+:::danger[XML AOT Support]
 
 The XML reflection-based serialization and deserialization helpers provided in FluentHttpClient are **not** AOT-compatible and should only be used in JIT-compiled applications.
 
