@@ -84,25 +84,23 @@ public static partial class FluentJsonTypedDeserialization
         // NOTE: HttpResponseMessage.Content is never null on modern TFMs, but can be on older platforms.
         // These checks exist for cross-target safety and are not hit in current test runs.
         if (response.Content is null)
-        {
             return default;
-        }
 
         options ??= FluentJsonSerializer.DefaultJsonSerializerOptions;
 
 #if NET5_0_OR_GREATER
-        var stream = await response.Content
-            .ReadAsStreamAsync(cancellationToken)
+        var json = await response.Content
+            .ReadAsStringAsync(cancellationToken)
             .ConfigureAwait(false);
 #else
-        var stream = await response.Content
-            .ReadAsStreamAsync()
+        var json = await response.Content
+            .ReadAsStringAsync()
             .ConfigureAwait(false);
 #endif
 
-        return await JsonSerializer
-            .DeserializeAsync<T>(stream, options, cancellationToken)
-            .ConfigureAwait(false);
+        return cancellationToken.IsCancellationRequested
+            ? throw new OperationCanceledException(cancellationToken)
+            : JsonSerializer.Deserialize<T>(json, options);
     }
 
     /// <summary>
