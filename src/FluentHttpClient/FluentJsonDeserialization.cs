@@ -89,16 +89,16 @@ public static class FluentJsonDeserialization
         }
 
 #if NET5_0_OR_GREATER
-        var stream = await response.Content
-            .ReadAsStreamAsync(cancellationToken)
+        var json = await response.Content
+            .ReadAsStringAsync(cancellationToken)
             .ConfigureAwait(false);
 #else
-        var stream = await response.Content
-            .ReadAsStreamAsync()
+        var json = await response.Content
+            .ReadAsStringAsync()
             .ConfigureAwait(false);
 #endif
 
-        return JsonDocument.Parse(stream, documentOptions);
+        return JsonDocument.Parse(json, documentOptions);
     }
 
     /// <summary>
