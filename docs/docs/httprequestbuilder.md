@@ -14,6 +14,20 @@ At a high level, the workflow looks like this:
 
 This keeps each request self-contained and avoids mutating shared `HttpClient` state like `DefaultRequestHeaders`.
 
+:::danger[BaseAddress Trailing Slash]
+
+When you build a request with a relative route, `HttpClient.BaseAddress` must end with a trailing slash for the route to be appended to it correctly. This is standard `Uri` combination behavior (RFC 3986 relative reference resolution), not something FluentHttpClient controls.
+
+A base address of `https://example.com/api/posts` combined with the route `1` resolves to `https://example.com/api/1`, dropping the `posts` segment, because the base address has no trailing slash. Use `https://example.com/api/posts/` instead to get `https://example.com/api/posts/1`.
+
+Adding a leading slash to the route does not fix this either. A route of `/1` is treated as an absolute path and replaces the entire base address path, giving you `https://example.com/1` instead, dropping `api` and `posts` both.
+
+This only applies when building a request from a relative route. `UsingBase` does not accept or set a route, so it is not affected.
+
+**See: https://www.rfc-editor.org/info/rfc3986/#section-5**
+
+:::
+
 ## Fluent Workflow
 
 FluentHttpClient is built around a simple pattern:
