@@ -30,6 +30,23 @@ var response = await builder.GetAsync();
 * `Task<HttpResponseMessage> GetAsync(HttpCompletionOption completionOption)`
 * `Task<HttpResponseMessage> GetAsync(HttpCompletionOption completionOption, CancellationToken cancellationToken)`
 
+### QUERY
+
+Use QUERY to send a request body describing a query, while keeping the safe and idempotent semantics of GET. It fills the gap between GET, which cannot carry a request body, and POST, which is neither safe nor idempotent. See [RFC 10008](https://datatracker.ietf.org/doc/html/rfc10008) for details.
+
+```csharp
+var response = await builder
+    .WithJsonContent(searchCriteria)
+    .QueryAsync();
+```
+
+**Available overloads**
+
+* `Task<HttpResponseMessage> QueryAsync()`
+* `Task<HttpResponseMessage> QueryAsync(CancellationToken cancellationToken)`
+* `Task<HttpResponseMessage> QueryAsync(HttpCompletionOption completionOption)`
+* `Task<HttpResponseMessage> QueryAsync(HttpCompletionOption completionOption, CancellationToken cancellationToken)`
+
 ### POST
 
 Use POST for creating resources or sending commands, typically with a request body.
@@ -230,6 +247,7 @@ var response = await builder
 | Method group   | Overloads                                                                                                                                          |
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `GetAsync`     | `GetAsync()`, `GetAsync(CancellationToken)`, `GetAsync(HttpCompletionOption)`, `GetAsync(HttpCompletionOption, CancellationToken)`                 |
+| `QueryAsync`   | `QueryAsync()`, `QueryAsync(CancellationToken)`, `QueryAsync(HttpCompletionOption)`, `QueryAsync(HttpCompletionOption, CancellationToken)`         |
 | `PostAsync`    | `PostAsync()`, `PostAsync(CancellationToken)`, `PostAsync(HttpCompletionOption)`, `PostAsync(HttpCompletionOption, CancellationToken)`             |
 | `PutAsync`     | `PutAsync()`, `PutAsync(CancellationToken)`, `PutAsync(HttpCompletionOption)`, `PutAsync(HttpCompletionOption, CancellationToken)`                 |
 | `DeleteAsync`  | `DeleteAsync()`, `DeleteAsync(CancellationToken)`, `DeleteAsync(HttpCompletionOption)`, `DeleteAsync(HttpCompletionOption, CancellationToken)`     |

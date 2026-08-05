@@ -429,4 +429,61 @@ public class FluentSendExtensionsTests
             handler.LastRequest!.Method.ShouldBe(HttpMethod.Put);
         }
     }
+
+    public class QueryAsyncTests
+    {
+        [Fact]
+        public async Task QueryAsync_UsesQueryMethod_WhenCalledWithoutParameters()
+        {
+            var handler = new TestHttpMessageHandler();
+            var builder = CreateBuilder(handler);
+
+            var response = await builder.QueryAsync();
+
+            response.ShouldNotBeNull();
+            handler.LastRequest.ShouldNotBeNull();
+            handler.LastRequest!.Method.ShouldBe(HttpMethod.Query);
+        }
+
+        [Fact]
+        public async Task QueryAsync_UsesQueryMethod_WhenCancellationTokenProvided()
+        {
+            var handler = new TestHttpMessageHandler();
+            var builder = CreateBuilder(handler);
+            using var cts = new CancellationTokenSource();
+
+            var response = await builder.QueryAsync(cts.Token);
+
+            response.ShouldNotBeNull();
+            handler.LastRequest.ShouldNotBeNull();
+            handler.LastRequest!.Method.ShouldBe(HttpMethod.Query);
+        }
+
+        [Fact]
+        public async Task QueryAsync_UsesQueryMethod_WhenCompletionOptionProvided()
+        {
+            var handler = new TestHttpMessageHandler();
+            var builder = CreateBuilder(handler);
+
+            var response = await builder.QueryAsync(HttpCompletionOption.ResponseHeadersRead);
+
+            response.ShouldNotBeNull();
+            handler.LastRequest.ShouldNotBeNull();
+            handler.LastRequest!.Method.ShouldBe(HttpMethod.Query);
+        }
+
+        [Fact]
+        public async Task QueryAsync_UsesQueryMethod_WhenCompletionOptionAndCancellationTokenProvided()
+        {
+            var handler = new TestHttpMessageHandler();
+            var builder = CreateBuilder(handler);
+            using var cts = new CancellationTokenSource();
+
+            var response = await builder.QueryAsync(HttpCompletionOption.ResponseContentRead, cts.Token);
+
+            response.ShouldNotBeNull();
+            handler.LastRequest.ShouldNotBeNull();
+            handler.LastRequest!.Method.ShouldBe(HttpMethod.Query);
+        }
+    }
 }
