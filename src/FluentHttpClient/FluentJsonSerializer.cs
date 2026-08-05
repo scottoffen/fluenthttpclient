@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-#if NETSTANDARD2_1_OR_GREATER
+#if !NETSTANDARD2_0
 using System.Text.Json.Serialization;
 #endif
 
@@ -17,7 +17,7 @@ internal static class FluentJsonSerializer
     public static readonly JsonSerializerOptions DefaultJsonSerializerOptions = new JsonSerializerOptions
     {
         PropertyNameCaseInsensitive = true,
-#if NETSTANDARD2_1_OR_GREATER
+#if !NETSTANDARD2_0
         NumberHandling = JsonNumberHandling.AllowReadingFromString,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
 #endif
