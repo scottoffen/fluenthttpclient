@@ -392,4 +392,73 @@ public static class FluentSendExtensions
     {
         return builder.SendAsync(HttpMethod.Put, completionOption, cancellationToken);
     }
+
+    // QUERY
+
+    /// <summary>
+    /// Sends an HTTP QUERY request using the configured <see cref="HttpRequestBuilder"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
+    public static Task<HttpResponseMessage> QueryAsync(this HttpRequestBuilder builder)
+    {
+#if NET10_0_OR_GREATER
+        return builder.SendAsync(HttpMethod.Query);
+#else
+        return builder.SendAsync("QUERY");
+#endif
+    }
+
+    /// <summary>
+    /// Sends an HTTP QUERY request using the specified <see cref="CancellationToken"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
+    public static Task<HttpResponseMessage> QueryAsync(
+        this HttpRequestBuilder builder,
+        CancellationToken cancellationToken)
+    {
+#if NET10_0_OR_GREATER
+        return builder.SendAsync(HttpMethod.Query, cancellationToken: cancellationToken);
+#else
+        return builder.SendAsync("QUERY", cancellationToken: cancellationToken);
+#endif
+    }
+
+    /// <summary>
+    /// Sends an HTTP QUERY request using the specified <see cref="HttpCompletionOption"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
+    public static Task<HttpResponseMessage> QueryAsync(
+        this HttpRequestBuilder builder,
+        HttpCompletionOption completionOption)
+    {
+#if NET10_0_OR_GREATER
+        return builder.SendAsync(HttpMethod.Query, completionOption);
+#else
+        return builder.SendAsync("QUERY", completionOption);
+#endif
+    }
+
+    /// <summary>
+    /// Sends an HTTP QUERY request using the specified <see cref="HttpCompletionOption"/> and <see cref="CancellationToken"/>.
+    /// </summary>
+    /// <param name="builder">The <see cref="HttpRequestBuilder"/> instance.</param>
+    /// <param name="completionOption">Indicates when the operation should complete.</param>
+    /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the HTTP response message.</returns>
+    public static Task<HttpResponseMessage> QueryAsync(
+        this HttpRequestBuilder builder,
+        HttpCompletionOption completionOption,
+        CancellationToken cancellationToken)
+    {
+#if NET10_0_OR_GREATER
+        return builder.SendAsync(HttpMethod.Query, completionOption, cancellationToken);
+#else
+        return builder.SendAsync("QUERY", completionOption, cancellationToken);
+#endif
+    }
 }

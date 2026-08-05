@@ -19,6 +19,9 @@ It works with the `HttpClient` you already have rather than replacing it. Each r
 - **Response handlers** that attach success and failure callbacks inline, without interrupting the chain.
 - **Extensible by subclassing**: derive from `HttpRequestBuilder` to create a custom builder shaped for a specific API or concern. Your methods chain alongside the built-in ones, and an override of `SendAsync` applies your logic to every request, since every other member on the class feeds into it.
 
+> [!NOTE]
+> FluentHttpClient has always included the ability to use custom HTTP verbs when sending requests. As of 5.1.0, we've added a dedicated `QueryAsync` method family, mirroring `GetAsync`, `PostAsync`, and the rest with the same four overloads, for the QUERY verb defined in [RFC 10008](https://datatracker.ietf.org/doc/html/rfc10008).
+
 ## Side-by-Side
 
 The same request, written with raw `HttpClient` and with FluentHttpClient. Both deserialize the response into the same model:

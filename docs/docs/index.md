@@ -42,6 +42,12 @@ FluentHttpClient is built around the way you actually write HTTP code: configure
 
 - **Deserialize** - Handle responses with extensions for reading content (string, bytes, stream) and strongly-typed JSON/XML deserialization, so the last step in your chain gives you the shape you actually care about.
 
+:::note
+
+FluentHttpClient has always included the ability to use custom HTTP verbs when sending requests. As of 5.1.0, we've added a dedicated `QueryAsync` method family, mirroring `GetAsync`, `PostAsync`, and the rest with the same four overloads, for the QUERY verb defined in [RFC 10008](https://datatracker.ietf.org/doc/html/rfc10008).
+
+:::
+
 ```csharp
 var httpClient = new HttpClient();
 
