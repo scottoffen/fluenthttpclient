@@ -63,7 +63,7 @@ JSON content can be supplied as raw JSON strings or objects that will be seriali
 
 :::warning[AOT and JSON]
 
-For Native AOT builds, only the section for raw JSON strings applies. For typed JSON serialization, see the [JSON AOT Support](./aot-support.md) documentation for AOT-friendly overloads.
+For Native AOT builds, only the section for raw JSON strings applies. For typed JSON serialization, see the [JSON AOT Support](./native-aot-support.md) documentation for AOT-friendly overloads.
 
 :::
 
