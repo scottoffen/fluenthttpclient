@@ -7,7 +7,7 @@ FluentHttpClient provides a set of extensions for reading and deserializing JSON
 
 :::warning[AOT and JSON]
 
-For Native AOT builds, only the sections for `JsonDocument` and `JsonObject` apply. For typed JSON deserialization, see the [JSON AOT Support](./aot-support.md) documentation for overloads are AOT-friendly.
+For Native AOT builds, only the sections for `JsonDocument` and `JsonObject` apply. For typed JSON deserialization, see the [JSON AOT Support](./native-aot-support.md) documentation for overloads are AOT-friendly.
 
 :::
 
